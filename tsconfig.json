@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "CommonJS",
+        "lib": [
+            "ES2020"
+        ],
+        "strict": true,
+        "outDir": "dist",
+        "baseUrl": "./",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "paths": {
+            "@src/*": [
+                "src/*"
+            ]
+        },
+        "useUnknownInCatchVariables": false,
+    },
+    "ts-node": {
+        "swc": true,
+    },
+    "include": [
+        "src/**/*.ts",
+    ],
+    "exclude": [
+        "src/public/*"
+    ]
+}

@@ -1,0 +1,25 @@
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import "dotenv/config";
+import express from "express";
+import logger from "morgan";
+import connect from "./database/db";
+
+
+// DB initialize
+connect();
+
+const app = express();
+
+app.use(cors());
+app.use(logger("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+
+app.listen(process.env.PORT ?? 3000, () => {
+    console.log(`App listening on port ${process.env.PORT || 3000}`);
+});
+
+export default app;

@@ -1,0 +1,54 @@
+{
+  "name": "ev_maintainance_backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "tsc && node ./dist/app.js",
+    "dev": "nodemon -L -e src/**/*.ts --exec \"npm run compile || exit 1\"",
+    "build": "tsc",
+    "compile": "tsc && ts-node ./src/app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QHuyyyyy/EV_Maintainance_Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/QHuyyyyy/EV_Maintainance_Backend/issues"
+  },
+  "homepage": "https://github.com/QHuyyyyy/EV_Maintainance_Backend#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "debug": "^4.4.3",
+    "express": "^5.1.0",
+    "firebase": "^11.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.1"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.11.24",
+    "@swc/helpers": "^0.5.17",
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.18",
+    "@types/debug": "^4.1.12",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.15.18",
+    "dotenv": "^16.5.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
