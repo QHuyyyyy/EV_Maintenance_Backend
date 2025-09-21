@@ -4,8 +4,9 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "node ./dist/app.js",
-    "build": "npm run swagger && tsc",
+    "start": "node ./dist/src/app.js",
+    "build": "npm run swagger && tsc && npm run copy-swagger",
+    "copy-swagger": "copy src\\swagger-output.json dist\\src\\swagger-output.json",
     "dev": "nodemon --exec ts-node src/app.ts",
     "dev:watch": "nodemon src/app.ts",
     "swagger": "ts-node swagger.ts",

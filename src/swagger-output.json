@@ -10,7 +10,7 @@
     }
   },
   "host": "localhost:5000",
-  "basePath": "/",
+  "basePath": "/api",
   "tags": [
     {
       "name": "Users",
