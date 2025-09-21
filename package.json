@@ -5,8 +5,11 @@
   "private": true,
   "scripts": {
     "start": "node ./dist/src/app.js",
-    "build": "npm run swagger && tsc && npm run copy-swagger",
-    "copy-swagger": "copy src\\swagger-output.json dist\\src\\swagger-output.json",
+    "build": "npm run build:prod",
+    "build:dev": "npm run swagger && tsc && npm run copy-swagger:win",
+    "build:prod": "npm run swagger && tsc && npm run copy-swagger:linux",
+    "copy-swagger:win": "copy src\\swagger-output.json dist\\src\\swagger-output.json",
+    "copy-swagger:linux": "cp src/swagger-output.json dist/src/swagger-output.json",
     "dev": "nodemon --exec ts-node src/app.ts",
     "dev:watch": "nodemon src/app.ts",
     "swagger": "ts-node swagger.ts",
