@@ -48,6 +48,7 @@ if (swaggerFile) {
 app.use('/api', userRoutes);
 
 // Root route redirect to API docs
+// #swagger.ignore = true
 app.get('/', (req, res) => {
     res.redirect('/api-docs');
 });
