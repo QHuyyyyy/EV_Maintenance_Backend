@@ -23,7 +23,7 @@ app.use(cookieParser());
 
 // Swagger documentation
 if (swaggerFile) {
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile, {
+    app.use('/api-docs', swaggerUi.serveFiles(swaggerFile, {}), swaggerUi.setup(swaggerFile, {
         customCss: '.swagger-ui .topbar { display: true }',
         customSiteTitle: 'EV Maintenance API Documentation',
         swaggerOptions: {
