@@ -12,7 +12,17 @@ let swaggerFile: any;
 try {
     swaggerFile = require('./swagger-output.json');
 } catch (error) {
-    console.log('Swagger file not found. Run: npm run swagger');
+    console.log('Swagger file not found. Using fallback...');
+    // Fallback basic swagger definition
+    swaggerFile = {
+        openapi: '3.0.0',
+        info: {
+            title: 'EV Maintenance API',
+            version: '1.0.0',
+            description: 'API for EV Maintenance Backend'
+        },
+        paths: {}
+    };
 }
 
 // DB initialize
@@ -29,7 +39,7 @@ app.use(cookieParser());
 // Swagger documentation
 if (swaggerFile) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile, {
-        customCss: '.swagger-ui .topbar { display: true}',
+        customCss: '.swagger-ui .topbar { display: true }',
         customSiteTitle: 'EV Maintenance API Documentation',
         swaggerOptions: {
             persistAuthorization: true,
@@ -37,13 +47,22 @@ if (swaggerFile) {
             docExpansion: 'list',
             filter: true,
             showExtensions: true,
-            tryItOutEnabled: true
-        }
+            tryItOutEnabled: true,
+            url: undefined // This forces it to use the embedded spec
+        },
+        // Use CDN for assets in production
+        customCssUrl: process.env.NODE_ENV === 'production' ? 'https://unpkg.com/swagger-ui-dist@latest/swagger-ui.css' : undefined,
+        customJs: process.env.NODE_ENV === 'production' ? ['https://unpkg.com/swagger-ui-dist@latest/swagger-ui-bundle.js'] : undefined
     }));
 }
 
 // API Routes
 app.use('/api', userRoutes);
+
+// Root route redirect to API docs
+app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+});
 
 // 404 handler
 app.use((req, res) => {
