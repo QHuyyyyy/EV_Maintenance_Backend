@@ -22,8 +22,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Swagger documentation
+const CSS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css';
+
+const options = {
+    customCssUrl: CSS_URL,
+};
 if (swaggerFile) {
-    app.use('/api-docs', swaggerUi.serveFiles(swaggerFile, {}), swaggerUi.setup(swaggerFile, {
+    app.use('/api-docs', swaggerUi.serveFiles(swaggerFile, options), swaggerUi.setup(swaggerFile, {
         customCss: '.swagger-ui .topbar { display: true }',
         customSiteTitle: 'EV Maintenance API Documentation',
         swaggerOptions: {
