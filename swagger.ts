@@ -13,7 +13,6 @@ const doc = {
     },
     host: `localhost:${process.env.PORT || 3000}`,
     basePath: '/api',
-    schemes: ['http', 'https'],
     consumes: ['application/json'],
     produces: ['application/json'],
     tags: [

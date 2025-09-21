@@ -18,8 +18,7 @@
     }
   ],
   "schemes": [
-    "http",
-    "https"
+    "http"
   ],
   "securityDefinitions": {
     "bearerAuth": {
@@ -35,6 +34,16 @@
     "application/json"
   ],
   "paths": {
+    "/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/users/search": {
       "get": {
         "tags": [
