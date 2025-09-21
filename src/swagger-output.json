@@ -348,9 +348,9 @@
           "type": "string",
           "example": "customer"
         },
-        "status": {
-          "type": "string",
-          "example": "active"
+        "isDeleted": {
+          "type": "boolean",
+          "example": false
         },
         "created_at": {
           "type": "string",
@@ -361,31 +361,6 @@
           "example": "2025-09-21T10:00:00.000Z"
         }
       }
-    },
-    "UserCreate": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string",
-          "example": "user@example.com"
-        },
-        "password": {
-          "type": "string",
-          "example": "password123"
-        },
-        "role": {
-          "type": "string",
-          "example": "customer"
-        },
-        "status": {
-          "type": "string",
-          "example": "active"
-        }
-      },
-      "required": [
-        "email",
-        "password"
-      ]
     },
     "UserUpdate": {
       "type": "object",
@@ -402,9 +377,9 @@
           "type": "string",
           "example": "mechanic"
         },
-        "status": {
-          "type": "string",
-          "example": "inactive"
+        "isDeleted": {
+          "type": "boolean",
+          "example": false
         }
       }
     },
@@ -423,18 +398,6 @@
       "required": [
         "email",
         "password"
-      ]
-    },
-    "StatusUpdate": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string",
-          "example": "suspended"
-        }
-      },
-      "required": [
-        "status"
       ]
     },
     "ApiResponse": {

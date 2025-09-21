@@ -53,8 +53,11 @@ app.use((req, res) => {
     });
 });
 
-app.listen(process.env.PORT ?? 3000, () => {
-    console.log(`App listening on port ${process.env.PORT || 3000}`);
-});
+// Only listen in development or when not running as serverless
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(process.env.PORT ?? 3000, () => {
+        console.log(`App listening on port ${process.env.PORT || 3000}`);
+    });
+}
 
 export default app;
