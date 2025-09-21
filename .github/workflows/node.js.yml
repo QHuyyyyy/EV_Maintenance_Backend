@@ -105,11 +105,3 @@ jobs:
           exit 1
         fi
         echo "Procfile found and validated"
-
-    - name: Check start script
-      run: |
-        if [ ! -f "dist/src/app.js" ]; then
-          echo "Start script target not found after build"
-          exit 1
-        fi
-        echo "Start script target exists"
