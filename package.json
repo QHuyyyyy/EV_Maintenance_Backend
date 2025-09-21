@@ -5,12 +5,12 @@
   "private": true,
   "scripts": {
     "start": "node ./dist/app.js",
-    "build": "npm run swagger && tsc && copy src\\swagger-output.json dist\\",
-    "vercel-build": "npm run swagger && tsc",
+    "build": "npm run swagger && tsc",
     "dev": "nodemon --exec ts-node src/app.ts",
     "dev:watch": "nodemon src/app.ts",
     "swagger": "ts-node swagger.ts",
-    "swagger:dev": "npm run swagger && npm run dev"
+    "swagger:dev": "npm run swagger && npm run dev",
+    "heroku-postbuild": "npm run build"
   },
   "repository": {
     "type": "git",

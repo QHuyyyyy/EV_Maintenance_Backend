@@ -11,7 +11,9 @@ const doc = {
             email: 'support@evmaintenance.com'
         }
     },
-    host: `localhost:${process.env.PORT || 3000}`,
+    host: process.env.NODE_ENV === 'production'
+        ? 'your-app-name.herokuapp.com'
+        : `localhost:${process.env.PORT || 3000}`,
     basePath: '/api',
     consumes: ['application/json'],
     produces: ['application/json'],

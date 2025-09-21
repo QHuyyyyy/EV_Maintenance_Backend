@@ -10,7 +10,7 @@
     }
   },
   "host": "localhost:5000",
-  "basePath": "/api",
+  "basePath": "/",
   "tags": [
     {
       "name": "Users",
@@ -44,7 +44,7 @@
         }
       }
     },
-    "/api/users/search": {
+    "/users/search": {
       "get": {
         "tags": [
           "Users"
@@ -108,7 +108,7 @@
         }
       }
     },
-    "/api/users/{id}": {
+    "/users/{id}": {
       "get": {
         "tags": [
           "Users"
@@ -271,7 +271,7 @@
         }
       }
     },
-    "/api/users": {
+    "/users/": {
       "get": {
         "tags": [
           "Users"
