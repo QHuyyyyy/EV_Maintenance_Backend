@@ -1,5 +1,5 @@
 import User from '../models/user.model';
-import { IUserUpdate, IUserResponse } from '../types/user.types';
+import { IUserUpdate, IUserResponse } from '../types/user.type';
 
 export class UserService {
 
