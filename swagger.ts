@@ -12,7 +12,7 @@ const doc = {
         }
     },
     host: process.env.NODE_ENV === 'production'
-        ? 'https://ev-maintenance-9bd58b96744e.herokuapp.com'
+        ? 'ev-maintenance-9bd58b96744e.herokuapp.com'
         : `localhost:${process.env.PORT || 3000}`,
     basePath: '/api',
     schemes: process.env.NODE_ENV === 'production' ? ['https'] : ['http'],
