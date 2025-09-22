@@ -11,7 +11,6 @@
     "copy-swagger:win": "copy src\\swagger-output.json dist\\src\\swagger-output.json",
     "copy-swagger:linux": "cp src/swagger-output.json dist/src/swagger-output.json || true",
     "dev": "nodemon --exec ts-node src/app.ts",
-    "dev:watch": "nodemon src/app.ts",
     "swagger": "ts-node swagger.ts",
     "swagger:dev": "npm run swagger && npm run dev",
     "test": "echo \"No tests specified\" && exit 0",
