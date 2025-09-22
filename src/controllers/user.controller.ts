@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import userService from '../services/user.service';
 import { IUserUpdate } from '../types/user.type';
+import { deleteUser, getAllUsers, getUserById, searchUsers, updateUser } from '../services/user.service';
 
 export class UserController {
 
@@ -12,7 +12,9 @@ export class UserController {
     async getUserById(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Users']
         // #swagger.summary = 'Get user by ID'
-        // #swagger.description = 'Retrieve a specific user by their ID'
+        /* #swagger.security = [{
+                   "bearerAuth": []
+           }] */
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
         /* #swagger.responses[200] = {
             description: 'User retrieved successfully',
@@ -28,7 +30,7 @@ export class UserController {
         } */
         try {
             const { id } = req.params;
-            const user = await userService.getUserById(id);
+            const user = await getUserById(id);
 
             if (!user) {
                 res.status(404).json({
@@ -65,7 +67,9 @@ export class UserController {
     async getAllUsers(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Users']
         // #swagger.summary = 'Get all users with filtering and pagination'
-        // #swagger.description = 'Retrieve all users with optional filtering by role and status'
+        /* #swagger.security = [{
+           "bearerAuth": []
+   }] */
         // #swagger.parameters['role'] = { in: 'query', type: 'string', enum: ['admin', 'mechanic', 'customer'], description: 'Filter by user role' }
         // #swagger.parameters['status'] = { in: 'query', type: 'string', enum: ['active', 'inactive', 'suspended'], description: 'Filter by user status' }
         // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number (default: 1)' }
@@ -84,7 +88,7 @@ export class UserController {
                 limit: limit ? parseInt(limit as string) : undefined
             };
 
-            const result = await userService.getAllUsers(filters);
+            const result = await getAllUsers(filters);
             console.log(result);
             res.status(200).json({
                 success: true,
@@ -119,7 +123,9 @@ export class UserController {
     async updateUser(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Users']
         // #swagger.summary = 'Update user by ID'
-        // #swagger.description = 'Update user information'
+        /* #swagger.security = [{
+           "bearerAuth": []
+   }] */
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
         // #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/UserUpdate' } }
         /* #swagger.responses[200] = {
@@ -143,7 +149,7 @@ export class UserController {
             delete (updateData as any).created_at;
             delete (updateData as any).updated_at;
 
-            const user = await userService.updateUser(id, updateData);
+            const user = await updateUser(id, updateData);
 
             if (!user) {
                 res.status(404).json({
@@ -180,7 +186,9 @@ export class UserController {
     async deleteUser(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Users']
         // #swagger.summary = 'Delete user by ID'
-        // #swagger.description = 'Permanently delete a user from the system'
+        /* #swagger.security = [{
+           "bearerAuth": []
+   }] */
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
         /* #swagger.responses[200] = {
             description: 'User deleted successfully',
@@ -195,7 +203,7 @@ export class UserController {
         } */
         try {
             const { id } = req.params;
-            const deleted = await userService.deleteUser(id);
+            const deleted = await deleteUser(id);
 
             if (!deleted) {
                 res.status(404).json({
@@ -232,7 +240,9 @@ export class UserController {
     async searchUsers(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Users']
         // #swagger.summary = 'Search users'
-        // #swagger.description = 'Search users by email or role'
+        /* #swagger.security = [{
+           "bearerAuth": []
+   }] */
         // #swagger.parameters['q'] = { in: 'query', required: true, type: 'string', description: 'Search query' }
         /* #swagger.responses[200] = {
             description: 'Search completed successfully',
@@ -257,7 +267,7 @@ export class UserController {
                 return;
             }
 
-            const users = await userService.searchUsers(q);
+            const users = await searchUsers(q);
 
             res.status(200).json({
                 success: true,

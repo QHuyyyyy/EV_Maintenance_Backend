@@ -1,5 +1,10 @@
 require('dotenv').config();
-const swaggerAutogen = require('swagger-autogen')();
+const swaggerAutogen = require('swagger-autogen')({
+    openapi: '3.0.0',
+    autoHeaders: false,  // Disable auto header detection
+    autoQuery: false,    // Disable auto query parameter detection
+    autoBody: false      // Disable auto body detection
+});
 
 const doc = {
     info: {
@@ -33,15 +38,20 @@ const doc = {
             created_at: '2025-09-21T10:00:00.000Z',
             updated_at: '2025-09-21T10:00:00.000Z'
         },
+        Login: {
+            email: 'user@example.com',
+            password: 'password123'
+        },
+        Register: {
+            email: 'user@example.com',
+            password: 'password123',
+            role: 'CUSTOMER',
+        },
         UserUpdate: {
             email: 'newemail@example.com',
             password: 'newpassword123',
-            role: 'mechanic',
+            role: 'TECHNICIAN',
             isDeleted: false,
-        },
-        UserLogin: {
-            $email: 'user@example.com',
-            $password: 'password123'
         },
         ApiResponse: {
             success: true,
@@ -69,9 +79,9 @@ const doc = {
         bearerAuth: {
             type: 'http',
             scheme: 'bearer',
-            bearerFormat: 'JWT'
-        }
-    }
+            description: 'Enter your JWT Bearer token here',
+        },
+    },
 };
 
 const outputFile = './src/swagger-output.json';
