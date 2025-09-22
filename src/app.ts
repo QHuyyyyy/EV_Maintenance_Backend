@@ -37,13 +37,12 @@ if (swaggerFile) {
             docExpansion: 'list',
             filter: true,
             showExtensions: true,
-            tryItOutEnabled: true
         }
     }));
 }
 
 // API Routes
-app.use('/users', userRoutes);
+app.use('/api/users', userRoutes);
 
 // Root route redirect to API docs
 // #swagger.ignore = true
