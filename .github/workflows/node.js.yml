@@ -1,11 +1,10 @@
 name: CI Pipeline
 
-  
 on:
   pull_request:
-    branches: [ main,dev ]
+    branches: [ main, dev ]
   push:
-    branches: [ main,dev ]
+    branches: [ main ]
 
 jobs:
   test-and-build:
