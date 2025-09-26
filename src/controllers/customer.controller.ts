@@ -4,6 +4,14 @@ import { CustomerService } from '../services/customer.service';
 const customerService = new CustomerService();
 
 export class CustomerController {
+    /**
+     * @swagger
+     * /api/customers:
+     *   post:
+     *     tags: [Customers]
+     *     summary: Create a new customer
+     *     description: Creates a new customer profile
+     */
     async createCustomer(req: Request, res: Response): Promise<void> {
         try {
             const customer = await customerService.createCustomer(req.body);
