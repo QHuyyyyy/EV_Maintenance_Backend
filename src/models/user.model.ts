@@ -23,10 +23,10 @@ const userSchema = new Schema({
         type: String,
         required: [true, 'Role is required'],
         enum: {
-            values: ['customer', 'admin', 'staff', 'technician'],
-            message: 'Role must be either customer, admin, staff, or technician'
+            values: ['CUSTOMER', 'ADMIN', 'STAFF', 'TECHNICIAN'],
+            message: 'Role must be either CUSTOMER, ADMIN, STAFF, or TECHNICIAN'
         },
-        default: 'customer'
+        default: 'CUSTOMER'
     },
     isDeleted: {
         type: Boolean,
@@ -38,6 +38,6 @@ const userSchema = new Schema({
 
 
 
-const User = mongoose.model('User', userSchema);
+export const User = mongoose.model('User', userSchema);
 
 export default User;
