@@ -143,29 +143,6 @@ export async function deleteUser(userId: string) {
     }
 }
 
-/**
- * Search users by email or role
- */
-export async function searchUsers(searchTerm: string) {
-    try {
-        const users = await User.find({
-            $or: [
-                { email: { $regex: searchTerm, $options: 'i' } },
-                { role: { $regex: searchTerm, $options: 'i' } }
-            ]
-        })
-            .select('-password')
-            .sort({ createdAt: -1 })
-            .limit(20);
-
-        return users;
-    } catch (error) {
-        if (error instanceof Error) {
-            throw new Error(`Failed to search users: ${error.message}`);
-        }
-        throw new Error('Failed to search users');
-    }
-}
 
 
 

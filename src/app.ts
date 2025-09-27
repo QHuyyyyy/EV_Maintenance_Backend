@@ -47,8 +47,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 // Root route redirect to API docs
-// #swagger.ignore = true
+
 app.get('/', (req, res) => {
+    // #swagger.ignore = true
     res.redirect('/api-docs');
 });
 

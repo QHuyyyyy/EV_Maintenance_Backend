@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IUserUpdate } from '../types/user.type';
-import { deleteUser, getAllUsers, getUserById, searchUsers, updateUser } from '../services/user.service';
+import { deleteUser, getAllUsers, getUserById, updateUser } from '../services/user.service';
 
 export class UserController {
 
@@ -232,62 +232,6 @@ export class UserController {
         }
     }
 
-
-    /**
-     * Search users
-     * GET /api/users/search?q=searchTerm
-     */
-    async searchUsers(req: Request, res: Response): Promise<void> {
-        // #swagger.tags = ['Users']
-        // #swagger.summary = 'Search users'
-        /* #swagger.security = [{
-           "bearerAuth": []
-   }] */
-        // #swagger.parameters['q'] = { in: 'query', required: true, type: 'string', description: 'Search query' }
-        /* #swagger.responses[200] = {
-            description: 'Search completed successfully',
-            schema: {
-                success: true,
-                message: 'Search completed successfully',
-                data: [{ $ref: '#/definitions/User' }]
-            }
-        } */
-        /* #swagger.responses[400] = {
-            description: 'Search query is required',
-            schema: { $ref: '#/definitions/ErrorResponse' }
-        } */
-        try {
-            const { q } = req.query;
-
-            if (!q || typeof q !== 'string') {
-                res.status(400).json({
-                    success: false,
-                    message: 'Search query is required'
-                });
-                return;
-            }
-
-            const users = await searchUsers(q);
-
-            res.status(200).json({
-                success: true,
-                message: 'Search completed successfully',
-                data: users
-            });
-        } catch (error) {
-            if (error instanceof Error) {
-                res.status(400).json({
-                    success: false,
-                    message: error.message
-                });
-            } else {
-                res.status(500).json({
-                    success: false,
-                    message: 'Internal server error'
-                });
-            }
-        }
-    }
 
 }
 

@@ -5,8 +5,7 @@ import { validate } from '../middlewares/auth';
 const router = Router();
 
 // User CRUD routes
-router.get('/search', validate,
-    userController.searchUsers.bind(userController)); // Must come before /:id
+
 router.get('/:id', validate, userController.getUserById.bind(userController));
 router.get('/', validate, userController.getAllUsers.bind(userController));
 router.patch('/:id', validate, userController.updateUser.bind(userController));
