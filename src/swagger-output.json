@@ -18,48 +18,19 @@
     {
       "name": "Users",
       "description": "User management and authentication endpoints"
-    },
-    {
-      "name": "Customers",
-      "description": "Customer management endpoints"
-    },
-    {
-      "name": "Vehicles",
-      "description": "Vehicle management endpoints"
     }
   ],
   "paths": {
-    "/": {
-      "get": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login with email and password",
         "description": "",
         "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/users/search": {
-      "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Search users",
-        "description": "Search users by email or role",
-        "parameters": [
-          {
-            "name": "q",
-            "in": "query",
-            "required": true,
-            "description": "Search query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
           "200": {
-            "description": "Search completed successfully",
+            "description": "User logged in successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -71,13 +42,11 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Search completed successfully"
+                      "example": "Login successfully"
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                     }
                   },
                   "xml": {
@@ -95,13 +64,11 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Search completed successfully"
+                      "example": "Login successfully"
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                     }
                   },
                   "xml": {
@@ -112,7 +79,10 @@
             }
           },
           "400": {
-            "description": "Search query is required",
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Invalid email or password",
             "content": {
               "application/json": {
                 "schema": {
@@ -129,16 +99,117 @@
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
         }
       }
     },
-    "/users/{id}": {
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register a new user",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Register successfully"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Register successfully"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
       "get": {
         "tags": [
           "Users"
         ],
         "summary": "Get user by ID",
-        "description": "Retrieve a specific user by their ID",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -201,6 +272,9 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "User not found",
             "content": {
@@ -219,14 +293,19 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": [
           "Users"
         ],
         "summary": "Update user by ID",
-        "description": "Update user information",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -297,6 +376,9 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "User not found",
             "content": {
@@ -315,14 +397,19 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "Users"
         ],
         "summary": "Delete user by ID",
-        "description": "Permanently delete a user from the system",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -379,6 +466,9 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "User not found",
             "content": {
@@ -397,16 +487,21 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
-    "/users/": {
+    "/api/users/": {
       "get": {
         "tags": [
           "Users"
         ],
         "summary": "Get all users with filtering and pagination",
-        "description": "Retrieve all users with optional filtering by role and status",
+        "description": "",
         "parameters": [
           {
             "name": "role",
@@ -470,298 +565,18 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
-        }
-      }
-    },
-    "/api/customers/": {
-      "post": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Create a new customer",
-        "description": "Creates a new customer profile",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Get all customers",
-        "description": "Retrieve all customers with optional filtering and pagination",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/customers/{id}": {
-      "get": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Get customer by ID",
-        "description": "Retrieve a specific customer by their ID",
-        "parameters": [
+        },
+        "security": [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "bearerAuth": []
           }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Update customer",
-        "description": "Update customer information",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Delete customer",
-        "description": "Delete a customer (soft delete)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/customers/user/{userId}": {
-      "get": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Get customer by user ID",
-        "description": "Retrieve customer information by their user ID",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/vehicles/": {
-      "post": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Create a new vehicle",
-        "description": "Creates a new vehicle profile",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Get all vehicles",
-        "description": "Retrieve all vehicles with optional filtering and pagination",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/vehicles/search": {
-      "get": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Search vehicles",
-        "description": "Search vehicles by name, model, VIN, or vehicle ID",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/vehicles/due-for-service": {
-      "get": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Get vehicles due for service",
-        "description": "Retrieve vehicles that are due for maintenance service",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/vehicles/{id}": {
-      "get": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Get vehicle by ID",
-        "description": "Retrieve a specific vehicle by its ID",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Update vehicle",
-        "description": "Update vehicle information",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Delete vehicle",
-        "description": "Delete a vehicle (soft delete)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/vehicles/vin/{vin}": {
-      "get": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Get vehicle by VIN",
-        "description": "Retrieve a vehicle by its VIN number",
-        "parameters": [
-          {
-            "name": "vin",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/vehicles/customer/{customerId}": {
-      "get": {
-        "tags": [
-          "Vehicles"
-        ],
-        "summary": "Get vehicles by customer ID",
-        "description": "Retrieve all vehicles owned by a specific customer",
-        "parameters": [
-          {
-            "name": "customerId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
+        ]
       }
     }
   },
@@ -948,262 +763,6 @@
         },
         "xml": {
           "name": "UsersListResponse"
-        }
-      },
-      "Customer": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
-          },
-          "userId": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
-          },
-          "customerName": {
-            "type": "string",
-            "example": "John Doe"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "example": "1990-01-15"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+1234567890"
-          },
-          "address": {
-            "type": "string",
-            "example": "123 Main St, City, State 12345"
-          },
-          "createdAt": {
-            "type": "string",
-            "example": "2025-09-21T10:00:00.000Z"
-          },
-          "updatedAt": {
-            "type": "string",
-            "example": "2025-09-21T10:00:00.000Z"
-          }
-        },
-        "xml": {
-          "name": "Customer"
-        }
-      },
-      "CreateCustomerRequest": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
-          },
-          "customerName": {
-            "type": "string",
-            "example": "John Doe"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "example": "1990-01-15"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+1234567890"
-          },
-          "address": {
-            "type": "string",
-            "example": "123 Main St, City, State 12345"
-          }
-        },
-        "xml": {
-          "name": "CreateCustomerRequest"
-        }
-      },
-      "UpdateCustomerRequest": {
-        "type": "object",
-        "properties": {
-          "customerName": {
-            "type": "string",
-            "example": "John Updated"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "example": "1990-01-15"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+1234567891"
-          },
-          "address": {
-            "type": "string",
-            "example": "456 New St, City, State 12345"
-          }
-        },
-        "xml": {
-          "name": "UpdateCustomerRequest"
-        }
-      },
-      "Vehicle": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
-          },
-          "vehicleId": {
-            "type": "string",
-            "example": "EV001"
-          },
-          "customerId": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
-          },
-          "vehicleName": {
-            "type": "string",
-            "example": "Tesla Model 3"
-          },
-          "model": {
-            "type": "string",
-            "example": "Model 3"
-          },
-          "VIN": {
-            "type": "string",
-            "example": "1HGCM82633A123456"
-          },
-          "price": {
-            "type": "number",
-            "example": 45000
-          },
-          "batteryCapacity": {
-            "type": "number",
-            "example": 75
-          },
-          "manufacturingYear": {
-            "type": "number",
-            "example": 2023
-          },
-          "lastServiceDate": {
-            "type": "string",
-            "example": "2025-01-15"
-          },
-          "nextServiceDue": {
-            "type": "string",
-            "example": "2025-07-15"
-          },
-          "warrantyExpiry": {
-            "type": "string",
-            "example": "2028-01-15"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": true
-          },
-          "createdAt": {
-            "type": "string",
-            "example": "2025-09-21T10:00:00.000Z"
-          },
-          "updatedAt": {
-            "type": "string",
-            "example": "2025-09-21T10:00:00.000Z"
-          }
-        },
-        "xml": {
-          "name": "Vehicle"
-        }
-      },
-      "CreateVehicleRequest": {
-        "type": "object",
-        "properties": {
-          "vehicleId": {
-            "type": "string",
-            "example": "EV001"
-          },
-          "customerId": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
-          },
-          "vehicleName": {
-            "type": "string",
-            "example": "Tesla Model 3"
-          },
-          "model": {
-            "type": "string",
-            "example": "Model 3"
-          },
-          "VIN": {
-            "type": "string",
-            "example": "1HGCM82633A123456"
-          },
-          "price": {
-            "type": "number",
-            "example": 45000
-          },
-          "batteryCapacity": {
-            "type": "number",
-            "example": 75
-          },
-          "manufacturingYear": {
-            "type": "number",
-            "example": 2023
-          },
-          "lastServiceDate": {
-            "type": "string",
-            "example": "2025-01-15"
-          },
-          "nextServiceDue": {
-            "type": "string",
-            "example": "2025-07-15"
-          },
-          "warrantyExpiry": {
-            "type": "string",
-            "example": "2028-01-15"
-          }
-        },
-        "xml": {
-          "name": "CreateVehicleRequest"
-        }
-      },
-      "UpdateVehicleRequest": {
-        "type": "object",
-        "properties": {
-          "vehicleName": {
-            "type": "string",
-            "example": "Tesla Model 3 Updated"
-          },
-          "model": {
-            "type": "string",
-            "example": "Model 3"
-          },
-          "price": {
-            "type": "number",
-            "example": 47000
-          },
-          "batteryCapacity": {
-            "type": "number",
-            "example": 80
-          },
-          "manufacturingYear": {
-            "type": "number",
-            "example": 2023
-          },
-          "lastServiceDate": {
-            "type": "string",
-            "example": "2025-02-15"
-          },
-          "nextServiceDue": {
-            "type": "string",
-            "example": "2025-08-15"
-          },
-          "warrantyExpiry": {
-            "type": "string",
-            "example": "2028-01-15"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "xml": {
-          "name": "UpdateVehicleRequest"
         }
       }
     },

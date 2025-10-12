@@ -4,12 +4,16 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "node ./dist/app.js",
-    "build": "npm run swagger && tsc",
+    "start": "node dist/src/app.js",
+    "build": "npm run build:prod",
+    "build:dev": "npm run swagger && tsc && npm run copy-swagger:win",
+    "build:prod": "npm run swagger && tsc && npm run copy-swagger:linux",
+    "copy-swagger:win": "copy src\\swagger-output.json dist\\src\\swagger-output.json",
+    "copy-swagger:linux": "cp src/swagger-output.json dist/src/swagger-output.json || true",
     "dev": "nodemon --exec ts-node src/app.ts",
-    "dev:watch": "nodemon src/app.ts",
     "swagger": "ts-node swagger.ts",
     "swagger:dev": "npm run swagger && npm run dev",
+    "test": "echo \"No tests specified\" && exit 0",
     "heroku-postbuild": "npm run build"
   },
   "repository": {
@@ -30,6 +34,7 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "debug": "^4.4.3",
+    "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "firebase": "^11.9.0",
     "jsonwebtoken": "^9.0.2",
@@ -51,8 +56,8 @@
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.15.18",
+    "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
-    "dotenv": "^16.5.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
