@@ -27,10 +27,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
 // Swagger documentation
 if (swaggerFile) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile, {
-        customCss: '.swagger-ui .topbar { display: none }',
+        customCss: '.swagger-ui .topbar { display: true }',
         customSiteTitle: 'EV Maintenance API Documentation',
         swaggerOptions: {
             persistAuthorization: true,
