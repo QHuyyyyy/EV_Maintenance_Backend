@@ -5,7 +5,6 @@ import { validate } from '../middlewares/auth';
 const router = Router();
 
 // Customer CRUD routes
-router.post('/', validate, customerController.createCustomer.bind(customerController));
 router.get('/', validate, customerController.getAllCustomers.bind(customerController));
 router.get('/user/:userId', validate, customerController.getCustomerByUserId.bind(customerController));
 router.get('/:id', validate, customerController.getCustomerById.bind(customerController));

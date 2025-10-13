@@ -17,6 +17,10 @@ export async function validate(
     try {
         const payload = validateToken(token);
         const user = await getUserById(payload.sub);
+        if (!user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
         req.user = user;
         next();
     } catch (error) {

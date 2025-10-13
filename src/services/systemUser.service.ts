@@ -1,0 +1,182 @@
+import SystemUser from '../models/systemUser.model';
+import { CreateSystemUserRequest, UpdateSystemUserRequest, ISystemUser } from '../types/systemUser.type';
+
+export class SystemUserService {
+
+    /**
+     * Create a new system user profile with empty fields (used during registration)
+     */
+    async createEmptySystemUser(userId: string): Promise<ISystemUser> {
+        try {
+            const systemUser = new SystemUser({
+                userId: userId,
+                name: '',
+                dateOfBirth: null,
+                certification: '',
+                phone: ''
+            });
+            const savedSystemUser = await systemUser.save();
+            return await this.getSystemUserById(savedSystemUser._id.toString());
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to create system user profile: ${error.message}`);
+            }
+            throw new Error('Failed to create system user profile: Unknown error');
+        }
+    }
+
+
+    /**
+     * Get system user by ID
+     */
+    async getSystemUserById(systemUserId: string): Promise<ISystemUser> {
+        try {
+            const systemUser = await SystemUser.findById(systemUserId)
+                .populate('userId', 'email role')
+                .lean();
+
+            if (!systemUser) {
+                throw new Error('System user not found');
+            }
+            return {
+                ...systemUser,
+                _id: systemUser._id.toString(),
+                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+            } as ISystemUser;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get system user: ${error.message}`);
+            }
+            throw new Error('Failed to get system user: Unknown error');
+        }
+    }
+
+    /**
+     * Get system user by user ID
+     */
+    async getSystemUserByUserId(userId: string): Promise<ISystemUser | null> {
+        try {
+            const systemUser = await SystemUser.findOne({ userId })
+                .populate('userId', 'email role')
+                .lean();
+
+            if (!systemUser) {
+                return null;
+            }
+
+            return {
+                ...systemUser,
+                _id: systemUser._id.toString(),
+                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+            } as ISystemUser;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get system user by user ID: ${error.message}`);
+            }
+            throw new Error('Failed to get system user by user ID: Unknown error');
+        }
+    }
+
+    /**
+     * Get all system users with optional filtering and pagination
+     */
+    async getAllSystemUsers(filters?: {
+        name?: string;
+        phone?: string;
+        certification?: string;
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        systemUsers: ISystemUser[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }> {
+        try {
+            const page = filters?.page || 1;
+            const limit = filters?.limit || 10;
+            const skip = (page - 1) * limit;
+
+            // Build query object
+            const query: any = {};
+            if (filters?.name) {
+                query.name = { $regex: filters.name, $options: 'i' };
+            }
+            if (filters?.phone) {
+                query.phone = { $regex: filters.phone, $options: 'i' };
+            }
+            if (filters?.certification) {
+                query.certification = { $regex: filters.certification, $options: 'i' };
+            }
+
+            const systemUsers = await SystemUser.find(query)
+                .populate('userId', 'email role')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean();
+
+            const total = await SystemUser.countDocuments(query);
+            const totalPages = Math.ceil(total / limit);
+
+            const mappedSystemUsers = systemUsers.map(systemUser => ({
+                ...systemUser,
+                _id: systemUser._id.toString(),
+                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+            })) as ISystemUser[];
+
+            return {
+                systemUsers: mappedSystemUsers,
+                total,
+                page,
+                limit,
+                totalPages
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get system users: ${error.message}`);
+            }
+            throw new Error('Failed to get system users: Unknown error');
+        }
+    }
+
+    /**
+     * Update system user by ID
+     */
+    async updateSystemUser(systemUserId: string, updateData: UpdateSystemUserRequest): Promise<ISystemUser | null> {
+        try {
+            const updatedSystemUser = await SystemUser.findByIdAndUpdate(
+                systemUserId,
+                updateData,
+                { new: true, runValidators: true }
+            ).lean();
+
+            if (!updatedSystemUser) {
+                return null;
+            }
+
+            return await this.getSystemUserById(systemUserId);
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to update system user: ${error.message}`);
+            }
+            throw new Error('Failed to update system user: Unknown error');
+        }
+    }
+
+    /**
+     * Delete system user by ID (soft delete)
+     */
+    async deleteSystemUser(systemUserId: string): Promise<boolean> {
+        try {
+            const deletedSystemUser = await SystemUser.findByIdAndDelete(systemUserId);
+            return !!deletedSystemUser;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to delete system user: ${error.message}`);
+            }
+            throw new Error('Failed to delete system user: Unknown error');
+        }
+    }
+}

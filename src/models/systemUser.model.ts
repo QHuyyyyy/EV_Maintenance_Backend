@@ -1,23 +1,23 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-const customerSchema = new Schema({
+const systemUserSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    customerName: {
+    name: {
         type: String,
         default: ''
     },
     dateOfBirth: {
         type: Date
     },
-    phone: {
+    certification: {
         type: String,
         default: ''
     },
-    address: {
+    phone: {
         type: String,
         default: ''
     }
@@ -25,4 +25,4 @@ const customerSchema = new Schema({
     timestamps: true
 });
 
-export default mongoose.model('Customer', customerSchema);
+export default mongoose.model('SystemUser', systemUserSchema);

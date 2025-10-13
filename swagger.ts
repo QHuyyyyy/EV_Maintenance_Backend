@@ -84,7 +84,6 @@ const doc = {
         },
         Customer: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            customerId: 'CUST17297654321ABCDE',
             userId: '60f1b2b3c4e5f6g7h8i9j0k2',
             customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
@@ -105,6 +104,12 @@ const doc = {
             dateOfBirth: '1990-01-15',
             phone: '+1234567890',
             address: '123 Main St, City, State'
+        },
+        UpdateSystemUser: {
+            name: 'John Doe',
+            dateOfBirth: '1990-01-15',
+            phone: '+1234567890',
+            certification: 'string'
         }
     },
     securityDefinitions: {

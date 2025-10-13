@@ -5,54 +5,6 @@ const customerService = new CustomerService();
 
 export class CustomerController {
     /**
-     * Create a new customer
-     * POST /api/customers
-     */
-    async createCustomer(req: Request, res: Response): Promise<void> {
-        // #swagger.tags = ['Customers']
-        // #swagger.summary = 'Create a new customer'
-        /* #swagger.security = [{
-           "bearerAuth": []
-   }]
-        // #swagger.description = 'Creates a new customer profile'
-        /* #swagger.requestBody = {
-            required: true,
-            content: {
-                "application/json": {
-                    schema: {
-                        $ref: '#/definitions/CreateCustomer'
-                    }
-                }
-            }
-        } */
-        /* #swagger.responses[201] = {
-            description: 'Customer created successfully',
-            schema: {
-                success: true,
-                message: 'Customer created successfully',
-                data: { $ref: '#/definitions/Customer' }
-            }
-        } */
-        /* #swagger.responses[400] = {
-            description: 'Bad request',
-            schema: { $ref: '#/definitions/ErrorResponse' }
-        } */
-        try {
-            const customer = await customerService.createCustomer(req.body);
-            res.status(201).json({
-                success: true,
-                message: 'Customer created successfully',
-                data: customer
-            });
-        } catch (error: any) {
-            res.status(400).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    /**
      * Get customer by ID
      * GET /api/customers/:id
      */
@@ -78,7 +30,7 @@ export class CustomerController {
         try {
             const { id } = req.params;
             const customer = await customerService.getCustomerById(id);
-            
+
             if (!customer) {
                 res.status(404).json({
                     success: false,
@@ -125,7 +77,7 @@ export class CustomerController {
         try {
             const { userId } = req.params;
             const customer = await customerService.getCustomerByUserId(userId);
-            
+
             if (!customer) {
                 res.status(404).json({
                     success: false,
@@ -171,7 +123,7 @@ export class CustomerController {
         } */
         try {
             const { customerName, phone, address, page, limit } = req.query;
-            
+
             const filters = {
                 customerName: customerName as string,
                 phone: phone as string,
@@ -230,7 +182,7 @@ export class CustomerController {
         try {
             const { id } = req.params;
             const customer = await customerService.updateCustomer(id, req.body);
-            
+
             if (!customer) {
                 res.status(404).json({
                     success: false,
@@ -278,7 +230,7 @@ export class CustomerController {
         try {
             const { id } = req.params;
             const deleted = await customerService.deleteCustomer(id);
-            
+
             if (!deleted) {
                 res.status(404).json({
                     success: false,

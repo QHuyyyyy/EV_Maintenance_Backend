@@ -12,4 +12,20 @@ export interface AuthRegisterDto {
 export interface Payload {
     sub: string;
     email: string;
+    originalIssuedAt?: number; // Thời gian đăng nhập ban đầu
+}
+
+export interface RefreshTokenDto {
+    refreshToken: string;
+}
+
+export interface AuthTokenResponse {
+    accessToken: string;
+    refreshToken?: string;
+    expiresIn: number;
+}
+
+export interface LogoutResponse {
+    success: boolean;
+    message: string;
 }
