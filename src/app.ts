@@ -7,6 +7,8 @@ import swaggerUi from "swagger-ui-express";
 import connect from "./database/db";
 import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.route";
+import customerRoutes from "./routes/customer.routes";
+import systemUserRoutes from "./routes/systemUser.routes";
 
 
 let swaggerFile: any;
@@ -27,10 +29,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
 // Swagger documentation
 if (swaggerFile) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile, {
-        customCss: '.swagger-ui .topbar { display: none }',
+        customCss: '.swagger-ui .topbar { display: true }',
         customSiteTitle: 'EV Maintenance API Documentation',
         swaggerOptions: {
             persistAuthorization: true,
@@ -45,6 +48,8 @@ if (swaggerFile) {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/system-users', systemUserRoutes);
 
 // Root route redirect to API docs
 

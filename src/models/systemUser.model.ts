@@ -1,0 +1,28 @@
+import mongoose, { Document, Schema } from 'mongoose';
+
+const systemUserSchema = new Schema({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    name: {
+        type: String,
+        default: ''
+    },
+    dateOfBirth: {
+        type: Date
+    },
+    certification: {
+        type: String,
+        default: ''
+    },
+    phone: {
+        type: String,
+        default: ''
+    }
+}, {
+    timestamps: true
+});
+
+export default mongoose.model('SystemUser', systemUserSchema);
