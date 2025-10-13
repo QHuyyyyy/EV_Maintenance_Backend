@@ -261,7 +261,7 @@ export async function logoutController(req: Request, res: Response) {
         }
 
         const { refreshToken } = req.body;
-        const success = logout(token, refreshToken);
+        const success = await logout(token, refreshToken);
 
         if (success) {
             return res.status(200).json({
