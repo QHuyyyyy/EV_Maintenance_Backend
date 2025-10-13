@@ -1,6 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 const customerSchema = new Schema({
+    customerId: {
+        type: String,
+        unique: true,
+        default: function() {
+            return 'CUST' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+        }
+    },
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',

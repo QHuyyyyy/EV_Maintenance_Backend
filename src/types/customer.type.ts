@@ -1,5 +1,6 @@
 export interface ICustomer {
     _id?: string;
+    customerId?: string;
     userId: string;
     customerName: string;
     dateOfBirth?: Date;

@@ -84,6 +84,7 @@ const doc = {
         },
         Customer: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            customerId: 'CUST17297654321ABCDE',
             userId: '60f1b2b3c4e5f6g7h8i9j0k2',
             customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
@@ -92,59 +93,18 @@ const doc = {
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
-        CreateCustomerRequest: {
-            userId: '60f1b2b3c4e5f6g7h8i9j0k2',
+        CreateCustomer: {
+            userId: '507f1f77bcf86cd799439011',
             customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
             phone: '+1234567890',
-            address: '123 Main St, City, State 12345'
+            address: '123 Main St, City, State'
         },
-        UpdateCustomerRequest: {
-            customerName: 'John Updated',
+        UpdateCustomer: {
+            customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
-            phone: '+1234567891',
-            address: '456 New St, City, State 12345'
-        },
-        Vehicle: {
-            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            vehicleId: 'EV001',
-            customerId: '60f1b2b3c4e5f6g7h8i9j0k2',
-            vehicleName: 'Tesla Model 3',
-            model: 'Model 3',
-            VIN: '1HGCM82633A123456',
-            price: 45000,
-            batteryCapacity: 75,
-            manufacturingYear: 2023,
-            lastServiceDate: '2025-01-15',
-            nextServiceDue: '2025-07-15',
-            warrantyExpiry: '2028-01-15',
-            isActive: true,
-            createdAt: '2025-09-21T10:00:00.000Z',
-            updatedAt: '2025-09-21T10:00:00.000Z'
-        },
-        CreateVehicleRequest: {
-            vehicleId: 'EV001',
-            customerId: '60f1b2b3c4e5f6g7h8i9j0k2',
-            vehicleName: 'Tesla Model 3',
-            model: 'Model 3',
-            VIN: '1HGCM82633A123456',
-            price: 45000,
-            batteryCapacity: 75,
-            manufacturingYear: 2023,
-            lastServiceDate: '2025-01-15',
-            nextServiceDue: '2025-07-15',
-            warrantyExpiry: '2028-01-15'
-        },
-        UpdateVehicleRequest: {
-            vehicleName: 'Tesla Model 3 Updated',
-            model: 'Model 3',
-            price: 47000,
-            batteryCapacity: 80,
-            manufacturingYear: 2023,
-            lastServiceDate: '2025-02-15',
-            nextServiceDue: '2025-08-15',
-            warrantyExpiry: '2028-01-15',
-            isActive: true
+            phone: '+1234567890',
+            address: '123 Main St, City, State'
         }
     },
     securityDefinitions: {

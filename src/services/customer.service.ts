@@ -8,20 +8,11 @@ export class CustomerService {
      */
     async createCustomer(customerData: CreateCustomerRequest): Promise<ICustomer> {
         try {
-            // Check if customer with this userId already exists
-            const existingCustomer = await Customer.findOne({ userId: customerData.userId });
-            if (existingCustomer) {
-                throw new Error('Customer with this user ID already exists');
-            }
-
             const customer = new Customer(customerData);
             const savedCustomer = await customer.save();
             return await this.getCustomerById(savedCustomer._id.toString());
         } catch (error) {
             if (error instanceof Error) {
-                if ((error as any).code === 11000) {
-                    throw new Error('Customer with this user ID already exists');
-                }
                 throw new Error(`Failed to create customer: ${error.message}`);
             }
             throw new Error('Failed to create customer: Unknown error');
@@ -43,7 +34,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId.toString()
+                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -69,7 +60,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId.toString()
+                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -122,7 +113,7 @@ export class CustomerService {
             const customers = customersRaw.map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId.toString()
+                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             })) as ICustomer[];
 
             return {
@@ -158,7 +149,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId.toString()
+                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -180,7 +171,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId.toString()
+                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -210,7 +201,7 @@ export class CustomerService {
             return customersRaw.map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId.toString()
+                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             })) as ICustomer[];
         } catch (error) {
             if (error instanceof Error) {
