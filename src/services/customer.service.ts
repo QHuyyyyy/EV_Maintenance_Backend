@@ -25,22 +25,6 @@ export class CustomerService {
     }
 
     /**
-     * Create a new customer
-     */
-    async createCustomer(customerData: CreateCustomerRequest): Promise<ICustomer> {
-        try {
-            const customer = new Customer(customerData);
-            const savedCustomer = await customer.save();
-            return await this.getCustomerById(savedCustomer._id.toString());
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to create customer: ${error.message}`);
-            }
-            throw new Error('Failed to create customer: Unknown error');
-        }
-    }
-
-    /**
      * Get customer by ID
      */
     async getCustomerById(customerId: string): Promise<ICustomer> {

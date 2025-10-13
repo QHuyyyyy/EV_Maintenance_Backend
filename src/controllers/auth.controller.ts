@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { login, register, refreshAccessToken, logout } from "../services/auth.service";
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
+import { CustomerService } from "../services/customer.service";
+import { SystemUserService } from "../services/systemUser.service";
 
+
+const customerService = new CustomerService();
+const systemUserService = new SystemUserService();
 export async function loginController(req: Request, res: Response) {
     // #swagger.tags = ['Auth']
     // #swagger.summary = 'Login with email and password'
@@ -279,5 +284,58 @@ export async function logoutController(req: Request, res: Response) {
             success: false,
             message: "Internal server error"
         });
+    }
+}
+export async function getProfileController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Get Profile'
+    /* #swagger.security = [{
+                  "bearerAuth": []
+          }] */
+
+    /* #swagger.responses[200] = {
+        description: 'Get profile successfully',
+        schema: {
+            success: true,
+            message: 'Get profile successfully'
+        }
+    } */
+    /* #swagger.responses[401] = {
+        description: 'No token provided',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    try {
+        const userRole = req.user.role;
+
+        const userId = req.user._id;
+        let profile = null;
+        console.log(userRole);
+        console.log(userId);
+        if (userRole === "CUSTOMER") {
+            profile = await customerService.getCustomerByUserId(userId);
+        } else if (userRole !== "CUSTOMER") {
+            profile = await systemUserService.getSystemUserByUserId(userId);
+        }
+
+        if (!profile) {
+            return res.status(404).json({ message: "Profile not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Get profile successfully',
+        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
     }
 }
