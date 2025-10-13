@@ -7,6 +7,7 @@ import swaggerUi from "swagger-ui-express";
 import connect from "./database/db";
 import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.route";
+import customerRoutes from "./routes/customer.routes";
 
 
 let swaggerFile: any;
@@ -46,6 +47,7 @@ if (swaggerFile) {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/customers', customerRoutes);
 
 // Root route redirect to API docs
 

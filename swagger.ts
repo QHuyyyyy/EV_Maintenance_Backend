@@ -27,6 +27,14 @@ const doc = {
         {
             name: 'Users',
             description: 'User management and authentication endpoints'
+        },
+        {
+            name: 'Customers',
+            description: 'Customer management endpoints'
+        },
+        {
+            name: 'Vehicles',
+            description: 'Vehicle management endpoints'
         }
     ],
     definitions: {
@@ -73,6 +81,30 @@ const doc = {
             message: 'Users retrieved successfully',
             data: [{ $ref: '#/definitions/User' }],
             pagination: { $ref: '#/definitions/PaginationInfo' }
+        },
+        Customer: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            customerId: 'CUST17297654321ABCDE',
+            userId: '60f1b2b3c4e5f6g7h8i9j0k2',
+            customerName: 'John Doe',
+            dateOfBirth: '1990-01-15',
+            phone: '+1234567890',
+            address: '123 Main St, City, State 12345',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateCustomer: {
+            userId: '507f1f77bcf86cd799439011',
+            customerName: 'John Doe',
+            dateOfBirth: '1990-01-15',
+            phone: '+1234567890',
+            address: '123 Main St, City, State'
+        },
+        UpdateCustomer: {
+            customerName: 'John Doe',
+            dateOfBirth: '1990-01-15',
+            phone: '+1234567890',
+            address: '123 Main St, City, State'
         }
     },
     securityDefinitions: {
