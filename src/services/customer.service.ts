@@ -4,6 +4,27 @@ import { CreateCustomerRequest, UpdateCustomerRequest, ICustomer } from '../type
 export class CustomerService {
 
     /**
+     * Create a new customer profile with empty fields (used during registration)
+     */
+    async createEmptyCustomer(userId: string): Promise<ICustomer> {
+        try {
+            const customer = new Customer({
+                userId: userId,
+                customerName: '',
+                phone: '',
+                address: ''
+            });
+            const savedCustomer = await customer.save();
+            return await this.getCustomerById(savedCustomer._id.toString());
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to create customer profile: ${error.message}`);
+            }
+            throw new Error('Failed to create customer profile: Unknown error');
+        }
+    }
+
+    /**
      * Create a new customer
      */
     async createCustomer(customerData: CreateCustomerRequest): Promise<ICustomer> {
@@ -27,7 +48,7 @@ export class CustomerService {
             const customer = await Customer.findById(customerId)
                 .populate('userId', 'email role')
                 .lean();
-            
+
             if (!customer) {
                 throw new Error('Customer not found');
             }
@@ -52,11 +73,11 @@ export class CustomerService {
             const customer = await Customer.findOne({ userId })
                 .populate('userId', 'email role')
                 .lean();
-            
+
             if (!customer) {
                 return null;
             }
-            
+
             return {
                 ...customer,
                 _id: customer._id.toString(),

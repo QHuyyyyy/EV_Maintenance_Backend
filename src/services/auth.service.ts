@@ -3,11 +3,16 @@ import { AuthLoginDto, AuthRegisterDto, Payload, AuthTokenResponse, RefreshToken
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { createUser, getUserByEmailForAuth } from "./user.service";
+import { CustomerService } from "./customer.service";
+import { SystemUserService } from "./systemUser.service";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 const REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY || process.env.JWT_SECRET_KEY;
 
-export async function login(authLoginDto: AuthLoginDto): Promise<AuthTokenResponse> {
+const customerService = new CustomerService();
+const systemUserService = new SystemUserService();
+
+export async function login(authLoginDto: AuthLoginDto) {
     const user = await getUserByEmailForAuth(authLoginDto.email);
     if (user.isDeleted) {
         throw new Error("The account does not exist");
@@ -33,7 +38,8 @@ export async function login(authLoginDto: AuthLoginDto): Promise<AuthTokenRespon
     return {
         accessToken,
         refreshToken,
-        expiresIn: 3600
+        expiresIn: 3600,
+        role: user.role
     };
 }
 
@@ -51,6 +57,26 @@ export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthTo
         role: authRegisterDto.role || "CUSTOMER",
         isDeleted: false
     });
+
+    // If role is CUSTOMER, automatically create an empty customer profile
+    if (user.role === "CUSTOMER") {
+        try {
+            await customerService.createEmptyCustomer(user._id.toString());
+        } catch (error) {
+            console.error("Failed to create customer profile:", error);
+            // Continue with registration even if customer profile creation fails
+        }
+    }
+
+    // If role is TECHNICIAN or STAFF, automatically create an empty system user profile
+    if (user.role === "TECHNICIAN" || user.role === "STAFF" || user.role === "ADMIN") {
+        try {
+            await systemUserService.createEmptySystemUser(user._id.toString());
+        } catch (error) {
+            console.error("Failed to create system user profile:", error);
+            // Continue with registration even if system user profile creation fails
+        }
+    }
 
     const payload: Payload = {
         sub: user._id.toString(),
