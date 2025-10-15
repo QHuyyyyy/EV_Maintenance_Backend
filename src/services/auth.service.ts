@@ -1,5 +1,5 @@
 import { User } from "../models/user.model";
-import { AuthLoginDto, AuthRegisterDto, Payload, AuthTokenResponse, RefreshTokenDto } from "../types/auth.type";
+import { AuthLoginDto, AuthRegisterDto, Payload, AuthTokenResponse, RefreshTokenDto, AuthRegisterResponse } from "../types/auth.type";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { createUser, getUserByEmailForAuth } from "./user.service";
@@ -43,7 +43,7 @@ export async function login(authLoginDto: AuthLoginDto) {
     };
 }
 
-export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthTokenResponse> {
+export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthRegisterResponse> {
     const existed = await User.findOne({ email: authRegisterDto.email });
 
     if (existed) throw new Error("Email existed");
@@ -78,22 +78,8 @@ export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthTo
         }
     }
 
-    const payload: Payload = {
-        sub: user._id.toString(),
-        email: user.email,
-        originalIssuedAt: Date.now()
-    };
-
-    const accessToken = signToken(payload);
-    const refreshToken = signRefreshToken(payload);
-
-    // Save refresh token to user
-    await User.findByIdAndUpdate(user._id, { refreshToken });
-
     return {
-        accessToken,
-        refreshToken,
-        expiresIn: 3600
+        message: "User registered successfully",
     };
 }
 

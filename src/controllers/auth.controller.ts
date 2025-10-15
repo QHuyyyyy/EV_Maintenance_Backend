@@ -84,8 +84,12 @@ export async function registerController(req: Request, res: Response) {
             description: 'User registered successfully',
             schema: {
                 success: true,
-                message: 'Register successfully',
-                token:  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                message: 'User registered successfully',
+                data: {
+                    userId: "507f1f77bcf86cd799439011",
+                    email: "user@example.com",
+                    role: "CUSTOMER"
+                }
             }
         } */
         /* #swagger.responses[400] = {
@@ -120,12 +124,10 @@ export async function registerController(req: Request, res: Response) {
             });
         }
         const authRegisterDto: AuthRegisterDto = { email, password, role };
-        const tokenResponse = await register(authRegisterDto);
+        const registerResponse = await register(authRegisterDto);
         return res.status(201).json({
             success: true,
-            message: "Register successfully",
-            data: tokenResponse,
-
+            message: registerResponse.message,
         });
     } catch (error: any) {
         if (error.message === "Email existed") {

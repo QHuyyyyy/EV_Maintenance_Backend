@@ -9,6 +9,9 @@ import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.route";
 import customerRoutes from "./routes/customer.routes";
 import systemUserRoutes from "./routes/systemUser.routes";
+import vehicleRoutes from "./routes/vehicle.routes";
+import servicePackageRoutes from "./routes/servicePackage.routes";
+import vehicleSubscriptionRoutes from "./routes/vehicleSubscription.routes";
 
 
 let swaggerFile: any;
@@ -50,6 +53,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/system-users', systemUserRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/service-packages', servicePackageRoutes);
+app.use('/api/vehicle-subscriptions', vehicleSubscriptionRoutes);
 
 // Root route redirect to API docs
 

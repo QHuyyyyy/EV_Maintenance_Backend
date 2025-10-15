@@ -5,9 +5,8 @@ import { validate } from '../middlewares/auth';
 const router = Router();
 
 // User CRUD routes
-
-router.get('/:id', validate, userController.getUserById.bind(userController));
 router.get('/', validate, userController.getAllUsers.bind(userController));
+router.get('/:id', validate, userController.getUserById.bind(userController));
 router.patch('/:id', validate, userController.updateUser.bind(userController));
 router.delete('/:id', validate, userController.deleteUser.bind(userController));
 

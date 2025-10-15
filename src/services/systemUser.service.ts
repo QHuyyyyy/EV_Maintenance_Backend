@@ -32,7 +32,6 @@ export class SystemUserService {
     async getSystemUserById(systemUserId: string): Promise<ISystemUser> {
         try {
             const systemUser = await SystemUser.findById(systemUserId)
-                .populate('userId', 'email role')
                 .lean();
 
             if (!systemUser) {
@@ -57,7 +56,6 @@ export class SystemUserService {
     async getSystemUserByUserId(userId: string): Promise<ISystemUser | null> {
         try {
             const systemUser = await SystemUser.findOne({ userId })
-                .populate('userId', 'email role')
                 .lean();
 
             if (!systemUser) {
@@ -111,7 +109,6 @@ export class SystemUserService {
             }
 
             const systemUsers = await SystemUser.find(query)
-                .populate('userId', 'email role')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)

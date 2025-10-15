@@ -29,3 +29,7 @@ export interface LogoutResponse {
     success: boolean;
     message: string;
 }
+
+export interface AuthRegisterResponse {
+    message: string;
+}
