@@ -5,6 +5,7 @@ const vehicleSchema = new mongoose.Schema({
     model: { type: String },
     VIN: { type: String, unique: true },
     price: { type: Number },
+    image: { type: String }, // URL của ảnh từ Firebase Storage
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" }
 }, {
     timestamps: true

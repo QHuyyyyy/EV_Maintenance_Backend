@@ -1,8 +1,14 @@
 import { Request, Response } from 'express';
 import { VehicleService } from '../services/vehicle.service';
+import { FirebaseStorageService } from '../firebase/storage.service';
+
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
+}
 
 export class VehicleController {
     private vehicleService = new VehicleService();
+    private firebaseStorageService = new FirebaseStorageService();
 
     async getAllVehicles(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicles']
@@ -122,7 +128,7 @@ export class VehicleController {
         }
     }
 
-    async createVehicle(req: Request, res: Response): Promise<void> {
+    async createVehicle(req: MulterRequest, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicles']
         // #swagger.summary = 'Create new vehicle'
         // #swagger.description = 'API to create a new electric vehicle'
@@ -130,7 +136,7 @@ export class VehicleController {
         /* #swagger.requestBody = {
             required: true,
             content: {
-                "application/json": {
+                "multipart/form-data": {
                     schema: {
                         type: "object",
                         required: ["vehicleName", "customerId"],
@@ -139,7 +145,8 @@ export class VehicleController {
                             model: { type: "string", example: "Model 3" },
                             VIN: { type: "string", example: "1HGBH41JXMN109186" },
                             price: { type: "number", example: 50000 },
-                            customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" }
+                            customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" },
+                            image: { type: "string", format: "binary", description: "Vehicle image" }
                         }
                     }
                 }
@@ -156,12 +163,24 @@ export class VehicleController {
                     model: "Model 3",
                     VIN: "1HGBH41JXMN109186",
                     price: 50000,
+                    image: "https://storage.googleapis.com/...",
                     customerId: "string"
                 }
             }
         } */
         try {
             const vehicleData = req.body;
+
+            // Upload image if provided
+            if (req.file) {
+                const imageUrl = await this.firebaseStorageService.uploadFile(
+                    req.file,
+                    undefined,
+                    'vehicles'
+                );
+                vehicleData.image = imageUrl;
+            }
+
             const newVehicle = await this.vehicleService.createVehicle(vehicleData);
 
             res.status(201).json({
@@ -177,7 +196,7 @@ export class VehicleController {
         }
     }
 
-    async updateVehicle(req: Request, res: Response): Promise<void> {
+    async updateVehicle(req: MulterRequest, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicles']
         // #swagger.summary = 'Update vehicle'
         // #swagger.description = 'API to update vehicle information'
@@ -186,7 +205,7 @@ export class VehicleController {
         /* #swagger.requestBody = {
             required: true,
             content: {
-                "application/json": {
+                "multipart/form-data": {
                     schema: {
                         type: "object",
                         properties: {
@@ -194,7 +213,8 @@ export class VehicleController {
                             model: { type: "string", example: "Model 3" },
                             VIN: { type: "string", example: "1HGBH41JXMN109186" },
                             price: { type: "number", example: 50000 },
-                            customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" }
+                            customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" },
+                            image: { type: "string", format: "binary", description: "Vehicle image" }
                         }
                     }
                 }
@@ -203,6 +223,17 @@ export class VehicleController {
         try {
             const { id } = req.params;
             const updateData = req.body;
+
+            // Upload image if provided
+            if (req.file) {
+                const imageUrl = await this.firebaseStorageService.uploadFile(
+                    req.file,
+                    undefined,
+                    'vehicles'
+                );
+                updateData.image = imageUrl;
+            }
+
             const updatedVehicle = await this.vehicleService.updateVehicle(id, updateData);
 
             if (!updatedVehicle) {
