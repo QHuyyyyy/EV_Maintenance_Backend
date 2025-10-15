@@ -13,7 +13,7 @@ export class SystemUserController {
         // #swagger.summary = 'Get system user by ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Retrieve a specific system user by their ID'
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'System User ID' }
         /* #swagger.responses[200] = {
@@ -60,7 +60,7 @@ export class SystemUserController {
         // #swagger.summary = 'Get system user by user ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Retrieve system user information by their user ID'
         // #swagger.parameters['userId'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
         /* #swagger.responses[200] = {
@@ -107,7 +107,7 @@ export class SystemUserController {
         // #swagger.summary = 'Get all system users with filtering and pagination'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Retrieve all system users with optional filtering and pagination'
         // #swagger.parameters['name'] = { in: 'query', type: 'string', description: 'Filter by name' }
         // #swagger.parameters['phone'] = { in: 'query', type: 'string', description: 'Filter by phone number' }
@@ -154,7 +154,7 @@ export class SystemUserController {
         // #swagger.summary = 'Update system user by ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Update system user information'
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'System User ID' }
         /* #swagger.requestBody = {
@@ -213,7 +213,7 @@ export class SystemUserController {
         // #swagger.summary = 'Delete system user by ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Delete a system user'
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'System User ID' }
         /* #swagger.responses[200] = {

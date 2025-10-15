@@ -1,4 +1,5 @@
 require('dotenv').config();
+import fs from 'fs';
 const swaggerAutogen = require('swagger-autogen')({
     openapi: '3.0.0',
     autoHeaders: false,  // Disable auto header detection
@@ -25,6 +26,10 @@ const doc = {
     produces: ['application/json'],
     tags: [
         {
+            name: 'Auth',
+            description: 'Authentication and authorization endpoints'
+        },
+        {
             name: 'Users',
             description: 'User management and authentication endpoints'
         },
@@ -33,8 +38,20 @@ const doc = {
             description: 'Customer management endpoints'
         },
         {
+            name: 'System Users',
+            description: 'System user management endpoints'
+        },
+        {
             name: 'Vehicles',
             description: 'Vehicle management endpoints'
+        },
+        {
+            name: 'Service Packages',
+            description: 'Service package management endpoints'
+        },
+        {
+            name: 'Vehicle Subscriptions',
+            description: 'Vehicle subscription management endpoints'
         }
     ],
     definitions: {
@@ -110,6 +127,16 @@ const doc = {
             dateOfBirth: '1990-01-15',
             phone: '+1234567890',
             certification: 'string'
+        },
+        SystemUser: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            userId: '60f1b2b3c4e5f6g7h8i9j0k2',
+            name: 'John Doe',
+            dateOfBirth: '1990-01-15',
+            phone: '+1234567890',
+            certificate: 'string',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
         }
     },
     securityDefinitions: {
@@ -127,6 +154,22 @@ const endpointsFiles = [
 ];
 
 swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
+    const swaggerData: Record<string, any> = JSON.parse(fs.readFileSync(outputFile, 'utf8'));
+
+    const newPaths: Record<string, any> = {};
+    for (const path in swaggerData.paths) {
+        if (path.endsWith('/') && path !== '/') {
+            // Bỏ dấu / cuối
+            const newPath = path.slice(0, -1);
+            newPaths[newPath] = swaggerData.paths[path];
+        } else {
+            newPaths[path] = swaggerData.paths[path];
+        }
+    }
+
+    swaggerData.paths = newPaths;
+
+    fs.writeFileSync(outputFile, JSON.stringify(swaggerData, null, 2));
     console.log('✅ Swagger documentation generated successfully!');
     console.log('📄 File created: ./src/swagger-output.json');
 });

@@ -65,6 +65,7 @@ export class UserController {
      * GET /api/users
      */
     async getAllUsers(req: Request, res: Response): Promise<void> {
+
         // #swagger.tags = ['Users']
         // #swagger.summary = 'Get all users with filtering and pagination'
         /* #swagger.security = [{

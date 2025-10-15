@@ -16,6 +16,10 @@
   ],
   "tags": [
     {
+      "name": "Auth",
+      "description": "Authentication and authorization endpoints"
+    },
+    {
       "name": "Users",
       "description": "User management and authentication endpoints"
     },
@@ -24,8 +28,20 @@
       "description": "Customer management endpoints"
     },
     {
+      "name": "System Users",
+      "description": "System user management endpoints"
+    },
+    {
       "name": "Vehicles",
       "description": "Vehicle management endpoints"
+    },
+    {
+      "name": "Service Packages",
+      "description": "Service package management endpoints"
+    },
+    {
+      "name": "Vehicle Subscriptions",
+      "description": "Vehicle subscription management endpoints"
     }
   ],
   "paths": {
@@ -141,11 +157,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Register successfully"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      "example": "User registered successfully"
                     }
                   },
                   "xml": {
@@ -163,11 +175,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Register successfully"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      "example": "User registered successfully"
                     }
                   },
                   "xml": {
@@ -521,6 +529,90 @@
         ]
       }
     },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all users with filtering and pagination",
+        "description": "",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "enum": [
+              "admin",
+              "mechanic",
+              "customer"
+            ],
+            "description": "Filter by user role",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended"
+            ],
+            "description": "Filter by user status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page (default: 10)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersListResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/users/{id}": {
       "get": {
         "tags": [
@@ -813,91 +905,7 @@
         ]
       }
     },
-    "/api/users/": {
-      "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Get all users with filtering and pagination",
-        "description": "",
-        "parameters": [
-          {
-            "name": "role",
-            "in": "query",
-            "enum": [
-              "admin",
-              "mechanic",
-              "customer"
-            ],
-            "description": "Filter by user role",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "enum": [
-              "active",
-              "inactive",
-              "suspended"
-            ],
-            "description": "Filter by user status",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Page number (default: 1)",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Items per page (default: 10)",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Users retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UsersListResponse"
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "$ref": "#/components/schemas/UsersListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/customers/": {
+    "/api/customers": {
       "get": {
         "tags": [
           "Customers"
@@ -1382,7 +1390,7 @@
         ]
       }
     },
-    "/api/system-users/": {
+    "/api/system-users": {
       "get": {
         "tags": [
           "System Users"
@@ -1866,6 +1874,1991 @@
           }
         ]
       }
+    },
+    "/api/vehicles": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get all vehicles",
+        "description": "API to get all electric vehicles in the system",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved vehicles list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Create new vehicle",
+        "description": "API to create a new electric vehicle",
+        "responses": {
+          "201": {
+            "description": "Vehicle created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "vehicleName": {
+                          "type": "string",
+                          "example": "Tesla Model 3"
+                        },
+                        "model": {
+                          "type": "string",
+                          "example": "Model 3"
+                        },
+                        "VIN": {
+                          "type": "string",
+                          "example": "1HGBH41JXMN109186"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 50000
+                        },
+                        "customerId": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "vehicleName": {
+                          "type": "string",
+                          "example": "Tesla Model 3"
+                        },
+                        "model": {
+                          "type": "string",
+                          "example": "Model 3"
+                        },
+                        "VIN": {
+                          "type": "string",
+                          "example": "1HGBH41JXMN109186"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 50000
+                        },
+                        "customerId": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "vehicleName",
+                  "customerId"
+                ],
+                "properties": {
+                  "vehicleName": {
+                    "type": "string",
+                    "example": "Tesla Model 3"
+                  },
+                  "model": {
+                    "type": "string",
+                    "example": "Model 3"
+                  },
+                  "VIN": {
+                    "type": "string",
+                    "example": "1HGBH41JXMN109186"
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": 50000
+                  },
+                  "customerId": {
+                    "type": "string",
+                    "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vehicles/{id}": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get vehicle by ID",
+        "description": "API to get a specific vehicle by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved vehicle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "vehicleName": {
+                          "type": "string",
+                          "example": "Tesla Model 3"
+                        },
+                        "model": {
+                          "type": "string",
+                          "example": "Model 3"
+                        },
+                        "VIN": {
+                          "type": "string",
+                          "example": "1HGBH41JXMN109186"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 50000
+                        },
+                        "customerId": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "customerName": {
+                              "type": "string",
+                              "example": "John Doe"
+                            },
+                            "phone": {
+                              "type": "string",
+                              "example": "0123456789"
+                            },
+                            "address": {
+                              "type": "string",
+                              "example": "123 ABC Street, Ho Chi Minh City"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "vehicleName": {
+                          "type": "string",
+                          "example": "Tesla Model 3"
+                        },
+                        "model": {
+                          "type": "string",
+                          "example": "Model 3"
+                        },
+                        "VIN": {
+                          "type": "string",
+                          "example": "1HGBH41JXMN109186"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 50000
+                        },
+                        "customerId": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "customerName": {
+                              "type": "string",
+                              "example": "John Doe"
+                            },
+                            "phone": {
+                              "type": "string",
+                              "example": "0123456789"
+                            },
+                            "address": {
+                              "type": "string",
+                              "example": "123 ABC Street, Ho Chi Minh City"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Vehicle not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Update vehicle",
+        "description": "API to update vehicle information",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vehicleName": {
+                    "type": "string",
+                    "example": "Tesla Model 3"
+                  },
+                  "model": {
+                    "type": "string",
+                    "example": "Model 3"
+                  },
+                  "VIN": {
+                    "type": "string",
+                    "example": "1HGBH41JXMN109186"
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": 50000
+                  },
+                  "customerId": {
+                    "type": "string",
+                    "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Delete vehicle",
+        "description": "API to delete a vehicle",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vehicle deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle deleted successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle deleted successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Vehicle not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicles/customer/{customerId}": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get vehicles by customer ID",
+        "description": "API to get all vehicles belonging to a specific customer",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved customer vehicles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicleName": {
+                            "type": "string",
+                            "example": "Tesla Model 3"
+                          },
+                          "model": {
+                            "type": "string",
+                            "example": "Model 3"
+                          },
+                          "VIN": {
+                            "type": "string",
+                            "example": "1HGBH41JXMN109186"
+                          },
+                          "price": {
+                            "type": "number",
+                            "example": 50000
+                          },
+                          "customerId": {
+                            "type": "string",
+                            "example": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicleName": {
+                            "type": "string",
+                            "example": "Tesla Model 3"
+                          },
+                          "model": {
+                            "type": "string",
+                            "example": "Model 3"
+                          },
+                          "VIN": {
+                            "type": "string",
+                            "example": "1HGBH41JXMN109186"
+                          },
+                          "price": {
+                            "type": "number",
+                            "example": 50000
+                          },
+                          "customerId": {
+                            "type": "string",
+                            "example": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-packages": {
+      "get": {
+        "tags": [
+          "Service Packages"
+        ],
+        "summary": "Get all service packages",
+        "description": "API to get all available service packages",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved service packages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Basic Maintenance"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Basic maintenance package for electric vehicles"
+                          },
+                          "price": {
+                            "type": "number",
+                            "example": 100
+                          },
+                          "duration": {
+                            "type": "number",
+                            "example": 30
+                          },
+                          "km_interval": {
+                            "type": "number",
+                            "example": 10000
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Basic Maintenance"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Basic maintenance package for electric vehicles"
+                          },
+                          "price": {
+                            "type": "number",
+                            "example": 100
+                          },
+                          "duration": {
+                            "type": "number",
+                            "example": 30
+                          },
+                          "km_interval": {
+                            "type": "number",
+                            "example": 10000
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Service Packages"
+        ],
+        "summary": "Create new service package",
+        "description": "API to create a new service package",
+        "responses": {
+          "201": {
+            "description": "Service package created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Basic Maintenance"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Basic maintenance package for electric vehicles"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 100
+                        },
+                        "duration": {
+                          "type": "number",
+                          "example": 30
+                        },
+                        "km_interval": {
+                          "type": "number",
+                          "example": 10000
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Basic Maintenance"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Basic maintenance package for electric vehicles"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 100
+                        },
+                        "duration": {
+                          "type": "number",
+                          "example": 30
+                        },
+                        "km_interval": {
+                          "type": "number",
+                          "example": 10000
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "price",
+                  "duration"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Basic Maintenance"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Basic maintenance package for electric vehicles"
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": 100
+                  },
+                  "duration": {
+                    "type": "number",
+                    "example": 30
+                  },
+                  "km_interval": {
+                    "type": "number",
+                    "example": 10000
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/service-packages/{id}": {
+      "get": {
+        "tags": [
+          "Service Packages"
+        ],
+        "summary": "Get service package by ID",
+        "description": "API to get a specific service package by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Package ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved service package",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Basic Maintenance"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Basic maintenance package for electric vehicles"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 100
+                        },
+                        "duration": {
+                          "type": "number",
+                          "example": 30
+                        },
+                        "km_interval": {
+                          "type": "number",
+                          "example": 10000
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Basic Maintenance"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Basic maintenance package for electric vehicles"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 100
+                        },
+                        "duration": {
+                          "type": "number",
+                          "example": 30
+                        },
+                        "km_interval": {
+                          "type": "number",
+                          "example": 10000
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Service Packages"
+        ],
+        "summary": "Update service package",
+        "description": "API to update a service package",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Package ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Basic Maintenance"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Basic maintenance package for electric vehicles"
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": 100
+                  },
+                  "duration": {
+                    "type": "number",
+                    "example": 30
+                  },
+                  "km_interval": {
+                    "type": "number",
+                    "example": 10000
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Packages"
+        ],
+        "summary": "Delete service package",
+        "description": "API to delete a service package",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Package ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service package deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package deleted successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package deleted successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Service package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Service package not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-subscriptions": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get all vehicle subscriptions",
+        "description": "API to get all vehicle maintenance subscriptions",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved subscriptions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicleId": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "string"
+                              },
+                              "vehicleName": {
+                                "type": "string",
+                                "example": "Tesla Model 3"
+                              },
+                              "model": {
+                                "type": "string",
+                                "example": "Model 3"
+                              },
+                              "VIN": {
+                                "type": "string",
+                                "example": "1HGBH41JXMN109186"
+                              }
+                            }
+                          },
+                          "package_id": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "Basic Maintenance"
+                              },
+                              "description": {
+                                "type": "string",
+                                "example": "Basic maintenance package"
+                              },
+                              "price": {
+                                "type": "number",
+                                "example": 100
+                              },
+                              "duration": {
+                                "type": "number",
+                                "example": 30
+                              },
+                              "km_interval": {
+                                "type": "number",
+                                "example": 10000
+                              }
+                            }
+                          },
+                          "start_date": {
+                            "type": "string",
+                            "example": "2023-01-01T00:00:00.000Z"
+                          },
+                          "end_date": {
+                            "type": "string",
+                            "example": "2024-01-01T00:00:00.000Z"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "ACTIVE"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicleId": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "string"
+                              },
+                              "vehicleName": {
+                                "type": "string",
+                                "example": "Tesla Model 3"
+                              },
+                              "model": {
+                                "type": "string",
+                                "example": "Model 3"
+                              },
+                              "VIN": {
+                                "type": "string",
+                                "example": "1HGBH41JXMN109186"
+                              }
+                            }
+                          },
+                          "package_id": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "Basic Maintenance"
+                              },
+                              "description": {
+                                "type": "string",
+                                "example": "Basic maintenance package"
+                              },
+                              "price": {
+                                "type": "number",
+                                "example": 100
+                              },
+                              "duration": {
+                                "type": "number",
+                                "example": 30
+                              },
+                              "km_interval": {
+                                "type": "number",
+                                "example": 10000
+                              }
+                            }
+                          },
+                          "start_date": {
+                            "type": "string",
+                            "example": "2023-01-01T00:00:00.000Z"
+                          },
+                          "end_date": {
+                            "type": "string",
+                            "example": "2024-01-01T00:00:00.000Z"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "ACTIVE"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Create new subscription",
+        "description": "API to create a new vehicle maintenance subscription",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vehicleId": {
+                    "type": "string",
+                    "example": "64f1b2c3d4e5f6789abcdef0",
+                    "description": "ID of the vehicle to subscribe"
+                  },
+                  "package_id": {
+                    "type": "string",
+                    "example": "64f1b2c3d4e5f6789abcdef1",
+                    "description": "ID of the maintenance package"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2023-01-01",
+                    "description": "Start date of the subscription"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "INACTIVE",
+                      "EXPIRED",
+                      "CANCELLED"
+                    ],
+                    "example": "ACTIVE",
+                    "description": "Initial status of the subscription"
+                  }
+                },
+                "required": [
+                  "vehicleId",
+                  "package_id",
+                  "start_date",
+                  "end_date"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vehicle-subscriptions/{id}": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get subscription by ID",
+        "description": "API to get a specific vehicle subscription by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Subscription ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Update subscription",
+        "description": "API to update a vehicle subscription",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Subscription ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vehicleId": {
+                    "type": "string",
+                    "example": "64f1b2c3d4e5f6789abcdef0"
+                  },
+                  "package_id": {
+                    "type": "string",
+                    "example": "64f1b2c3d4e5f6789abcdef1"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2023-01-01"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-01"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "INACTIVE",
+                      "EXPIRED",
+                      "CANCELLED"
+                    ],
+                    "example": "ACTIVE"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Delete subscription",
+        "description": "API to delete a vehicle subscription",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Subscription ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-subscriptions/vehicle/{vehicleId}": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get subscriptions by vehicle ID",
+        "description": "API to get all subscriptions for a specific vehicle",
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-subscriptions/customer/{customerId}": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get subscriptions by customer ID",
+        "description": "API to get all subscriptions for a specific customer",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-subscriptions/{id}/status": {
+      "put": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Update subscription status",
+        "description": "API to update the status of a vehicle subscription",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Subscription ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "INACTIVE",
+                      "EXPIRED",
+                      "CANCELLED"
+                    ],
+                    "example": "ACTIVE",
+                    "description": "The new status for the subscription"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vehicle-subscriptions/expiring/{days}": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get expiring subscriptions",
+        "description": "API to get subscriptions that are expiring within specified days",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Number of days to check for expiring subscriptions"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-subscriptions/{id}/renew": {
+      "post": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Renew subscription",
+        "description": "API to renew a vehicle subscription",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Subscription ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-subscriptions/update-expired": {
+      "put": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Update expired subscriptions",
+        "description": "API to automatically update expired subscriptions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2167,6 +4160,46 @@
         },
         "xml": {
           "name": "UpdateSystemUser"
+        }
+      },
+      "SystemUser": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "userId": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890"
+          },
+          "certificate": {
+            "type": "string",
+            "example": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "SystemUser"
         }
       }
     },

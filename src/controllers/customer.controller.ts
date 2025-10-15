@@ -13,7 +13,7 @@ export class CustomerController {
         // #swagger.summary = 'Get customer by ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Retrieve a specific customer by their ID'
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'Customer ID' }
         /* #swagger.responses[200] = {
@@ -60,7 +60,7 @@ export class CustomerController {
         // #swagger.summary = 'Get customer by user ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Retrieve customer information by their user ID'
         // #swagger.parameters['userId'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
         /* #swagger.responses[200] = {
@@ -107,7 +107,7 @@ export class CustomerController {
         // #swagger.summary = 'Get all customers with filtering and pagination'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Retrieve all customers with optional filtering and pagination'
         // #swagger.parameters['customerName'] = { in: 'query', type: 'string', description: 'Filter by customer name' }
         // #swagger.parameters['phone'] = { in: 'query', type: 'string', description: 'Filter by phone number' }
@@ -154,7 +154,7 @@ export class CustomerController {
         // #swagger.summary = 'Update customer by ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Update customer information'
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'Customer ID' }
         /* #swagger.requestBody = {
@@ -213,7 +213,7 @@ export class CustomerController {
         // #swagger.summary = 'Delete customer by ID'
         /* #swagger.security = [{
            "bearerAuth": []
-   }]
+   }] */
         // #swagger.description = 'Delete a customer (soft delete)'
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'Customer ID' }
         /* #swagger.responses[200] = {
