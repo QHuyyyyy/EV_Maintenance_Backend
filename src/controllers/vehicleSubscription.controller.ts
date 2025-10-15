@@ -151,6 +151,23 @@ export class VehicleSubscriptionController {
         // #swagger.description = 'API to update a vehicle subscription'
         // #swagger.security = [{ "bearerAuth": [] }]
         // #swagger.parameters['id'] = { description: 'Subscription ID', required: true, type: 'string' }
+        /* #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            vehicleId: { type: "string", example: "64f1b2c3d4e5f6789abcdef0" },
+                            package_id: { type: "string", example: "64f1b2c3d4e5f6789abcdef1" },
+                            start_date: { type: "string", format: "date", example: "2023-01-01" },
+                            end_date: { type: "string", format: "date", example: "2024-01-01" },
+                            status: { type: "string", enum: ["ACTIVE", "INACTIVE", "EXPIRED", "CANCELLED"], example: "ACTIVE" }
+                        }
+                    }
+                }
+            }
+        } */
         try {
             const { id } = req.params;
             const updateData = req.body;
@@ -183,6 +200,25 @@ export class VehicleSubscriptionController {
         // #swagger.description = 'API to update the status of a vehicle subscription'
         // #swagger.security = [{ "bearerAuth": [] }]
         // #swagger.parameters['id'] = { description: 'Subscription ID', required: true, type: 'string' }
+        /* #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            status: { 
+                                type: "string", 
+                                enum: ["ACTIVE", "INACTIVE", "EXPIRED", "CANCELLED"], 
+                                example: "ACTIVE",
+                                description: "The new status for the subscription"
+                            }
+                        },
+                        required: ["status"]
+                    }
+                }
+            }
+        } */
         try {
             const { id } = req.params;
             const { status } = req.body;
