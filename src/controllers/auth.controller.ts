@@ -85,11 +85,7 @@ export async function registerController(req: Request, res: Response) {
             schema: {
                 success: true,
                 message: 'User registered successfully',
-                data: {
-                    userId: "507f1f77bcf86cd799439011",
-                    email: "user@example.com",
-                    role: "CUSTOMER"
-                }
+              
             }
         } */
         /* #swagger.responses[400] = {

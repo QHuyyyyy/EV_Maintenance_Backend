@@ -34,7 +34,7 @@ export class ServicePackageService {
             }
 
             if (packageData.duration <= 0) {
-                throw new Error('Duration must be greater than 0');
+                throw new Error('Duration must be greater than 0 days');
             }
 
             if (packageData.km_interval <= 0) {
@@ -58,7 +58,7 @@ export class ServicePackageService {
             }
 
             if (updateData.duration !== undefined && updateData.duration <= 0) {
-                throw new Error('Duration must be greater than 0');
+                throw new Error('Duration must be greater than 0 days');
             }
 
             if (updateData.km_interval !== undefined && updateData.km_interval <= 0) {

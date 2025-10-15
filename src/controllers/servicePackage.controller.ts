@@ -17,7 +17,7 @@ export class ServicePackageController {
                     name: "Basic Maintenance",
                     description: "Basic maintenance package for electric vehicles",
                     price: 100,
-                    duration: 12,
+                    duration: 30,
                     km_interval: 10000
                 }]
             }
@@ -50,7 +50,7 @@ export class ServicePackageController {
                     name: "Basic Maintenance",
                     description: "Basic maintenance package for electric vehicles",
                     price: 100,
-                    duration: 12,
+                    duration: 30,
                     km_interval: 10000
                 }
             }
@@ -102,7 +102,7 @@ export class ServicePackageController {
                             name: { type: "string", example: "Basic Maintenance" },
                             description: { type: "string", example: "Basic maintenance package for electric vehicles" },
                             price: { type: "number", example: 100 },
-                            duration: { type: "number", example: 12 },
+                            duration: { type: "number", example: 30 },
                             km_interval: { type: "number", example: 10000 }
                         }
                     }
@@ -119,7 +119,7 @@ export class ServicePackageController {
                     name: "Basic Maintenance",
                     description: "Basic maintenance package for electric vehicles",
                     price: 100,
-                    duration: 12,
+                    duration: 30,
                     km_interval: 10000
                 }
             }
@@ -157,7 +157,7 @@ export class ServicePackageController {
                             name: { type: "string", example: "Basic Maintenance" },
                             description: { type: "string", example: "Basic maintenance package for electric vehicles" },
                             price: { type: "number", example: 100 },
-                            duration: { type: "number", example: 12 },
+                            duration: { type: "number", example: 30 },
                             km_interval: { type: "number", example: 10000 }
                         }
                     }

@@ -82,11 +82,20 @@ export class VehicleSubscriptionService {
             }
 
             // Tính toán ngày bắt đầu và kết thúc
-            const startDate = subscriptionData.start_date ? new Date(subscriptionData.start_date) : new Date();
-            const endDate = new Date(startDate);
-            endDate.setMonth(endDate.getMonth() + servicePackage.duration);
+            // Duration được tính bằng ngày
+            let startDate: Date;
+            if (subscriptionData.start_date) {
+                startDate = new Date(subscriptionData.start_date);
+                // Kiểm tra xem ngày có hợp lệ không
+                if (isNaN(startDate.getTime())) {
+                    throw new Error('Invalid start_date format. Please provide a valid date');
+                }
+            } else {
+                startDate = new Date();
+            }
 
-            const subscription = new VehicleSubscription({
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + servicePackage.duration); const subscription = new VehicleSubscription({
                 vehicleId: subscriptionData.vehicleId,
                 package_id: subscriptionData.package_id,
                 start_date: startDate,
@@ -112,10 +121,15 @@ export class VehicleSubscriptionService {
                 }
 
                 // Nếu thay đổi gói dịch vụ, cần tính lại ngày kết thúc
+                // Duration được tính bằng ngày
                 if (updateData.start_date) {
                     const startDate = new Date(updateData.start_date);
+                    // Kiểm tra xem ngày có hợp lệ không
+                    if (isNaN(startDate.getTime())) {
+                        throw new Error('Invalid start_date format. Please provide a valid date');
+                    }
                     const endDate = new Date(startDate);
-                    endDate.setMonth(endDate.getMonth() + servicePackage.duration);
+                    endDate.setDate(endDate.getDate() + servicePackage.duration);
                     updateData.end_date = endDate;
                 }
             }
@@ -220,9 +234,10 @@ export class VehicleSubscriptionService {
             }
 
             // Tạo đăng ký mới
+            // Duration được tính bằng ngày
             const newStartDate = subscription.end_date;
             const newEndDate = new Date(newStartDate);
-            newEndDate.setMonth(newEndDate.getMonth() + servicePackage.duration);
+            newEndDate.setDate(newEndDate.getDate() + servicePackage.duration);
 
             const renewedSubscription = new VehicleSubscription({
                 vehicleId: subscription.vehicleId,

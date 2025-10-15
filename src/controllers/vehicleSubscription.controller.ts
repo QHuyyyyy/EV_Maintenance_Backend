@@ -26,7 +26,7 @@ export class VehicleSubscriptionController {
                         name: "Basic Maintenance",
                         description: "Basic maintenance package",
                         price: 100,
-                        duration: 12,
+                        duration: 30,
                         km_interval: 10000
                     },
                     start_date: "2023-01-01T00:00:00.000Z",
@@ -128,6 +128,41 @@ export class VehicleSubscriptionController {
         // #swagger.summary = 'Create new subscription'
         // #swagger.description = 'API to create a new vehicle maintenance subscription'
         // #swagger.security = [{ "bearerAuth": [] }]
+        /* #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            vehicleId: { 
+                                type: "string", 
+                                example: "64f1b2c3d4e5f6789abcdef0",
+                                description: "ID of the vehicle to subscribe"
+                            },
+                            package_id: { 
+                                type: "string", 
+                                example: "64f1b2c3d4e5f6789abcdef1",
+                                description: "ID of the maintenance package"
+                            },
+                            start_date: { 
+                                type: "string", 
+                                format: "date", 
+                                example: "2023-01-01",
+                                description: "Start date of the subscription"
+                            },
+                            status: { 
+                                type: "string", 
+                                enum: ["ACTIVE", "INACTIVE", "EXPIRED", "CANCELLED"], 
+                                example: "ACTIVE",
+                                description: "Initial status of the subscription"
+                            }
+                        },
+                        required: ["vehicleId", "package_id", "start_date", "end_date"]
+                    }
+                }
+            }
+        } */
         try {
             const subscriptionData = req.body;
             const newSubscription = await this.vehicleSubscriptionService.createSubscription(subscriptionData);

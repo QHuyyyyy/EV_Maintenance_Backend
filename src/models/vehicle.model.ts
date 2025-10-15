@@ -6,6 +6,8 @@ const vehicleSchema = new mongoose.Schema({
     VIN: { type: String, unique: true },
     price: { type: Number },
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" }
+}, {
+    timestamps: true
 });
 
 export const Vehicle = mongoose.model("Vehicle", vehicleSchema);
