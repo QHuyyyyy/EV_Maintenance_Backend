@@ -3877,6 +3877,785 @@
           }
         ]
       }
+    },
+    "/api/alerts": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "summary": "Get all alerts with filtering and pagination",
+        "description": "API to get all alerts with optional filtering and pagination",
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "description": "Filter by vehicle ID",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isRead",
+            "description": "Filter by read status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "description": "Filter by alert type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "description": "Filter by priority",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alerts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alerts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "alerts": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        },
+                        "totalCount": {
+                          "type": "number",
+                          "example": 0
+                        },
+                        "currentPage": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "totalPages": {
+                          "type": "number",
+                          "example": 1
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alerts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "alerts": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        },
+                        "totalCount": {
+                          "type": "number",
+                          "example": 0
+                        },
+                        "currentPage": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "totalPages": {
+                          "type": "number",
+                          "example": 1
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Alerts"
+        ],
+        "summary": "Create a new alert",
+        "description": "API to create a new alert for a vehicle",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Alert data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Maintenance Due"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "Your vehicle requires maintenance"
+                },
+                "vehicleId": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439011"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "MAINTENANCE"
+                },
+                "priority": {
+                  "type": "string",
+                  "example": "HIGH"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Alert created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "SYSTEM"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "MEDIUM"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "SYSTEM"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "MEDIUM"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/alerts/{id}": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "summary": "Get alert by ID",
+        "description": "API to get a specific alert by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Alert ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "SYSTEM"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "MEDIUM"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "2023-01-01T00:00:00.000Z"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "2023-01-01T00:00:00.000Z"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "SYSTEM"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "MEDIUM"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "2023-01-01T00:00:00.000Z"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "2023-01-01T00:00:00.000Z"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Alert not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Alerts"
+        ],
+        "summary": "Update alert",
+        "description": "API to update an existing alert",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Alert ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Alert update data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Updated alert title"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "Updated alert content"
+                },
+                "isRead": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "type": {
+                  "type": "string",
+                  "example": "MAINTENANCE"
+                },
+                "priority": {
+                  "type": "string",
+                  "example": "HIGH"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Updated alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Updated alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "MAINTENANCE"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "HIGH"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Updated alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Updated alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "MAINTENANCE"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "HIGH"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alerts/{id}/read": {
+      "patch": {
+        "tags": [
+          "Alerts"
+        ],
+        "summary": "Mark alert as read",
+        "description": "API to mark a specific alert as read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Alert ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert marked as read"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "SYSTEM"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "MEDIUM"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Alert marked as read"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Alert title"
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Alert content"
+                        },
+                        "isRead": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "vehicleId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "SYSTEM"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "example": "MEDIUM"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
