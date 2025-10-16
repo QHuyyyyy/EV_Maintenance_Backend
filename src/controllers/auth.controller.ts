@@ -53,12 +53,14 @@ export async function loginController(req: Request, res: Response) {
         });
     } catch (error: any) {
         if (error.message === "The account does not exist" ||
-            error.message === "Password not match!") {
+            error.message === "Password not match!" ||
+            error.message.includes("Failed to get user by email")) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid email or password"
             });
         }
+        console.error("Login error:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error"
