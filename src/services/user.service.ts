@@ -28,7 +28,7 @@ export async function getUserByEmailForAuth(email: string) {
     try {
         const user = await User.findOne({ email: email });
         if (!user) {
-            throw new Error("User with this email not found");
+            throw new Error("The account does not exist");
         }
         return user;
     } catch (error) {
