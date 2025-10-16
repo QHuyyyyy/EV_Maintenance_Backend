@@ -1,5 +1,6 @@
 import { Vehicle } from '../models/vehicle.model';
 import Customer from '../models/customer.model';
+import FirebaseStorageService from '../firebase/storage.service';
 
 export class VehicleService {
     // Lấy tất cả xe
