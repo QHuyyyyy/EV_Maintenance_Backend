@@ -110,7 +110,6 @@ export class CustomerController {
    }] */
         // #swagger.description = 'Retrieve all customers with optional filtering and pagination'
         // #swagger.parameters['customerName'] = { in: 'query', type: 'string', description: 'Filter by customer name' }
-        // #swagger.parameters['phone'] = { in: 'query', type: 'string', description: 'Filter by phone number' }
         // #swagger.parameters['address'] = { in: 'query', type: 'string', description: 'Filter by address' }
         // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number (default: 1)' }
         // #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page (default: 10)' }
@@ -122,12 +121,10 @@ export class CustomerController {
             }
         } */
         try {
-            const { customerName, phone, address, page, limit } = req.query;
+            const { customerName, address, page, limit } = req.query;
 
             const filters = {
                 customerName: customerName as string,
-                phone: phone as string,
-                address: address as string,
                 page: page ? parseInt(page as string) : undefined,
                 limit: limit ? parseInt(limit as string) : undefined
             };

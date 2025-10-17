@@ -9,7 +9,7 @@ router.post("/", AlertController.createAlert.bind(AlertController));
 
 router.get("/:id", AlertController.getAlertById.bind(AlertController));
 
-router.put("/:id", AlertController.updateAlert.bind(AlertController));
+router.patch("/:id", AlertController.updateAlert.bind(AlertController));
 
 router.patch("/:id/read", AlertController.markAsRead.bind(AlertController));
 

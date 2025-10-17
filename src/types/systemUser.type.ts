@@ -1,10 +1,13 @@
 export interface ISystemUser {
     _id?: string;
-    userId: string;
+    userId: string | {
+        email?: string;
+        phone?: string;
+        role?: string;
+    };
     name?: string;
     dateOfBirth?: Date;
     certification?: string;
-    phone?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -14,12 +17,10 @@ export interface CreateSystemUserRequest {
     name?: string;
     dateOfBirth?: Date;
     certification?: string;
-    phone?: string;
 }
 
 export interface UpdateSystemUserRequest {
     name?: string;
     dateOfBirth?: Date;
     certification?: string;
-    phone?: string;
 }

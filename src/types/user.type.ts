@@ -1,6 +1,7 @@
 export interface IUser {
-    email: string;
-    password: string;
+    email?: string;
+    phone?: string;
+    password?: string;
     role: 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'TECHNICIAN';
     isDeleted: boolean;
     created_at?: Date;
