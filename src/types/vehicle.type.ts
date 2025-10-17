@@ -2,8 +2,12 @@ export interface IVehicle {
     _id?: string;
     vehicleName: string;
     model?: string;
+    year?: number;
     VIN?: string;
     price?: number;
+    mileage?: number;
+    plateNumber?: string;
+    last_service_date?: Date;
     image?: string;
     customerId: string;
     createdAt?: Date;
@@ -13,8 +17,12 @@ export interface IVehicle {
 export interface CreateVehicleInput {
     vehicleName: string;
     model?: string;
+    year?: number;
     VIN?: string;
     price?: number;
+    mileage?: number;
+    plateNumber?: string;
+    last_service_date?: Date;
     image?: string;
     customerId: string;
 }
@@ -22,8 +30,12 @@ export interface CreateVehicleInput {
 export interface UpdateVehicleInput {
     vehicleName?: string;
     model?: string;
+    year?: number;
     VIN?: string;
     price?: number;
+    mileage?: number;
+    plateNumber?: string;
+    last_service_date?: Date;
     image?: string;
     customerId?: string;
 }

@@ -11,7 +11,6 @@ export class CustomerService {
             const customer = new Customer({
                 userId: userId,
                 customerName: '',
-                phone: '',
                 address: ''
             });
             const savedCustomer = await customer.save();
@@ -23,6 +22,8 @@ export class CustomerService {
             throw new Error('Failed to create customer profile: Unknown error');
         }
     }
+
+
 
     /**
      * Get customer by ID
@@ -80,7 +81,6 @@ export class CustomerService {
      */
     async getAllCustomers(filters?: {
         customerName?: string;
-        phone?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -99,9 +99,6 @@ export class CustomerService {
             const query: any = {};
             if (filters?.customerName) {
                 query.customerName = { $regex: filters.customerName, $options: 'i' };
-            }
-            if (filters?.phone) {
-                query.phone = { $regex: filters.phone, $options: 'i' };
             }
 
             // Execute queries
@@ -187,14 +184,13 @@ export class CustomerService {
     }
 
     /**
-     * Search customers by name or phone
+     * Search customers by name or address
      */
     async searchCustomers(searchTerm: string): Promise<ICustomer[]> {
         try {
             const customersRaw = await Customer.find({
                 $or: [
                     { customerName: { $regex: searchTerm, $options: 'i' } },
-                    { phone: { $regex: searchTerm, $options: 'i' } },
                     { address: { $regex: searchTerm, $options: 'i' } }
                 ]
             })

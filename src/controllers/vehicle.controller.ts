@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { VehicleService } from '../services/vehicle.service';
 import { FirebaseStorageService } from '../firebase/storage.service';
+import { assignVehicleToCustomer } from '../services/auth.service';
 
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
@@ -12,18 +13,43 @@ export class VehicleController {
 
     async getAllVehicles(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicles']
-        // #swagger.summary = 'Get all vehicles'
-        // #swagger.description = 'API to get all electric vehicles in the system'
+        // #swagger.summary = 'Get all vehicles with filters'
+        // #swagger.description = 'API to get all electric vehicles with optional filters'
         // #swagger.security = [{ "bearerAuth": [] }]
+        // #swagger.parameters['customerId'] = { description: 'Filter by customer ID', required: false, type: 'string', in: 'query' }
+        // #swagger.parameters['year'] = { description: 'Filter by manufacturing year', required: false, type: 'number', in: 'query' }
+        // #swagger.parameters['model'] = { description: 'Filter by vehicle model', required: false, type: 'string', in: 'query' }
+        // #swagger.parameters['vehicleName'] = { description: 'Filter by vehicle name', required: false, type: 'string', in: 'query' }
+        // #swagger.parameters['plateNumber'] = { description: 'Filter by plate number', required: false, type: 'string', in: 'query' }
+        // #swagger.parameters['VIN'] = { description: 'Filter by VIN', required: false, type: 'string', in: 'query' }
+        // #swagger.parameters['minMileage'] = { description: 'Filter by minimum mileage', required: false, type: 'number', in: 'query' }
+        // #swagger.parameters['maxMileage'] = { description: 'Filter by maximum mileage', required: false, type: 'number', in: 'query' }
+        // #swagger.parameters['minPrice'] = { description: 'Filter by minimum price', required: false, type: 'number', in: 'query' }
+        // #swagger.parameters['maxPrice'] = { description: 'Filter by maximum price', required: false, type: 'number', in: 'query' }
         /* #swagger.responses[200] = {
             description: 'Successfully retrieved vehicles list',
             schema: {
                 success: true,
-            
+                data: [{
+                    _id: "string",
+                    vehicleName: "string",
+                    model: "string",
+                    year: "number",
+                    VIN: "string",
+                    price: "number",
+                    mileage: "number",
+                    plateNumber: "string",
+                    last_service_date: "string",
+                    image: "string",
+                    customerId: "object",
+                    createdAt: "string",
+                    updatedAt: "string"
+                }]
             }
         } */
         try {
-            const vehicles = await this.vehicleService.getAllVehicles();
+            const filters = req.query;
+            const vehicles = await this.vehicleService.getAllVehicles(filters);
             res.status(200).json({
                 success: true,
                 data: vehicles
@@ -47,16 +73,7 @@ export class VehicleController {
             schema: {
                 success: true,
                 data: {
-                    _id: "string",
-                    vehicleName: "Tesla Model 3",
-                    model: "Model 3",
-                    VIN: "1HGBH41JXMN109186",
-                    price: 50000,
-                    customerId: {
-                        _id: "string",
-                        customerName: "John Doe",
-                        phone: "0123456789",
-                        address: "123 ABC Street, Ho Chi Minh City"
+                    
                     }
                 }
             }
@@ -103,12 +120,7 @@ export class VehicleController {
             schema: {
                 success: true,
                 data: [{
-                    _id: "string",
-                    vehicleName: "Tesla Model 3",
-                    model: "Model 3",
-                    VIN: "1HGBH41JXMN109186",
-                    price: 50000,
-                    customerId: "string"
+                    
                 }]
             }
         } */
@@ -143,6 +155,10 @@ export class VehicleController {
                         properties: {
                             vehicleName: { type: "string", example: "Tesla Model 3" },
                             model: { type: "string", example: "Model 3" },
+                            year: { type: "number", example: 2021 },
+                            mileage: { type: "number", example: 15000 },
+                            plateNumber: { type: "string", example: "ABC1234" },
+                            last_service_date: { type: "string", example: "2022-01-01" },
                             VIN: { type: "string", example: "1HGBH41JXMN109186" },
                             price: { type: "number", example: 50000 },
                             customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" },
@@ -158,13 +174,19 @@ export class VehicleController {
                 success: true,
                 message: 'Vehicle created successfully',
                 data: {
-                    _id: "string",
-                    vehicleName: "Tesla Model 3",
-                    model: "Model 3",
-                    VIN: "1HGBH41JXMN109186",
-                    price: 50000,
-                    image: "https://storage.googleapis.com/...",
-                    customerId: "string"
+                      _id: "string",
+                    vehicleName: "string",
+                    model: "string",
+                    year: "number",
+                    VIN: "string",
+                    price: "number",
+                    mileage: "number",
+                    plateNumber: "string",
+                    last_service_date: "string",
+                    image: "string",
+                    customerId: "object",
+                    createdAt: "string",
+                    updatedAt: "string"
                 }
             }
         } */
@@ -297,6 +319,163 @@ export class VehicleController {
             res.status(500).json({
                 success: false,
                 message: error.message
+            });
+        }
+    }
+
+    async getMyVehicles(req: Request, res: Response): Promise<void> {
+        // #swagger.tags = ['Vehicles']
+        // #swagger.summary = 'Get current customer vehicles'
+        // #swagger.description = 'API for customer to get their own vehicles'
+        // #swagger.security = [{ "bearerAuth": [] }]
+        /* #swagger.responses[200] = {
+            description: 'Successfully retrieved customer vehicles',
+            schema: {
+                success: true,
+                data: []
+            }
+        } */
+        try {
+            const user = req.user;
+
+            if (user.role !== 'CUSTOMER') {
+                res.status(403).json({
+                    success: false,
+                    message: 'Only customers can access this endpoint'
+                });
+                return;
+            }
+
+            // Get customer profile first
+            const { CustomerService } = await import('../services/customer.service');
+            const customerService = new CustomerService();
+            const customer = await customerService.getCustomerByUserId(user._id.toString());
+
+            if (!customer || !customer._id) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Customer profile not found'
+                });
+                return;
+            }
+
+            const vehicles = await this.vehicleService.getVehiclesByCustomer(customer._id.toString());
+
+            res.status(200).json({
+                success: true,
+                data: vehicles
+            });
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    async updateMileage(req: Request, res: Response): Promise<void> {
+        // #swagger.tags = ['Vehicles']
+        // #swagger.summary = 'Update vehicle mileage'
+        // #swagger.description = 'API to update the mileage of a vehicle'
+        // #swagger.security = [{ "bearerAuth": [] }]
+        // #swagger.parameters['id'] = { description: 'Vehicle ID', required: true, type: 'string' }
+        /* #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Mileage data',
+            required: true,
+            schema: {
+                mileage: 'number'
+            }
+        } */
+        /* #swagger.responses[200] = {
+            description: 'Successfully updated vehicle mileage',
+            schema: {
+                success: true,
+                data: {}
+            }
+        } */
+        try {
+            const { id } = req.params;
+            const { mileage } = req.body;
+
+            if (!mileage && mileage !== 0) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Mileage is required'
+                });
+                return;
+            }
+
+            const updatedVehicle = await this.vehicleService.updateMileage(id, mileage);
+
+            if (!updatedVehicle) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Vehicle not found'
+                });
+                return;
+            }
+
+            res.status(200).json({
+                success: true,
+                data: updatedVehicle,
+                message: 'Vehicle mileage updated successfully'
+            });
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    async assignVehicleToCustomer(req: Request, res: Response) {
+        // #swagger.tags = ['Vehicles']
+        // #swagger.summary = 'Assign vehicle to customer by phone'
+        /* #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        $ref: '#/definitions/AssignVehicle'
+                    }
+                }
+            }
+        } */
+        try {
+            const { vehicleId, phone } = req.body;
+
+            if (!vehicleId || !phone) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Vehicle ID and phone number are required"
+                });
+            }
+
+            // Validate phone format
+            const phoneRegex = /^[0-9]{10,11}$/;
+            if (!phoneRegex.test(phone)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid phone number format (must be 10-11 digits)"
+                });
+            }
+
+            const result = await assignVehicleToCustomer(vehicleId, phone);
+
+            return res.status(200).json({
+                success: true,
+                message: result.message,
+                data: {
+                    customerId: result.customerId,
+                    userId: result.userId
+                }
+            });
+        } catch (error: any) {
+            console.error("Assign vehicle error:", error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || "Failed to assign vehicle to customer"
             });
         }
     }

@@ -4,7 +4,6 @@ export interface ISystemUser {
     name?: string;
     dateOfBirth?: Date;
     certification?: string;
-    phone?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -14,12 +13,10 @@ export interface CreateSystemUserRequest {
     name?: string;
     dateOfBirth?: Date;
     certification?: string;
-    phone?: string;
 }
 
 export interface UpdateSystemUserRequest {
     name?: string;
     dateOfBirth?: Date;
     certification?: string;
-    phone?: string;
 }

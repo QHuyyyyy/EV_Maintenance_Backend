@@ -11,7 +11,8 @@ export interface AuthRegisterDto {
 
 export interface Payload {
     sub: string;
-    email: string;
+    email?: string;
+    phone?: string;
     originalIssuedAt?: number; // Thời gian đăng nhập ban đầu
 }
 

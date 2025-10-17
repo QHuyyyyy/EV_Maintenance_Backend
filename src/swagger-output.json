@@ -136,6 +136,46 @@
         }
       }
     },
+    "/api/auth/login-otp": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login customer with Firebase OTP",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idToken": {
+                    "type": "string",
+                    "description": "Firebase ID token from OTP verification"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "Phone number used for OTP"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/register": {
       "post": {
         "tags": [
@@ -922,14 +962,6 @@
             }
           },
           {
-            "name": "phone",
-            "in": "query",
-            "description": "Filter by phone number",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "address",
             "in": "query",
             "description": "Filter by address",
@@ -1407,14 +1439,6 @@
             }
           },
           {
-            "name": "phone",
-            "in": "query",
-            "description": "Filter by phone number",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "certification",
             "in": "query",
             "description": "Filter by certification",
@@ -1880,8 +1904,100 @@
         "tags": [
           "Vehicles"
         ],
-        "summary": "Get all vehicles",
-        "description": "API to get all electric vehicles in the system",
+        "summary": "Get all vehicles with filters",
+        "description": "API to get all electric vehicles with optional filters",
+        "parameters": [
+          {
+            "name": "customerId",
+            "description": "Filter by customer ID",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "description": "Filter by manufacturing year",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "model",
+            "description": "Filter by vehicle model",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleName",
+            "description": "Filter by vehicle name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "plateNumber",
+            "description": "Filter by plate number",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "VIN",
+            "description": "Filter by VIN",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minMileage",
+            "description": "Filter by minimum mileage",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxMileage",
+            "description": "Filter by maximum mileage",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "minPrice",
+            "description": "Filter by minimum price",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "description": "Filter by maximum price",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successfully retrieved vehicles list",
@@ -1893,6 +2009,66 @@
                     "success": {
                       "type": "boolean",
                       "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicleName": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "model": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "year": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "VIN": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "price": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "mileage": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "plateNumber": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "last_service_date": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "image": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "customerId": {
+                            "type": "string",
+                            "example": "object"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "string"
+                          }
+                        }
+                      }
                     }
                   },
                   "xml": {
@@ -1907,6 +2083,66 @@
                     "success": {
                       "type": "boolean",
                       "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicleName": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "model": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "year": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "VIN": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "price": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "mileage": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "plateNumber": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "last_service_date": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "image": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "customerId": {
+                            "type": "string",
+                            "example": "object"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "string"
+                          }
+                        }
+                      }
                     }
                   },
                   "xml": {
@@ -1960,25 +2196,49 @@
                         },
                         "vehicleName": {
                           "type": "string",
-                          "example": "Tesla Model 3"
+                          "example": "string"
                         },
                         "model": {
                           "type": "string",
-                          "example": "Model 3"
+                          "example": "string"
+                        },
+                        "year": {
+                          "type": "string",
+                          "example": "number"
                         },
                         "VIN": {
                           "type": "string",
-                          "example": "1HGBH41JXMN109186"
+                          "example": "string"
                         },
                         "price": {
-                          "type": "number",
-                          "example": 50000
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "mileage": {
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "plateNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "last_service_date": {
+                          "type": "string",
+                          "example": "string"
                         },
                         "image": {
                           "type": "string",
-                          "example": "https://storage.googleapis.com/..."
+                          "example": "string"
                         },
                         "customerId": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "updatedAt": {
                           "type": "string",
                           "example": "string"
                         }
@@ -2011,25 +2271,49 @@
                         },
                         "vehicleName": {
                           "type": "string",
-                          "example": "Tesla Model 3"
+                          "example": "string"
                         },
                         "model": {
                           "type": "string",
-                          "example": "Model 3"
+                          "example": "string"
+                        },
+                        "year": {
+                          "type": "string",
+                          "example": "number"
                         },
                         "VIN": {
                           "type": "string",
-                          "example": "1HGBH41JXMN109186"
+                          "example": "string"
                         },
                         "price": {
-                          "type": "number",
-                          "example": 50000
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "mileage": {
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "plateNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "last_service_date": {
+                          "type": "string",
+                          "example": "string"
                         },
                         "image": {
                           "type": "string",
-                          "example": "https://storage.googleapis.com/..."
+                          "example": "string"
                         },
                         "customerId": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "updatedAt": {
                           "type": "string",
                           "example": "string"
                         }
@@ -2074,6 +2358,22 @@
                     "type": "string",
                     "example": "Model 3"
                   },
+                  "year": {
+                    "type": "number",
+                    "example": 2021
+                  },
+                  "mileage": {
+                    "type": "number",
+                    "example": 15000
+                  },
+                  "plateNumber": {
+                    "type": "string",
+                    "example": "ABC1234"
+                  },
+                  "last_service_date": {
+                    "type": "string",
+                    "example": "2022-01-01"
+                  },
                   "VIN": {
                     "type": "string",
                     "example": "1HGBH41JXMN109186"
@@ -2096,6 +2396,77 @@
             }
           }
         }
+      }
+    },
+    "/api/vehicles/my-vehicles": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get current customer vehicles",
+        "description": "API for customer to get their own vehicles",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved customer vehicles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "example": [],
+                      "items": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "example": [],
+                      "items": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/vehicles/{id}": {
@@ -2130,49 +2501,7 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string",
-                          "example": "string"
-                        },
-                        "vehicleName": {
-                          "type": "string",
-                          "example": "Tesla Model 3"
-                        },
-                        "model": {
-                          "type": "string",
-                          "example": "Model 3"
-                        },
-                        "VIN": {
-                          "type": "string",
-                          "example": "1HGBH41JXMN109186"
-                        },
-                        "price": {
-                          "type": "number",
-                          "example": 50000
-                        },
-                        "customerId": {
-                          "type": "object",
-                          "properties": {
-                            "_id": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "customerName": {
-                              "type": "string",
-                              "example": "John Doe"
-                            },
-                            "phone": {
-                              "type": "string",
-                              "example": "0123456789"
-                            },
-                            "address": {
-                              "type": "string",
-                              "example": "123 ABC Street, Ho Chi Minh City"
-                            }
-                          }
-                        }
-                      }
+                      "properties": {}
                     }
                   },
                   "xml": {
@@ -2190,49 +2519,7 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string",
-                          "example": "string"
-                        },
-                        "vehicleName": {
-                          "type": "string",
-                          "example": "Tesla Model 3"
-                        },
-                        "model": {
-                          "type": "string",
-                          "example": "Model 3"
-                        },
-                        "VIN": {
-                          "type": "string",
-                          "example": "1HGBH41JXMN109186"
-                        },
-                        "price": {
-                          "type": "number",
-                          "example": 50000
-                        },
-                        "customerId": {
-                          "type": "object",
-                          "properties": {
-                            "_id": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "customerName": {
-                              "type": "string",
-                              "example": "John Doe"
-                            },
-                            "phone": {
-                              "type": "string",
-                              "example": "0123456789"
-                            },
-                            "address": {
-                              "type": "string",
-                              "example": "123 ABC Street, Ho Chi Minh City"
-                            }
-                          }
-                        }
-                      }
+                      "properties": {}
                     }
                   },
                   "xml": {
@@ -2244,50 +2531,6 @@
           },
           "401": {
             "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Vehicle not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Vehicle not found"
-                    }
-                  },
-                  "xml": {
-                    "name": "main"
-                  }
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Vehicle not found"
-                    }
-                  },
-                  "xml": {
-                    "name": "main"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [
@@ -2518,32 +2761,7 @@
                       "type": "array",
                       "items": {
                         "type": "object",
-                        "properties": {
-                          "_id": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "vehicleName": {
-                            "type": "string",
-                            "example": "Tesla Model 3"
-                          },
-                          "model": {
-                            "type": "string",
-                            "example": "Model 3"
-                          },
-                          "VIN": {
-                            "type": "string",
-                            "example": "1HGBH41JXMN109186"
-                          },
-                          "price": {
-                            "type": "number",
-                            "example": 50000
-                          },
-                          "customerId": {
-                            "type": "string",
-                            "example": "string"
-                          }
-                        }
+                        "properties": {}
                       }
                     }
                   },
@@ -2564,32 +2782,7 @@
                       "type": "array",
                       "items": {
                         "type": "object",
-                        "properties": {
-                          "_id": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "vehicleName": {
-                            "type": "string",
-                            "example": "Tesla Model 3"
-                          },
-                          "model": {
-                            "type": "string",
-                            "example": "Model 3"
-                          },
-                          "VIN": {
-                            "type": "string",
-                            "example": "1HGBH41JXMN109186"
-                          },
-                          "price": {
-                            "type": "number",
-                            "example": 50000
-                          },
-                          "customerId": {
-                            "type": "string",
-                            "example": "string"
-                          }
-                        }
+                        "properties": {}
                       }
                     }
                   },
@@ -2612,6 +2805,39 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/vehicles/assign-vehicle": {
+      "post": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Assign vehicle to customer by phone",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignVehicle"
+              }
+            }
+          }
+        }
       }
     },
     "/api/service-packages": {
@@ -4721,7 +4947,7 @@
           },
           "role": {
             "type": "string",
-            "example": "CUSTOMER"
+            "example": "STAFF"
           }
         },
         "xml": {
@@ -4957,6 +5183,22 @@
         },
         "xml": {
           "name": "UpdateSystemUser"
+        }
+      },
+      "AssignVehicle": {
+        "type": "object",
+        "properties": {
+          "vehicleId": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0123456789"
+          }
+        },
+        "xml": {
+          "name": "AssignVehicle"
         }
       },
       "SystemUser": {

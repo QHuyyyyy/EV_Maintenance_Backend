@@ -3,10 +3,14 @@ import mongoose from "mongoose";
 const vehicleSchema = new mongoose.Schema({
     vehicleName: { type: String, required: true },
     model: { type: String },
+    year: { type: Number }, // Manufacturing year
     VIN: { type: String, unique: true },
     price: { type: Number },
+    mileage: { type: Number, default: 0 }, // Current mileage
+    plateNumber: { type: String, unique: true }, // License plate number
+    last_service_date: { type: Date }, // Last service/maintenance date
     image: { type: String }, // URL của ảnh từ Firebase Storage
-    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" }
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", default: null }
 }, {
     timestamps: true
 });
