@@ -42,6 +42,22 @@
     {
       "name": "Vehicle Subscriptions",
       "description": "Vehicle subscription management endpoints"
+    },
+    {
+      "name": "Centers",
+      "description": "Service center management endpoints"
+    },
+    {
+      "name": "Appointments",
+      "description": "Appointment management endpoints"
+    },
+    {
+      "name": "Service Records",
+      "description": "Service record management endpoints"
+    },
+    {
+      "name": "Service Checklists",
+      "description": "Service checklist management endpoints"
     }
   ],
   "paths": {
@@ -4656,6 +4672,937 @@
           }
         }
       }
+    },
+    "/api/centers": {
+      "post": {
+        "tags": [
+          "Centers"
+        ],
+        "description": "Create a new service center",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCenter"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Centers"
+        ],
+        "description": "Get all service centers with optional filters",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by center name (partial match)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/centers/{id}": {
+      "get": {
+        "tags": [
+          "Centers"
+        ],
+        "description": "Get center by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Center ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Centers"
+        ],
+        "description": "Update a service center",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Center ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCenter"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Centers"
+        ],
+        "description": "Delete a service center",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Center ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/appointments": {
+      "post": {
+        "tags": [
+          "Appointments"
+        ],
+        "description": "Create a new appointment",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointment"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "description": "Get all appointments with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "confirmed",
+              "in-progress",
+              "completed",
+              "cancelled"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "description": "Filter by customer ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "center_id",
+            "in": "query",
+            "description": "Filter by center ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Filter by start date (from)",
+            "required": false,
+            "format": "date-time",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Filter by end date (to)",
+            "required": false,
+            "format": "date-time",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/appointments/{id}": {
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "description": "Get appointment by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Appointment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Appointments"
+        ],
+        "description": "Update an appointment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Appointment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Appointments"
+        ],
+        "description": "Delete an appointment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Appointment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-records": {
+      "post": {
+        "tags": [
+          "Service Records"
+        ],
+        "description": "Create a new service record",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceRecord"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Service Records"
+        ],
+        "description": "Get all service records with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "in-progress",
+              "completed",
+              "cancelled"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointment_id",
+            "in": "query",
+            "description": "Filter by appointment ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "technician_id",
+            "in": "query",
+            "description": "Filter by technician ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Filter by start date (from)",
+            "required": false,
+            "format": "date-time",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Filter by end date (to)",
+            "required": false,
+            "format": "date-time",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-records/{id}": {
+      "get": {
+        "tags": [
+          "Service Records"
+        ],
+        "description": "Get service record by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Service Records"
+        ],
+        "description": "Update a service record",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceRecord"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Records"
+        ],
+        "description": "Delete a service record",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-checklists": {
+      "post": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "description": "Create a new service checklist item",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceChecklist"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "description": "Get all service checklists with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "completed",
+              "skipped"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "record_id",
+            "in": "query",
+            "description": "Filter by service record ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-checklists/{id}": {
+      "get": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "description": "Get service checklist by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Checklist ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "description": "Update a service checklist item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Checklist ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceChecklist"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "description": "Delete a service checklist item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Checklist ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -4997,6 +5944,386 @@
         },
         "xml": {
           "name": "SystemUser"
+        }
+      },
+      "Center": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "CTR001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Downtown Service Center"
+          },
+          "address": {
+            "type": "string",
+            "example": "456 Main St, City, State 54321"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Center"
+        }
+      },
+      "CreateCenter": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Downtown Service Center"
+          },
+          "address": {
+            "type": "string",
+            "example": "456 Main St, City, State 54321"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890"
+          }
+        },
+        "xml": {
+          "name": "CreateCenter"
+        }
+      },
+      "UpdateCenter": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Updated Service Center"
+          },
+          "address": {
+            "type": "string",
+            "example": "789 New St, City, State 54321"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+0987654321"
+          }
+        },
+        "xml": {
+          "name": "UpdateCenter"
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "appointment_id": {
+            "type": "string",
+            "example": "APT001"
+          },
+          "staffId": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "vehicle_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "2025-10-16T09:00:00.000Z"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "2025-10-16T11:00:00.000Z"
+          },
+          "status": {
+            "type": "string",
+            "example": "scheduled"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Appointment"
+        }
+      },
+      "CreateAppointment": {
+        "type": "object",
+        "properties": {
+          "staffId": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "vehicle_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "2025-10-16T09:00:00.000Z"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "2025-10-16T11:00:00.000Z"
+          },
+          "status": {
+            "type": "string",
+            "example": "scheduled"
+          }
+        },
+        "xml": {
+          "name": "CreateAppointment"
+        }
+      },
+      "UpdateAppointment": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "example": "2025-10-16T10:00:00.000Z"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "2025-10-16T12:00:00.000Z"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          }
+        },
+        "xml": {
+          "name": "UpdateAppointment"
+        }
+      },
+      "ServiceRecord": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "record_id": {
+            "type": "string",
+            "example": "REC001"
+          },
+          "appointment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "technician_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "start_time": {
+            "type": "string",
+            "example": "2025-10-16T09:00:00.000Z"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "2025-10-16T11:00:00.000Z"
+          },
+          "description": {
+            "type": "string",
+            "example": "Regular maintenance completed"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          },
+          "mileage": {
+            "type": "number",
+            "example": 50000
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "ServiceRecord"
+        }
+      },
+      "CreateServiceRecord": {
+        "type": "object",
+        "properties": {
+          "appointment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "technician_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "start_time": {
+            "type": "string",
+            "example": "2025-10-16T09:00:00.000Z"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "2025-10-16T11:00:00.000Z"
+          },
+          "description": {
+            "type": "string",
+            "example": "Regular maintenance completed"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          },
+          "mileage": {
+            "type": "number",
+            "example": 50000
+          }
+        },
+        "xml": {
+          "name": "CreateServiceRecord"
+        }
+      },
+      "UpdateServiceRecord": {
+        "type": "object",
+        "properties": {
+          "end_time": {
+            "type": "string",
+            "example": "2025-10-16T12:00:00.000Z"
+          },
+          "description": {
+            "type": "string",
+            "example": "Maintenance and inspection completed"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          },
+          "mileage": {
+            "type": "number",
+            "example": 51000
+          }
+        },
+        "xml": {
+          "name": "UpdateServiceRecord"
+        }
+      },
+      "ServiceChecklist": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "checklist_id": {
+            "type": "string",
+            "example": "CHK001"
+          },
+          "record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Oil Change"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          },
+          "note": {
+            "type": "string",
+            "example": "Used synthetic oil"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "ServiceChecklist"
+        }
+      },
+      "CreateServiceChecklist": {
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Oil Change"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "note": {
+            "type": "string",
+            "example": "Schedule oil change"
+          }
+        },
+        "xml": {
+          "name": "CreateServiceChecklist"
+        }
+      },
+      "UpdateServiceChecklist": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Oil Change"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          },
+          "note": {
+            "type": "string",
+            "example": "Used synthetic oil"
+          }
+        },
+        "xml": {
+          "name": "UpdateServiceChecklist"
         }
       }
     },

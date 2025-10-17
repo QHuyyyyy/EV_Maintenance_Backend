@@ -52,6 +52,22 @@ const doc = {
         {
             name: 'Vehicle Subscriptions',
             description: 'Vehicle subscription management endpoints'
+        },
+        {
+            name: 'Centers',
+            description: 'Service center management endpoints'
+        },
+        {
+            name: 'Appointments',
+            description: 'Appointment management endpoints'
+        },
+        {
+            name: 'Service Records',
+            description: 'Service record management endpoints'
+        },
+        {
+            name: 'Service Checklists',
+            description: 'Service checklist management endpoints'
         }
     ],
     definitions: {
@@ -137,6 +153,101 @@ const doc = {
             certificate: 'string',
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        Center: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            center_id: 'CTR001',
+            name: 'Downtown Service Center',
+            address: '456 Main St, City, State 54321',
+            phone: '+1234567890',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateCenter: {
+            name: 'Downtown Service Center',
+            address: '456 Main St, City, State 54321',
+            phone: '+1234567890'
+        },
+        UpdateCenter: {
+            name: 'Updated Service Center',
+            address: '789 New St, City, State 54321',
+            phone: '+0987654321'
+        },
+        Appointment: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            appointment_id: 'APT001',
+            staffId: '60f1b2b3c4e5f6g7h8i9j0k2',
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            vehicle_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
+            startTime: '2025-10-16T09:00:00.000Z',
+            endTime: '2025-10-16T11:00:00.000Z',
+            status: 'scheduled',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateAppointment: {
+            staffId: '60f1b2b3c4e5f6g7h8i9j0k2',
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            vehicle_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
+            startTime: '2025-10-16T09:00:00.000Z',
+            endTime: '2025-10-16T11:00:00.000Z',
+            status: 'scheduled'
+        },
+        UpdateAppointment: {
+            startTime: '2025-10-16T10:00:00.000Z',
+            endTime: '2025-10-16T12:00:00.000Z',
+            status: 'completed'
+        },
+        ServiceRecord: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            record_id: 'REC001',
+            appointment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            technician_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            start_time: '2025-10-16T09:00:00.000Z',
+            end_time: '2025-10-16T11:00:00.000Z',
+            description: 'Regular maintenance completed',
+            status: 'completed',
+            mileage: 50000,
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateServiceRecord: {
+            appointment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            technician_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            start_time: '2025-10-16T09:00:00.000Z',
+            end_time: '2025-10-16T11:00:00.000Z',
+            description: 'Regular maintenance completed',
+            status: 'completed',
+            mileage: 50000
+        },
+        UpdateServiceRecord: {
+            end_time: '2025-10-16T12:00:00.000Z',
+            description: 'Maintenance and inspection completed',
+            status: 'completed',
+            mileage: 51000
+        },
+        ServiceChecklist: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            checklist_id: 'CHK001',
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            name: 'Oil Change',
+            status: 'completed',
+            note: 'Used synthetic oil',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateServiceChecklist: {
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            name: 'Oil Change',
+            status: 'pending',
+            note: 'Schedule oil change'
+        },
+        UpdateServiceChecklist: {
+            name: 'Oil Change',
+            status: 'completed',
+            note: 'Used synthetic oil'
         }
     },
     securityDefinitions: {

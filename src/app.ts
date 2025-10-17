@@ -13,6 +13,10 @@ import vehicleRoutes from "./routes/vehicle.routes";
 import servicePackageRoutes from "./routes/servicePackage.routes";
 import vehicleSubscriptionRoutes from "./routes/vehicleSubscription.routes";
 import alertRoutes from "./routes/alert.routes";
+import centerRoutes from "./routes/center.routes";
+import appointmentRoutes from "./routes/appointment.routes";
+import serviceRecordRoutes from "./routes/serviceRecord.routes";
+import serviceChecklistRoutes from "./routes/serviceChecklist.routes";
 
 
 let swaggerFile: any;
@@ -58,6 +62,10 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/service-packages', servicePackageRoutes);
 app.use('/api/vehicle-subscriptions', vehicleSubscriptionRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/centers', centerRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/service-records', serviceRecordRoutes);
+app.use('/api/service-checklists', serviceChecklistRoutes);
 
 // Root route redirect to API docs
 
