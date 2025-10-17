@@ -22,19 +22,11 @@ router.post('/', validate, VehicleSubscriptionController.createSubscription.bind
 // PATCH /api/vehicle-subscriptions/:id - Cập nhật đăng ký
 router.patch('/:id', validate, VehicleSubscriptionController.updateSubscription.bind(VehicleSubscriptionController));
 
-// PATCH /api/vehicle-subscriptions/:id/status - Cập nhật trạng thái đăng ký
-router.patch('/:id/status', validate, VehicleSubscriptionController.updateSubscriptionStatus.bind(VehicleSubscriptionController));
-
 // DELETE /api/vehicle-subscriptions/:id - Xóa đăng ký
 router.delete('/:id', validate, VehicleSubscriptionController.deleteSubscription.bind(VehicleSubscriptionController));
-
-// GET /api/vehicle-subscriptions/expiring/:days - Lấy đăng ký sắp hết hạn
-router.get('/expiring/:days', validate, VehicleSubscriptionController.getExpiringSubscriptions.bind(VehicleSubscriptionController));
 
 // POST /api/vehicle-subscriptions/:id/renew - Gia hạn đăng ký
 router.post('/:id/renew', validate, VehicleSubscriptionController.renewSubscription.bind(VehicleSubscriptionController));
 
-// PATCH /api/vehicle-subscriptions/update-expired - Cập nhật trạng thái hết hạn tự động
-router.patch('/update-expired', validate, VehicleSubscriptionController.updateExpiredSubscriptions.bind(VehicleSubscriptionController));
 
 export default router;

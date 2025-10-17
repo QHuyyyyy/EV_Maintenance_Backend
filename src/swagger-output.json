@@ -3953,107 +3953,6 @@
         ]
       }
     },
-    "/api/vehicle-subscriptions/{id}/status": {
-      "patch": {
-        "tags": [
-          "Vehicle Subscriptions"
-        ],
-        "summary": "Update subscription status",
-        "description": "API to update the status of a vehicle subscription",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Subscription ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "ACTIVE",
-                      "INACTIVE",
-                      "EXPIRED",
-                      "CANCELLED"
-                    ],
-                    "example": "ACTIVE",
-                    "description": "The new status for the subscription"
-                  }
-                },
-                "required": [
-                  "status"
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/vehicle-subscriptions/expiring/{days}": {
-      "get": {
-        "tags": [
-          "Vehicle Subscriptions"
-        ],
-        "summary": "Get expiring subscriptions",
-        "description": "API to get subscriptions that are expiring within specified days",
-        "parameters": [
-          {
-            "name": "days",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Number of days to check for expiring subscriptions"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/vehicle-subscriptions/{id}/renew": {
       "post": {
         "tags": [
@@ -4081,31 +3980,6 @@
           },
           "401": {
             "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/vehicle-subscriptions/update-expired": {
-      "patch": {
-        "tags": [
-          "Vehicle Subscriptions"
-        ],
-        "summary": "Update expired subscriptions",
-        "description": "API to automatically update expired subscriptions",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [
