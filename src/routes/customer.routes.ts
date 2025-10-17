@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', validate, customerController.getAllCustomers.bind(customerController));
 router.get('/user/:userId', validate, customerController.getCustomerByUserId.bind(customerController));
 router.get('/:id', validate, customerController.getCustomerById.bind(customerController));
-router.put('/:id', validate, customerController.updateCustomer.bind(customerController));
+router.patch('/:id', validate, customerController.updateCustomer.bind(customerController));
 router.delete('/:id', validate, customerController.deleteCustomer.bind(customerController));
 
 export default router;

@@ -110,7 +110,6 @@ export class SystemUserController {
    }] */
         // #swagger.description = 'Retrieve all system users with optional filtering and pagination'
         // #swagger.parameters['name'] = { in: 'query', type: 'string', description: 'Filter by name' }
-        // #swagger.parameters['phone'] = { in: 'query', type: 'string', description: 'Filter by phone number' }
         // #swagger.parameters['certification'] = { in: 'query', type: 'string', description: 'Filter by certification' }
         // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number (default: 1)' }
         // #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page (default: 10)' }
@@ -122,11 +121,10 @@ export class SystemUserController {
             }
         } */
         try {
-            const { name, phone, certification, page, limit } = req.query;
+            const { name, certification, page, limit } = req.query;
 
             const filters = {
                 name: name as string,
-                phone: phone as string,
                 certification: certification as string,
                 page: page ? parseInt(page as string) : undefined,
                 limit: limit ? parseInt(limit as string) : undefined

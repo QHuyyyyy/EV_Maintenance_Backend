@@ -128,7 +128,16 @@ export class UserController {
            "bearerAuth": []
    }] */
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
-        // #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/UserUpdate' } }
+        /* #swagger.requestBody = {
+      required: true,
+      content: {
+          "application/json": {
+              schema: {
+                  $ref: '#/definitions/UserUpdate'
+              }
+          }
+      }
+  } */
         /* #swagger.responses[200] = {
             description: 'User updated successfully',
             schema: {

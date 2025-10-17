@@ -12,8 +12,7 @@ export class SystemUserService {
                 userId: userId,
                 name: '',
                 dateOfBirth: null,
-                certification: '',
-                phone: ''
+                certification: ''
             });
             const savedSystemUser = await systemUser.save();
             return await this.getSystemUserById(savedSystemUser._id.toString());
@@ -37,10 +36,11 @@ export class SystemUserService {
             if (!systemUser) {
                 throw new Error('System user not found');
             }
+            console.log(systemUser);
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
-                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -55,17 +55,17 @@ export class SystemUserService {
      */
     async getSystemUserByUserId(userId: string): Promise<ISystemUser | null> {
         try {
-            const systemUser = await SystemUser.findOne({ userId })
+            const systemUser = await SystemUser.findOne({ userId }).populate('userId', 'phone email role')
                 .lean();
 
             if (!systemUser) {
                 return null;
             }
-
+            console.log(systemUser);
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
-                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -80,7 +80,6 @@ export class SystemUserService {
      */
     async getAllSystemUsers(filters?: {
         name?: string;
-        phone?: string;
         certification?: string;
         page?: number;
         limit?: number;
@@ -100,9 +99,6 @@ export class SystemUserService {
             const query: any = {};
             if (filters?.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
-            }
-            if (filters?.phone) {
-                query.phone = { $regex: filters.phone, $options: 'i' };
             }
             if (filters?.certification) {
                 query.certification = { $regex: filters.certification, $options: 'i' };

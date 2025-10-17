@@ -11,7 +11,6 @@ export class CustomerService {
             const customer = new Customer({
                 userId: userId,
                 customerName: '',
-                phone: '',
                 address: ''
             });
             const savedCustomer = await customer.save();
@@ -23,6 +22,8 @@ export class CustomerService {
             throw new Error('Failed to create customer profile: Unknown error');
         }
     }
+
+
 
     /**
      * Get customer by ID
@@ -39,8 +40,8 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             } as ICustomer;
+
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get customer: ${error.message}`);
@@ -55,7 +56,7 @@ export class CustomerService {
     async getCustomerByUserId(userId: string): Promise<ICustomer | null> {
         try {
             const customer = await Customer.findOne({ userId })
-                .populate('userId', 'email role')
+                .populate('userId', 'phone email role')
                 .lean();
 
             if (!customer) {
@@ -65,7 +66,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -80,7 +81,6 @@ export class CustomerService {
      */
     async getAllCustomers(filters?: {
         customerName?: string;
-        phone?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -100,9 +100,6 @@ export class CustomerService {
             if (filters?.customerName) {
                 query.customerName = { $regex: filters.customerName, $options: 'i' };
             }
-            if (filters?.phone) {
-                query.phone = { $regex: filters.phone, $options: 'i' };
-            }
 
             // Execute queries
             const [customersRaw, total] = await Promise.all([
@@ -118,7 +115,7 @@ export class CustomerService {
             const customers = customersRaw.map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             })) as ICustomer[];
 
             return {
@@ -154,7 +151,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -176,7 +173,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -187,14 +184,13 @@ export class CustomerService {
     }
 
     /**
-     * Search customers by name or phone
+     * Search customers by name or address
      */
     async searchCustomers(searchTerm: string): Promise<ICustomer[]> {
         try {
             const customersRaw = await Customer.find({
                 $or: [
                     { customerName: { $regex: searchTerm, $options: 'i' } },
-                    { phone: { $regex: searchTerm, $options: 'i' } },
                     { address: { $regex: searchTerm, $options: 'i' } }
                 ]
             })
@@ -206,7 +202,7 @@ export class CustomerService {
             return customersRaw.map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             })) as ICustomer[];
         } catch (error) {
             if (error instanceof Error) {

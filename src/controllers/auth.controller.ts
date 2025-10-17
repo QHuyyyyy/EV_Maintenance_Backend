@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { login, register, refreshAccessToken, logout } from "../services/auth.service";
+import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP } from "../services/auth.service";
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
 import { CustomerService } from "../services/customer.service";
 import { SystemUserService } from "../services/systemUser.service";
@@ -324,6 +324,7 @@ export async function getProfileController(req: Request, res: Response) {
         res.status(200).json({
             success: true,
             message: 'Get profile successfully',
+            data: profile
         });
     } catch (error) {
         if (error instanceof Error) {
@@ -339,3 +340,63 @@ export async function getProfileController(req: Request, res: Response) {
         }
     }
 }
+
+export async function loginWithOTPController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Login customer with Firebase OTP'
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        idToken: {
+                            type: "string",
+                            description: "Firebase ID token from OTP verification"
+                        },
+                        phone: {
+                            type: "string",
+                            description: "Phone number used for OTP"
+                        }
+                    },
+                }
+            }
+        }
+    } */
+    try {
+        const { idToken, phone } = req.body;
+
+        if (!idToken || !phone) {
+            return res.status(400).json({
+                success: false,
+                message: "Firebase ID token and phone number are required"
+            });
+        }
+
+        // Validate phone format
+        const phoneRegex = /^[0-9]{10,11}$/;
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid phone number format (must be 10-11 digits)"
+            });
+        }
+
+        const tokenResponse = await loginWithFirebaseOTP(idToken, phone);
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successfully",
+            data: tokenResponse,
+        });
+    } catch (error: any) {
+        console.error("OTP Login error:", error);
+        return res.status(401).json({
+            success: false,
+            message: error.message || "Invalid OTP or authentication failed"
+        });
+    }
+}
+
+

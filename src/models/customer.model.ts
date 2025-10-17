@@ -13,10 +13,6 @@ const customerSchema = new Schema({
     dateOfBirth: {
         type: Date
     },
-    phone: {
-        type: String,
-        default: ''
-    },
     address: {
         type: String,
         default: ''
