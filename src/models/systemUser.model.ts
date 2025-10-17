@@ -16,10 +16,6 @@ const systemUserSchema = new Schema({
     certification: {
         type: String,
         default: ''
-    },
-    phone: {
-        type: String,
-        default: ''
     }
 }, {
     timestamps: true

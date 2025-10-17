@@ -40,6 +40,21 @@ export async function getUserByEmailForAuth(email: string) {
 }
 
 /**
+ * Get user by phone for authentication
+ */
+export async function getUserByPhone(phone: string) {
+    try {
+        const user = await User.findOne({ phone: phone, isDeleted: false });
+        return user; // Return null if not found, no error
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new Error(`Failed to get user by phone: ${error.message}`);
+        }
+        throw new Error('Failed to get user by phone: Unknown error');
+    }
+}
+
+/**
  * Get all users with optional filtering
  */
 export async function getAllUsers(filters?: {

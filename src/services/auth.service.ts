@@ -2,9 +2,10 @@ import { User } from "../models/user.model";
 import { AuthLoginDto, AuthRegisterDto, Payload, AuthTokenResponse, RefreshTokenDto, AuthRegisterResponse } from "../types/auth.type";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { createUser, getUserByEmailForAuth } from "./user.service";
+import { createUser, getUserByEmailForAuth, getUserByPhone } from "./user.service";
 import { CustomerService } from "./customer.service";
 import { SystemUserService } from "./systemUser.service";
+import { auth } from "../firebase/firebase.config";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 const REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY || process.env.JWT_SECRET_KEY;
@@ -17,6 +18,9 @@ export async function login(authLoginDto: AuthLoginDto) {
     if (user.isDeleted) {
         throw new Error("The account does not exist");
     }
+    if (!user.password) {
+        throw new Error("Invalid account type");
+    }
     const isMatched = await comparePassword(authLoginDto.password, user.password);
 
     if (!isMatched) {
@@ -25,7 +29,7 @@ export async function login(authLoginDto: AuthLoginDto) {
 
     const payload: Payload = {
         sub: user._id.toString(),
-        email: user.email,
+        email: user.email || undefined,
         originalIssuedAt: Date.now()
     };
 
@@ -54,7 +58,7 @@ export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthRe
     const user = await createUser({
         email: authRegisterDto.email,
         password: hashedPassword,
-        role: authRegisterDto.role || "CUSTOMER",
+        role: authRegisterDto.role || "STAFF",
         isDeleted: false
     });
 
@@ -115,7 +119,7 @@ export async function refreshAccessToken(refreshTokenDto: RefreshTokenDto): Prom
 
         const newPayload: Payload = {
             sub: user._id.toString(),
-            email: user.email,
+            email: user.email || undefined,
             originalIssuedAt: payload.originalIssuedAt || Date.now()
         };
 
@@ -154,4 +158,104 @@ async function hashPassword(password: string, saltRounds: number = 10) {
 
 async function comparePassword(password: string, hashedPassword: string) {
     return await bcrypt.compare(password, hashedPassword);
+}
+
+// Firebase OTP Login for customers
+export async function loginWithFirebaseOTP(idToken: string, phone: string) {
+    try {
+        // Verify Firebase ID token
+        const decodedToken = await auth.verifyIdToken(idToken);
+        const firebasePhone = decodedToken.phone_number;
+
+        // Ensure phone numbers match
+        if (firebasePhone !== phone) {
+            throw new Error("Phone number mismatch");
+        }
+
+        // Check if user exists
+        let user = await getUserByPhone(phone);
+
+        if (!user) {
+            // Create new user account for customer
+            user = await createUser({
+                phone: phone,
+                role: "CUSTOMER",
+                isDeleted: false
+            });
+
+            // Create customer profile
+            await customerService.createEmptyCustomer(user._id.toString());
+        }
+
+        if (user.isDeleted) {
+            throw new Error("The account does not exist");
+        }
+
+        if (user.role !== "CUSTOMER") {
+            throw new Error("This login method is only for customers");
+        }
+
+        const payload: Payload = {
+            sub: user._id.toString(),
+            phone: user.phone || undefined,
+            originalIssuedAt: Date.now()
+        };
+
+        const accessToken = signToken(payload);
+        const refreshToken = signRefreshToken(payload);
+
+        // Save refresh token to user
+        await User.findByIdAndUpdate(user._id, { refreshToken });
+
+        return {
+            accessToken,
+            refreshToken,
+            expiresIn: 3600,
+            role: user.role
+        };
+    } catch (error) {
+        console.error("Firebase OTP login error:", error);
+        throw new Error("Invalid OTP or authentication failed");
+    }
+}
+
+// Assign vehicle to customer by phone
+export async function assignVehicleToCustomer(vehicleId: string, phone: string) {
+    try {
+        // Check if user exists with this phone
+        let user = await getUserByPhone(phone);
+        let customer;
+
+        if (!user) {
+            // Create new user account
+            user = await createUser({
+                phone: phone,
+                role: "CUSTOMER",
+                isDeleted: false
+            });
+
+            // Create customer profile
+            customer = await customerService.createEmptyCustomer(user._id.toString());
+        } else {
+            // Get existing customer profile
+            customer = await customerService.getCustomerByUserId(user._id.toString());
+        }
+
+        if (!customer) {
+            throw new Error("Failed to create or find customer profile");
+        }
+
+        // Update vehicle with customer ID
+        const { Vehicle } = await import("../models/vehicle.model");
+        await Vehicle.findByIdAndUpdate(vehicleId, { customerId: customer._id });
+
+        return {
+            message: "Vehicle assigned to customer successfully",
+            customerId: customer._id,
+            userId: user._id
+        };
+    } catch (error) {
+        console.error("Assign vehicle error:", error);
+        throw new Error("Failed to assign vehicle to customer");
+    }
 }
