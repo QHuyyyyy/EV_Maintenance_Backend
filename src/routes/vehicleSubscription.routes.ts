@@ -19,11 +19,11 @@ router.get('/customer/:customerId', validate, VehicleSubscriptionController.getS
 // POST /api/vehicle-subscriptions - Tạo đăng ký mới
 router.post('/', validate, VehicleSubscriptionController.createSubscription.bind(VehicleSubscriptionController));
 
-// PUT /api/vehicle-subscriptions/:id - Cập nhật đăng ký
-router.put('/:id', validate, VehicleSubscriptionController.updateSubscription.bind(VehicleSubscriptionController));
+// PATCH /api/vehicle-subscriptions/:id - Cập nhật đăng ký
+router.patch('/:id', validate, VehicleSubscriptionController.updateSubscription.bind(VehicleSubscriptionController));
 
-// PUT /api/vehicle-subscriptions/:id/status - Cập nhật trạng thái đăng ký
-router.put('/:id/status', validate, VehicleSubscriptionController.updateSubscriptionStatus.bind(VehicleSubscriptionController));
+// PATCH /api/vehicle-subscriptions/:id/status - Cập nhật trạng thái đăng ký
+router.patch('/:id/status', validate, VehicleSubscriptionController.updateSubscriptionStatus.bind(VehicleSubscriptionController));
 
 // DELETE /api/vehicle-subscriptions/:id - Xóa đăng ký
 router.delete('/:id', validate, VehicleSubscriptionController.deleteSubscription.bind(VehicleSubscriptionController));
@@ -34,7 +34,7 @@ router.get('/expiring/:days', validate, VehicleSubscriptionController.getExpirin
 // POST /api/vehicle-subscriptions/:id/renew - Gia hạn đăng ký
 router.post('/:id/renew', validate, VehicleSubscriptionController.renewSubscription.bind(VehicleSubscriptionController));
 
-// PUT /api/vehicle-subscriptions/update-expired - Cập nhật trạng thái hết hạn tự động
-router.put('/update-expired', validate, VehicleSubscriptionController.updateExpiredSubscriptions.bind(VehicleSubscriptionController));
+// PATCH /api/vehicle-subscriptions/update-expired - Cập nhật trạng thái hết hạn tự động
+router.patch('/update-expired', validate, VehicleSubscriptionController.updateExpiredSubscriptions.bind(VehicleSubscriptionController));
 
 export default router;

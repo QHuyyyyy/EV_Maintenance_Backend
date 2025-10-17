@@ -11,7 +11,7 @@ router.get('/my-vehicles', validate, VehicleController.getMyVehicles.bind(Vehicl
 router.get('/:id', validate, VehicleController.getVehicleById.bind(VehicleController));
 router.get('/customer/:customerId', validate, VehicleController.getVehiclesByCustomer.bind(VehicleController));
 router.post('/', validate, upload.single('image'), VehicleController.createVehicle.bind(VehicleController));
-router.put('/:id', validate, upload.single('image'), VehicleController.updateVehicle.bind(VehicleController));
+router.patch('/:id', validate, upload.single('image'), VehicleController.updateVehicle.bind(VehicleController));
 // router.patch('/:id/mileage', validate, VehicleController.updateMileage.bind(VehicleController));
 router.delete('/:id', validate, VehicleController.deleteVehicle.bind(VehicleController));
 router.post("/assign-vehicle", validate, VehicleController.assignVehicleToCustomer.bind(VehicleController));

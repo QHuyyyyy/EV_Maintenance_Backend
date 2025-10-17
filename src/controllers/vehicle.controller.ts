@@ -151,7 +151,7 @@ export class VehicleController {
                 "multipart/form-data": {
                     schema: {
                         type: "object",
-                        required: ["vehicleName", "customerId"],
+                        required: ["vehicleName", "model", "year", "VIN", "price", "plateNumber","image"],
                         properties: {
                             vehicleName: { type: "string", example: "Tesla Model 3" },
                             model: { type: "string", example: "Model 3" },
@@ -161,7 +161,7 @@ export class VehicleController {
                             last_service_date: { type: "string", example: "2022-01-01" },
                             VIN: { type: "string", example: "1HGBH41JXMN109186" },
                             price: { type: "number", example: 50000 },
-                            customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" },
+                            customerId: { type: "string", description: "Customer ID - leave empty if vehicle has no owner" },
                             image: { type: "string", format: "binary", description: "Vehicle image" }
                         }
                     }
@@ -231,11 +231,14 @@ export class VehicleController {
                     schema: {
                         type: "object",
                         properties: {
-                            vehicleName: { type: "string", example: "Tesla Model 3" },
-                            model: { type: "string", example: "Model 3" },
-                            VIN: { type: "string", example: "1HGBH41JXMN109186" },
-                            price: { type: "number", example: 50000 },
-                            customerId: { type: "string", example: "60f1b2b3c4e5f6g7h8i9j0k1" },
+                             vehicleName: { type: "string" },
+                            model: { type: "string" },
+                            year: { type: "number" },
+                            mileage: { type: "number" },
+                            plateNumber: { type: "string" },
+                            last_service_date: { type: "string" },
+                            VIN: { type: "string" },
+                            price: { type: "number" },
                             image: { type: "string", format: "binary", description: "Vehicle image" }
                         }
                     }

@@ -9,7 +9,7 @@ export interface IVehicle {
     plateNumber?: string;
     last_service_date?: Date;
     image?: string;
-    customerId: string;
+    customerId?: string | null; // Có thể null khi xe chưa có chủ
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -24,7 +24,7 @@ export interface CreateVehicleInput {
     plateNumber?: string;
     last_service_date?: Date;
     image?: string;
-    customerId: string;
+    customerId?: string | null; // Có thể null khi xe chưa có chủ
 }
 
 export interface UpdateVehicleInput {
@@ -37,5 +37,5 @@ export interface UpdateVehicleInput {
     plateNumber?: string;
     last_service_date?: Date;
     image?: string;
-    customerId?: string;
+    customerId?: string | null; // Có thể null hoặc string
 }

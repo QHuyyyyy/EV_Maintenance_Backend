@@ -90,15 +90,16 @@ export class VehicleService {
     // Tạo xe mới
     async createVehicle(vehicleData: any) {
         try {
-            // Kiểm tra xem customer có tồn tại không (chỉ khi customerId được cung cấp)
-            if (vehicleData.customerId) {
+            // Kiểm tra customer có tồn tại không (chỉ khi customerId được cung cấp và không null)
+            if (vehicleData.customerId && vehicleData.customerId !== null && vehicleData.customerId !== '') {
                 const customer = await Customer.findById(vehicleData.customerId);
                 if (!customer) {
                     throw new Error('Customer not found');
                 }
+            } else {
+                // Đảm bảo customerId là null khi không có chủ sở hữu
+                vehicleData.customerId = null;
             }
-
-            // Kiểm tra VIN không trùng lặp
             if (vehicleData.VIN) {
                 const existingVehicle = await Vehicle.findOne({ VIN: vehicleData.VIN });
                 if (existingVehicle) {
@@ -137,10 +138,20 @@ export class VehicleService {
     // Cập nhật xe
     async updateVehicle(id: string, updateData: any) {
         try {
-            // Kiểm tra VIN không trùng lặp (nếu có cập nhật VIN)
-            if (updateData.VIN) {
+            // Lọc bỏ các field empty để giữ nguyên giá trị cũ trong database
+            const filteredUpdateData: any = {};
+
+            for (const [key, value] of Object.entries(updateData)) {
+                // Chỉ thêm vào filteredUpdateData nếu giá trị không phải là empty
+                if (value !== null && value !== undefined && value !== '' &&
+                    !(Array.isArray(value) && value.length === 0)) {
+                    filteredUpdateData[key] = value;
+                }
+            }
+
+            if (filteredUpdateData.VIN) {
                 const existingVehicle = await Vehicle.findOne({
-                    VIN: updateData.VIN,
+                    VIN: filteredUpdateData.VIN,
                     _id: { $ne: id }
                 });
                 if (existingVehicle) {
@@ -149,9 +160,9 @@ export class VehicleService {
             }
 
             // Kiểm tra plateNumber không trùng lặp (nếu có cập nhật plateNumber)
-            if (updateData.plateNumber) {
+            if (filteredUpdateData.plateNumber) {
                 const existingPlateVehicle = await Vehicle.findOne({
-                    plateNumber: updateData.plateNumber,
+                    plateNumber: filteredUpdateData.plateNumber,
                     _id: { $ne: id }
                 });
                 if (existingPlateVehicle) {
@@ -160,26 +171,23 @@ export class VehicleService {
             }
 
             // Validate year
-            if (updateData.year && (updateData.year < 1900 || updateData.year > new Date().getFullYear() + 1)) {
+            if (filteredUpdateData.year && (filteredUpdateData.year < 1900 || filteredUpdateData.year > new Date().getFullYear() + 1)) {
                 throw new Error('Invalid vehicle year');
             }
 
             // Validate mileage
-            if (updateData.mileage && updateData.mileage < 0) {
+            if (filteredUpdateData.mileage && filteredUpdateData.mileage < 0) {
                 throw new Error('Mileage cannot be negative');
             }
 
-            // Kiểm tra customer có tồn tại không (nếu có cập nhật customerId)
-            if (updateData.customerId) {
-                const customer = await Customer.findById(updateData.customerId);
-                if (!customer) {
-                    throw new Error('Customer not found');
-                }
+            // Nếu không có field nào để update, trả về vehicle hiện tại
+            if (Object.keys(filteredUpdateData).length === 0) {
+                return await this.getVehicleById(id);
             }
 
             const updatedVehicle = await Vehicle.findByIdAndUpdate(
                 id,
-                updateData,
+                filteredUpdateData,
                 { new: true, runValidators: true }
             ).populate('customerId', 'customerName address');
 

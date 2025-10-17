@@ -765,14 +765,6 @@
               "type": "string"
             },
             "description": "User ID"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/UserUpdate"
-            }
           }
         ],
         "responses": {
@@ -852,7 +844,17 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          }
+        }
       },
       "delete": {
         "tags": [
@@ -1231,7 +1233,7 @@
           }
         ]
       },
-      "put": {
+      "patch": {
         "tags": [
           "Customers"
         ],
@@ -1708,7 +1710,7 @@
           }
         ]
       },
-      "put": {
+      "patch": {
         "tags": [
           "System Users"
         ],
@@ -2347,7 +2349,12 @@
                 "type": "object",
                 "required": [
                   "vehicleName",
-                  "customerId"
+                  "model",
+                  "year",
+                  "VIN",
+                  "price",
+                  "plateNumber",
+                  "image"
                 ],
                 "properties": {
                   "vehicleName": {
@@ -2384,7 +2391,7 @@
                   },
                   "customerId": {
                     "type": "string",
-                    "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+                    "description": "Customer ID - leave empty if vehicle has no owner"
                   },
                   "image": {
                     "type": "string",
@@ -2539,7 +2546,7 @@
           }
         ]
       },
-      "put": {
+      "patch": {
         "tags": [
           "Vehicles"
         ],
@@ -2583,24 +2590,28 @@
                 "type": "object",
                 "properties": {
                   "vehicleName": {
-                    "type": "string",
-                    "example": "Tesla Model 3"
+                    "type": "string"
                   },
                   "model": {
-                    "type": "string",
-                    "example": "Model 3"
+                    "type": "string"
+                  },
+                  "year": {
+                    "type": "number"
+                  },
+                  "mileage": {
+                    "type": "number"
+                  },
+                  "plateNumber": {
+                    "type": "string"
+                  },
+                  "last_service_date": {
+                    "type": "string"
                   },
                   "VIN": {
-                    "type": "string",
-                    "example": "1HGBH41JXMN109186"
+                    "type": "string"
                   },
                   "price": {
-                    "type": "number",
-                    "example": 50000
-                  },
-                  "customerId": {
-                    "type": "string",
-                    "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+                    "type": "number"
                   },
                   "image": {
                     "type": "string",
@@ -3263,7 +3274,7 @@
           }
         }
       },
-      "put": {
+      "patch": {
         "tags": [
           "Service Packages"
         ],
@@ -3755,7 +3766,7 @@
           }
         ]
       },
-      "put": {
+      "patch": {
         "tags": [
           "Vehicle Subscriptions"
         ],
@@ -3943,7 +3954,7 @@
       }
     },
     "/api/vehicle-subscriptions/{id}/status": {
-      "put": {
+      "patch": {
         "tags": [
           "Vehicle Subscriptions"
         ],
@@ -4080,7 +4091,7 @@
       }
     },
     "/api/vehicle-subscriptions/update-expired": {
-      "put": {
+      "patch": {
         "tags": [
           "Vehicle Subscriptions"
         ],
@@ -4596,7 +4607,7 @@
           }
         }
       },
-      "put": {
+      "patch": {
         "tags": [
           "Alerts"
         ],
@@ -5088,10 +5099,6 @@
             "type": "string",
             "example": "1990-01-15"
           },
-          "phone": {
-            "type": "string",
-            "example": "+1234567890"
-          },
           "address": {
             "type": "string",
             "example": "123 Main St, City, State 12345"
@@ -5148,10 +5155,6 @@
             "type": "string",
             "example": "1990-01-15"
           },
-          "phone": {
-            "type": "string",
-            "example": "+1234567890"
-          },
           "address": {
             "type": "string",
             "example": "123 Main St, City, State"
@@ -5171,10 +5174,6 @@
           "dateOfBirth": {
             "type": "string",
             "example": "1990-01-15"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+1234567890"
           },
           "certification": {
             "type": "string",

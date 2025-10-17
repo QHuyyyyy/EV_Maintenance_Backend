@@ -36,10 +36,11 @@ export class SystemUserService {
             if (!systemUser) {
                 throw new Error('System user not found');
             }
+            console.log(systemUser);
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
-                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -54,17 +55,17 @@ export class SystemUserService {
      */
     async getSystemUserByUserId(userId: string): Promise<ISystemUser | null> {
         try {
-            const systemUser = await SystemUser.findOne({ userId })
+            const systemUser = await SystemUser.findOne({ userId }).populate('userId', 'phone email role')
                 .lean();
 
             if (!systemUser) {
                 return null;
             }
-
+            console.log(systemUser);
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
-                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
+
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {

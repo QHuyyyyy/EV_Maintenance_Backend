@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', validate, systemUserController.getAllSystemUsers.bind(systemUserController));
 router.get('/user/:userId', validate, systemUserController.getSystemUserByUserId.bind(systemUserController));
 router.get('/:id', validate, systemUserController.getSystemUserById.bind(systemUserController));
-router.put('/:id', validate, systemUserController.updateSystemUser.bind(systemUserController));
+router.patch('/:id', validate, systemUserController.updateSystemUser.bind(systemUserController));
 router.delete('/:id', validate, systemUserController.deleteSystemUser.bind(systemUserController));
 
 export default router;

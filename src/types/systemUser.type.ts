@@ -1,6 +1,10 @@
 export interface ISystemUser {
     _id?: string;
-    userId: string;
+    userId: string | {
+        email?: string;
+        phone?: string;
+        role?: string;
+    };
     name?: string;
     dateOfBirth?: Date;
     certification?: string;

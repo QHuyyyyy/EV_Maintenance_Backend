@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const vehicleSchema = new mongoose.Schema({
-    vehicleName: { type: String, required: true },
+    vehicleName: { type: String },
     model: { type: String },
     year: { type: Number }, // Manufacturing year
     VIN: { type: String, unique: true },

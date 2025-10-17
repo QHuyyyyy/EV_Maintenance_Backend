@@ -40,8 +40,8 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
             } as ICustomer;
+
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get customer: ${error.message}`);
@@ -56,7 +56,7 @@ export class CustomerService {
     async getCustomerByUserId(userId: string): Promise<ICustomer | null> {
         try {
             const customer = await Customer.findOne({ userId })
-                .populate('userId', 'email role')
+                .populate('userId', 'phone email role')
                 .lean();
 
             if (!customer) {
@@ -66,7 +66,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -115,7 +115,7 @@ export class CustomerService {
             const customers = customersRaw.map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             })) as ICustomer[];
 
             return {
@@ -151,7 +151,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -173,7 +173,7 @@ export class CustomerService {
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -202,7 +202,7 @@ export class CustomerService {
             return customersRaw.map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: (customer.userId as any)?._id?.toString() || (customer.userId as any)?.toString() || customer.userId
+                userId: customer.userId // Giữ nguyên object populate
             })) as ICustomer[];
         } catch (error) {
             if (error instanceof Error) {

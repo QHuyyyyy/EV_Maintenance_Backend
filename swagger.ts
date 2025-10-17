@@ -104,7 +104,6 @@ const doc = {
             userId: '60f1b2b3c4e5f6g7h8i9j0k2',
             customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
-            phone: '+1234567890',
             address: '123 Main St, City, State 12345',
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
@@ -119,13 +118,11 @@ const doc = {
         UpdateCustomer: {
             customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
-            phone: '+1234567890',
             address: '123 Main St, City, State'
         },
         UpdateSystemUser: {
             name: 'John Doe',
             dateOfBirth: '1990-01-15',
-            phone: '+1234567890',
             certification: 'string'
         },
         AssignVehicle: {

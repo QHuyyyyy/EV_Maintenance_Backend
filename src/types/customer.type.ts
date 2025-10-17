@@ -1,6 +1,10 @@
 export interface ICustomer {
     _id?: string;
-    userId: string;
+    userId?: {
+        email?: string;
+        phone?: string;
+        role?: string;
+    };
     customerName?: string;
     dateOfBirth?: Date;
     address?: string;
