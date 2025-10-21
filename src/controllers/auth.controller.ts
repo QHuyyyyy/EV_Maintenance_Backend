@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP } from "../services/auth.service";
+import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken } from "../services/auth.service";
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
 import { CustomerService } from "../services/customer.service";
 import { SystemUserService } from "../services/systemUser.service";
@@ -410,6 +410,162 @@ export async function getProfileController(req: Request, res: Response) {
                 message: 'Internal server error'
             });
         }
+    }
+}
+
+/**
+ * Register Firebase device token for push notifications
+ * POST /auth/deviceToken
+ */
+export async function registerDeviceTokenController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Register Firebase device token for push notifications'
+    /* #swagger.security = [{
+               "bearerAuth": []
+       }] */
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        token: { type: 'string', description: 'Firebase device token' }
+                    },
+                    required: ['token']
+                }
+            }
+        }
+    } */
+    /* #swagger.responses[200] = {
+        description: 'Device token registered successfully',
+        schema: {
+            success: true,
+            message: 'Device token registered successfully',
+            data: {
+                customerId: 'string',
+                tokenCount: 'number'
+            }
+        }
+    } */
+    /* #swagger.responses[400] = {
+        description: 'Device token is required',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    /* #swagger.responses[404] = {
+        description: 'Customer not found',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    try {
+        const { token } = req.body;
+        const userId = (req as any).user._id;
+
+        const data = await registerDeviceToken(userId, token);
+
+        res.status(200).json({
+            success: true,
+            message: 'Device token registered successfully',
+            data
+        });
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.message === 'Device token is required') {
+                return res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            if (error.message === 'Customer not found') {
+                return res.status(404).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+        }
+        console.error('Error registering device token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to register device token',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+
+/**
+ * Unregister Firebase device token
+ * DELETE /auth/deviceToken
+ */
+export async function unregisterDeviceTokenController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Unregister Firebase device token'
+    /* #swagger.security = [{
+               "bearerAuth": []
+       }] */
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        token: { type: 'string', description: 'Firebase device token' }
+                    },
+                    required: ['token']
+                }
+            }
+        }
+    } */
+    /* #swagger.responses[200] = {
+        description: 'Device token unregistered successfully',
+        schema: {
+            success: true,
+            message: 'Device token unregistered successfully',
+            data: {
+                customerId: 'string',
+                tokenCount: 'number'
+            }
+        }
+    } */
+    /* #swagger.responses[400] = {
+        description: 'Device token is required',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    /* #swagger.responses[404] = {
+        description: 'Customer not found',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    try {
+        const { token } = req.body;
+        const userId = (req as any).user._id;
+
+        const data = await unregisterDeviceToken(userId, token as string);
+
+        res.status(200).json({
+            success: true,
+            message: 'Device token unregistered successfully',
+            data
+        });
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.message === 'Device token is required') {
+                return res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            if (error.message === 'Customer not found') {
+                return res.status(404).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+        }
+        console.error('Error unregistering device token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to unregister device token',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 }
 

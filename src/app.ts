@@ -17,6 +17,8 @@ import centerRoutes from "./routes/center.routes";
 import appointmentRoutes from "./routes/appointment.routes";
 import serviceRecordRoutes from "./routes/serviceRecord.routes";
 import serviceChecklistRoutes from "./routes/serviceChecklist.routes";
+import schedulerRoutes from "./routes/scheduler.routes";
+import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
 
 
 let swaggerFile: any;
@@ -28,6 +30,9 @@ try {
 
 // DB initialize
 connect();
+
+// Start maintenance scheduler
+maintenanceScheduler.startScheduler();
 
 const app = express();
 
@@ -66,6 +71,7 @@ app.use('/api/centers', centerRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/service-records', serviceRecordRoutes);
 app.use('/api/service-checklists', serviceChecklistRoutes);
+app.use('/api/scheduler', schedulerRoutes);
 
 // Root route redirect to API docs
 

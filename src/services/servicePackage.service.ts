@@ -26,7 +26,7 @@ export class ServicePackageService {
         try {
             // Validate dữ liệu
             if (!packageData.name || !packageData.description || !packageData.price || !packageData.duration || !packageData.km_interval) {
-                throw new Error('Missing required fields');
+                throw new Error('Missing required fields: name, description, price, duration, km_interval');
             }
 
             if (packageData.price <= 0) {
@@ -34,11 +34,16 @@ export class ServicePackageService {
             }
 
             if (packageData.duration <= 0) {
-                throw new Error('Duration must be greater than 0 days');
+                throw new Error('Duration (subscription active period) must be greater than 0 days');
             }
 
             if (packageData.km_interval <= 0) {
                 throw new Error('KM interval must be greater than 0');
+            }
+
+            // service_interval_days: maintenance frequency (default 365 days if not provided)
+            if (packageData.service_interval_days !== undefined && packageData.service_interval_days <= 0) {
+                throw new Error('Service interval days must be greater than 0');
             }
 
             const package_ = new ServicePackage(packageData);
@@ -58,11 +63,15 @@ export class ServicePackageService {
             }
 
             if (updateData.duration !== undefined && updateData.duration <= 0) {
-                throw new Error('Duration must be greater than 0 days');
+                throw new Error('Duration (subscription active period) must be greater than 0 days');
             }
 
             if (updateData.km_interval !== undefined && updateData.km_interval <= 0) {
                 throw new Error('KM interval must be greater than 0');
+            }
+
+            if (updateData.service_interval_days !== undefined && updateData.service_interval_days <= 0) {
+                throw new Error('Service interval days must be greater than 0');
             }
 
             const updatedPackage = await ServicePackage.findByIdAndUpdate(

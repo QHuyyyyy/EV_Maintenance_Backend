@@ -97,13 +97,14 @@ export class ServicePackageController {
                 "application/json": {
                     schema: {
                         type: "object",
-                        required: ["name", "price", "duration"],
+                        required: ["name", "price", "duration", "km_interval"],
                         properties: {
                             name: { type: "string", example: "Basic Maintenance" },
                             description: { type: "string", example: "Basic maintenance package for electric vehicles" },
                             price: { type: "number", example: 100 },
-                            duration: { type: "number", example: 30 },
-                            km_interval: { type: "number", example: 10000 }
+                            duration: { type: "number", example: 30, description: "Subscription active period (days)" },
+                            km_interval: { type: "number", example: 10000, description: "Mileage interval for maintenance" },
+                            service_interval_days: { type: "number", example: 365, description: "Maintenance frequency in days (default: 365)" }
                         }
                     }
                 }
@@ -120,7 +121,8 @@ export class ServicePackageController {
                     description: "Basic maintenance package for electric vehicles",
                     price: 100,
                     duration: 30,
-                    km_interval: 10000
+                    km_interval: 10000,
+                    service_interval_days: 365
                 }
             }
         } */
@@ -157,8 +159,9 @@ export class ServicePackageController {
                             name: { type: "string", example: "Basic Maintenance" },
                             description: { type: "string", example: "Basic maintenance package for electric vehicles" },
                             price: { type: "number", example: 100 },
-                            duration: { type: "number", example: 30 },
-                            km_interval: { type: "number", example: 10000 }
+                            duration: { type: "number", example: 30, description: "Subscription active period (days)" },
+                            km_interval: { type: "number", example: 10000, description: "Mileage interval for maintenance" },
+                            service_interval_days: { type: "number", example: 365, description: "Maintenance frequency in days" }
                         }
                     }
                 }

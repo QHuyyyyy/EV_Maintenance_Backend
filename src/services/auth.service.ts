@@ -334,3 +334,72 @@ export async function assignVehicleToCustomer(vehicleId: string, phone: string) 
         throw new Error("Failed to assign vehicle to customer");
     }
 }
+
+/**
+ * Register Firebase device token for push notifications
+ */
+export async function registerDeviceToken(userId: string, token: string) {
+    try {
+        if (!token) {
+            throw new Error('Device token is required');
+        }
+
+        // Find customer by user
+        const { default: Customer } = await import("../models/customer.model");
+        const customer = await Customer.findOne({ userId });
+
+        if (!customer) {
+            throw new Error('Customer not found');
+        }
+
+        // Add token if not already exists
+        if (!customer.deviceTokens.includes(token)) {
+            customer.deviceTokens.push(token);
+            await customer.save();
+            console.log(`✅ Device token registered for customer: ${customer._id}`);
+        }
+
+        return {
+            customerId: customer._id,
+            tokenCount: customer.deviceTokens.length
+        };
+    } catch (error) {
+        console.error('Error registering device token:', error);
+        throw error;
+    }
+}
+
+/**
+ * Unregister Firebase device token
+ */
+export async function unregisterDeviceToken(userId: string, token: string) {
+    try {
+        if (!token) {
+            throw new Error('Device token is required');
+        }
+
+        const { default: Customer } = await import("../models/customer.model");
+        const customer = await Customer.findOne({ userId });
+
+        if (!customer) {
+            throw new Error('Customer not found');
+        }
+
+        // Remove token
+        const index = customer.deviceTokens.indexOf(token);
+        if (index > -1) {
+            customer.deviceTokens.splice(index, 1);
+            await customer.save();
+            console.log(`✅ Device token unregistered for customer: ${customer._id}`);
+        }
+
+        return {
+            customerId: customer._id,
+            tokenCount: customer.deviceTokens.length
+        };
+    } catch (error) {
+        console.error('Error unregistering device token:', error);
+        throw error;
+    }
+}
+
