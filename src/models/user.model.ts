@@ -28,9 +28,10 @@ const userSchema = new Schema({
         validate: {
             validator: function (phone: string) {
                 if (!phone) return true; // Allow empty phone for non-customers
-                return /^[0-9]{10,11}$/.test(phone);
+                // Accept both formats: +84123456789 or 0123456789 or 84123456789
+                return /^\+?[0-9]{10,12}$/.test(phone);
             },
-            message: 'Please enter a valid phone number (10-11 digits)'
+            message: 'Please enter a valid phone number (10-12 digits, optionally with + prefix)'
         }
     },
     password: {

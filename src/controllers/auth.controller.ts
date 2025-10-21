@@ -227,22 +227,6 @@ export async function logoutController(req: Request, res: Response) {
     /* #swagger.security = [{
         "BearerAuth": []
     }] */
-    /* #swagger.requestBody = {
-        required: false,
-        content: {
-            "application/json": {
-                schema: {
-                    type: "object",
-                    properties: {
-                        refreshToken: {
-                            type: "string",
-                            description: "Refresh token to invalidate (optional)"
-                        }
-                    }
-                }
-            }
-        }
-    } */
     /* #swagger.responses[200] = {
         description: 'Logout successful',
         schema: {
@@ -264,9 +248,7 @@ export async function logoutController(req: Request, res: Response) {
                 message: "No token provided"
             });
         }
-
-        const { refreshToken } = req.body;
-        const success = await logout(token, refreshToken);
+        const success = await logout(token);
 
         if (success) {
             return res.status(200).json({
@@ -286,6 +268,96 @@ export async function logoutController(req: Request, res: Response) {
         });
     }
 }
+
+export async function firebaseOtpLoginController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Login with Firebase OTP token'
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        idToken: {
+                            type: "string",
+                            description: "Firebase ID token from OTP verification"
+                        },
+                        phoneNumber: {
+                            type: "string",
+                            description: "Phone number used for OTP"
+                        }
+                    },
+                    required: ["idToken", "phoneNumber"]
+                }
+            }
+        }
+    } */
+    /* #swagger.responses[200] = {
+        description: 'OTP login successful',
+        schema: {
+            success: true,
+            message: 'Login successfully',
+            data: {
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                expiresIn: 3600,
+                role: "CUSTOMER"
+            }
+        }
+    } */
+    /* #swagger.responses[400] = {
+        description: 'Invalid request data',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    /* #swagger.responses[401] = {
+        description: 'Invalid Firebase token or authentication failed',
+        schema: { $ref: '#/definitions/ErrorResponse' }
+    } */
+    try {
+        const { idToken, phoneNumber } = req.body;
+
+        // Input validation
+        if (!idToken || !phoneNumber) {
+            return res.status(400).json({
+                success: false,
+                message: "Firebase ID token and phone number are required"
+            });
+        }
+
+        // Validate phone format (should be in +84xxxxxxxxx, 0xxxxxxxxx, or 84xxxxxxxxx format)
+        const phoneRegex = /^(\+84|0|84)[1-9][0-9]{8}$/;
+        if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid phone number format. Expected format: +84xxxxxxxxx, 0xxxxxxxxx, or 84xxxxxxxxx"
+            });
+        }
+
+        const tokenResponse = await loginWithFirebaseOTP(idToken, phoneNumber);
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successfully",
+            data: tokenResponse,
+        });
+    } catch (error: any) {
+        console.error("Firebase OTP Login error:", error);
+
+        if (error.message === "Phone number mismatch") {
+            return res.status(400).json({
+                success: false,
+                message: "Phone number does not match Firebase token"
+            });
+        }
+
+        return res.status(401).json({
+            success: false,
+            message: error.message || "Invalid OTP or authentication failed"
+        });
+    }
+}
+
 export async function getProfileController(req: Request, res: Response) {
     // #swagger.tags = ['Auth']
     // #swagger.summary = 'Get Profile'
@@ -341,62 +413,6 @@ export async function getProfileController(req: Request, res: Response) {
     }
 }
 
-export async function loginWithOTPController(req: Request, res: Response) {
-    // #swagger.tags = ['Auth']
-    // #swagger.summary = 'Login customer with Firebase OTP'
-    /* #swagger.requestBody = {
-        required: true,
-        content: {
-            "application/json": {
-                schema: {
-                    type: "object",
-                    properties: {
-                        idToken: {
-                            type: "string",
-                            description: "Firebase ID token from OTP verification"
-                        },
-                        phone: {
-                            type: "string",
-                            description: "Phone number used for OTP"
-                        }
-                    },
-                }
-            }
-        }
-    } */
-    try {
-        const { idToken, phone } = req.body;
 
-        if (!idToken || !phone) {
-            return res.status(400).json({
-                success: false,
-                message: "Firebase ID token and phone number are required"
-            });
-        }
-
-        // Validate phone format
-        const phoneRegex = /^[0-9]{10,11}$/;
-        if (!phoneRegex.test(phone)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid phone number format (must be 10-11 digits)"
-            });
-        }
-
-        const tokenResponse = await loginWithFirebaseOTP(idToken, phone);
-
-        return res.status(200).json({
-            success: true,
-            message: "Login successfully",
-            data: tokenResponse,
-        });
-    } catch (error: any) {
-        console.error("OTP Login error:", error);
-        return res.status(401).json({
-            success: false,
-            message: error.message || "Invalid OTP or authentication failed"
-        });
-    }
-}
 
 
