@@ -157,17 +157,121 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Login customer with Firebase OTP",
+        "summary": "Login with Firebase OTP token",
         "description": "",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OTP login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Login successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "accessToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        "refreshToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        "expiresIn": {
+                          "type": "number",
+                          "example": 3600
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "CUSTOMER"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Login successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "accessToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        "refreshToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        "expiresIn": {
+                          "type": "number",
+                          "example": 3600
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "CUSTOMER"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Invalid Firebase token or authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -181,11 +285,15 @@
                     "type": "string",
                     "description": "Firebase ID token from OTP verification"
                   },
-                  "phone": {
+                  "phoneNumber": {
                     "type": "string",
                     "description": "Phone number used for OTP"
                   }
-                }
+                },
+                "required": [
+                  "idToken",
+                  "phoneNumber"
+                ]
               }
             }
           }
@@ -485,23 +593,7 @@
           {
             "BearerAuth": []
           }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "refreshToken": {
-                    "type": "string",
-                    "description": "Refresh token to invalidate (optional)"
-                  }
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/api/auth/profile": {
@@ -583,6 +675,280 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/auth/deviceToken": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register Firebase device token for push notifications",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Device token registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Device token registered successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "customerId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "tokenCount": {
+                          "type": "string",
+                          "example": "number"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Device token registered successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "customerId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "tokenCount": {
+                          "type": "string",
+                          "example": "number"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Device token is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Customer not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Firebase device token"
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Unregister Firebase device token",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Device token unregistered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Device token unregistered successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "customerId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "tokenCount": {
+                          "type": "string",
+                          "example": "number"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Device token unregistered successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "customerId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "tokenCount": {
+                          "type": "string",
+                          "example": "number"
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Device token is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Customer not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Firebase device token"
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/api/users": {
@@ -2244,6 +2610,10 @@
                           "type": "string",
                           "example": "string"
                         },
+                        "last_alert_mileage": {
+                          "type": "string",
+                          "example": "number"
+                        },
                         "image": {
                           "type": "string",
                           "example": "string"
@@ -2318,6 +2688,10 @@
                         "last_service_date": {
                           "type": "string",
                           "example": "string"
+                        },
+                        "last_alert_mileage": {
+                          "type": "string",
+                          "example": "number"
                         },
                         "image": {
                           "type": "string",
@@ -2395,7 +2769,8 @@
                   },
                   "last_service_date": {
                     "type": "string",
-                    "example": "2022-01-01"
+                    "format": "date",
+                    "example": "2023-10-01"
                   },
                   "VIN": {
                     "type": "string",
@@ -2622,6 +2997,9 @@
                   },
                   "last_service_date": {
                     "type": "string"
+                  },
+                  "last_alert_mileage": {
+                    "type": "number"
                   },
                   "VIN": {
                     "type": "string"
@@ -3025,6 +3403,10 @@
                         "km_interval": {
                           "type": "number",
                           "example": 10000
+                        },
+                        "service_interval_days": {
+                          "type": "number",
+                          "example": 365
                         }
                       }
                     }
@@ -3072,6 +3454,10 @@
                         "km_interval": {
                           "type": "number",
                           "example": 10000
+                        },
+                        "service_interval_days": {
+                          "type": "number",
+                          "example": 365
                         }
                       }
                     }
@@ -3104,7 +3490,8 @@
                 "required": [
                   "name",
                   "price",
-                  "duration"
+                  "duration",
+                  "km_interval"
                 ],
                 "properties": {
                   "name": {
@@ -3121,11 +3508,18 @@
                   },
                   "duration": {
                     "type": "number",
-                    "example": 30
+                    "example": 30,
+                    "description": "Subscription active period (days)"
                   },
                   "km_interval": {
                     "type": "number",
-                    "example": 10000
+                    "example": 10000,
+                    "description": "Mileage interval for maintenance"
+                  },
+                  "service_interval_days": {
+                    "type": "number",
+                    "example": 365,
+                    "description": "Maintenance frequency in days (default: 365)"
                   }
                 }
               }
@@ -3347,11 +3741,18 @@
                   },
                   "duration": {
                     "type": "number",
-                    "example": 30
+                    "example": 30,
+                    "description": "Subscription active period (days)"
                   },
                   "km_interval": {
                     "type": "number",
-                    "example": 10000
+                    "example": 10000,
+                    "description": "Mileage interval for maintenance"
+                  },
+                  "service_interval_days": {
+                    "type": "number",
+                    "example": 365,
+                    "description": "Maintenance frequency in days"
                   }
                 }
               }
@@ -5706,6 +6107,127 @@
           },
           "404": {
             "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/scheduler/trigger": {
+      "post": {
+        "tags": [
+          "Scheduler"
+        ],
+        "summary": "Manually trigger maintenance check",
+        "description": "Trigger the maintenance scheduler to check for upcoming maintenance tasks (for testing/manual execution)",
+        "responses": {
+          "200": {
+            "description": "Maintenance check triggered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Maintenance check triggered successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Maintenance check triggered successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to trigger maintenance check"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to trigger maintenance check"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [

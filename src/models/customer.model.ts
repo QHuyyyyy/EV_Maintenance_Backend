@@ -16,6 +16,11 @@ const customerSchema = new Schema({
     address: {
         type: String,
         default: ''
+    },
+    deviceTokens: {
+        type: [String],
+        default: [],
+        description: 'Array of Firebase Cloud Messaging device tokens for push notifications'
     }
 }, {
     timestamps: true
