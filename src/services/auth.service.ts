@@ -8,6 +8,29 @@ import { SystemUserService } from "./systemUser.service";
 import { auth } from "../firebase/firebase.config";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
+
+/**
+ * Normalize phone number to international format (+84xxx)
+ */
+function normalizePhoneNumber(phone: string): string {
+    if (!phone) return phone;
+
+    // Remove all non-digit characters
+    const cleaned = phone.replace(/\D/g, '');
+
+    // If starts with 0, replace with +84
+    if (cleaned.startsWith('0')) {
+        return '+84' + cleaned.substring(1);
+    }
+
+    // If starts with 84, add +
+    if (cleaned.startsWith('84')) {
+        return '+' + cleaned;
+    }
+
+    // Default: add +84
+    return '+84' + cleaned;
+}
 const REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY || process.env.JWT_SECRET_KEY;
 
 const customerService = new CustomerService();
@@ -137,7 +160,7 @@ export async function refreshAccessToken(refreshTokenDto: RefreshTokenDto): Prom
     }
 }
 
-export async function logout(token: string, refreshToken?: string): Promise<boolean> {
+export async function logout(token: string): Promise<boolean> {
     try {
         // Validate token to get user ID
         const payload = validateToken(token);
@@ -163,28 +186,52 @@ async function comparePassword(password: string, hashedPassword: string) {
 // Firebase OTP Login for customers
 export async function loginWithFirebaseOTP(idToken: string, phone: string) {
     try {
+        console.log('[OTP Login] Starting Firebase OTP authentication...');
+        console.log('[OTP Login] Received phone:', phone);
+
         // Verify Firebase ID token
         const decodedToken = await auth.verifyIdToken(idToken);
         const firebasePhone = decodedToken.phone_number;
 
-        // Ensure phone numbers match
-        if (firebasePhone !== phone) {
+        console.log('[OTP Login] Firebase phone from token:', firebasePhone);
+
+        // Check if Firebase token contains phone number
+        if (!firebasePhone) {
+            throw new Error("Firebase token does not contain phone number");
+        }
+
+        // Normalize both phone numbers to ensure they match
+        const normalizedPhone = normalizePhoneNumber(phone);
+        const normalizedFirebasePhone = normalizePhoneNumber(firebasePhone);
+
+        console.log('[OTP Login] Normalized user phone:', normalizedPhone);
+        console.log('[OTP Login] Normalized Firebase phone:', normalizedFirebasePhone);
+
+        // Ensure phone numbers match (after normalization)
+        if (normalizedFirebasePhone !== normalizedPhone) {
+            console.error(`[OTP Login] Phone mismatch - Firebase: ${normalizedFirebasePhone}, User: ${normalizedPhone}`);
             throw new Error("Phone number mismatch");
         }
 
+        console.log('[OTP Login] Phone numbers matched successfully');
+
         // Check if user exists
-        let user = await getUserByPhone(phone);
+        let user = await getUserByPhone(normalizedPhone);
 
         if (!user) {
+            console.log('[OTP Login] User not found, creating new customer...');
             // Create new user account for customer
             user = await createUser({
-                phone: phone,
+                phone: normalizedPhone,
                 role: "CUSTOMER",
                 isDeleted: false
             });
 
             // Create customer profile
             await customerService.createEmptyCustomer(user._id.toString());
+            console.log('[OTP Login] New customer created:', user._id);
+        } else {
+            console.log('[OTP Login] Existing user found:', user._id);
         }
 
         if (user.isDeleted) {
@@ -207,15 +254,43 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
         // Save refresh token to user
         await User.findByIdAndUpdate(user._id, { refreshToken });
 
+        console.log('[OTP Login] Authentication successful for user:', user._id);
+
         return {
             accessToken,
             refreshToken,
             expiresIn: 3600,
             role: user.role
         };
-    } catch (error) {
-        console.error("Firebase OTP login error:", error);
-        throw new Error("Invalid OTP or authentication failed");
+    } catch (error: any) {
+        console.error("[OTP Login] Authentication error:", error.message);
+        console.error("[OTP Login] Full error:", error);
+
+        // Re-throw specific errors so controller can handle them
+        if (error.message === "Phone number mismatch") {
+            console.error("[OTP Login] Phone number mismatch detected");
+            throw error;
+        }
+
+        if (error.message === "The account does not exist" ||
+            error.message === "This login method is only for customers") {
+            console.error("[OTP Login] Account validation failed:", error.message);
+            throw error;
+        }
+
+        if (error.message === "Firebase token does not contain phone number") {
+            console.error("[OTP Login] Firebase token missing phone number");
+            throw error;
+        }
+
+        // For Firebase verification errors
+        if (error.code === 'auth/invalid-id-token' || error.code === 'auth/id-token-expired') {
+            console.error("[OTP Login] Invalid or expired Firebase ID token");
+            throw new Error("Invalid or expired Firebase ID token");
+        }
+
+        console.error("[OTP Login] Unhandled error type");
+        throw new Error(error.message || "Invalid OTP or authentication failed");
     }
 }
 
