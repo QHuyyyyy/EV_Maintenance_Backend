@@ -100,6 +100,12 @@ export class VehicleService {
                 // Đảm bảo customerId là null khi không có chủ sở hữu
                 vehicleData.customerId = null;
             }
+
+            // Xử lý Date fields: nếu empty string thì convert thành null
+            if (vehicleData.last_service_date === '' || vehicleData.last_service_date === null) {
+                vehicleData.last_service_date = null;
+            }
+
             if (vehicleData.VIN) {
                 const existingVehicle = await Vehicle.findOne({ VIN: vehicleData.VIN });
                 if (existingVehicle) {
@@ -123,9 +129,6 @@ export class VehicleService {
             // Validate mileage
             if (vehicleData.mileage && vehicleData.mileage < 0) {
                 throw new Error('Mileage cannot be negative');
-            }
-            if (vehicleData.last_service_date && isNaN(new Date(vehicleData.last_service_date).getTime())) {
-                throw new Error('Invalid last service date');
             }
             const vehicle = new Vehicle(vehicleData);
             const savedVehicle = await vehicle.save();
@@ -178,6 +181,11 @@ export class VehicleService {
             // Validate mileage
             if (filteredUpdateData.mileage && filteredUpdateData.mileage < 0) {
                 throw new Error('Mileage cannot be negative');
+            }
+
+            // Validate last_alert_mileage
+            if (filteredUpdateData.last_alert_mileage && filteredUpdateData.last_alert_mileage < 0) {
+                throw new Error('Last alert mileage cannot be negative');
             }
 
             // Nếu không có field nào để update, trả về vehicle hiện tại
