@@ -19,6 +19,7 @@ import { firebaseNotificationService } from '../firebase/fcm.service';
 
 interface AlertPayload {
     vehicleId: string;
+    alertId?: string;  // Add alert _id from database
     title: string;
     content: string;
     type: 'MAINTENANCE' | 'SUBSCRIPTION_EXPIRY' | 'SERVICE_DUE' | 'SYSTEM' | 'WARNING';
@@ -347,7 +348,7 @@ export class MaintenanceSchedulerService {
 
             // Tạo alert mới
             const newAlert = new Alert(alertData);
-            await newAlert.save();
+            const savedAlert = await newAlert.save();
 
             console.log(`✅ Alert created for vehicle ${alertData.vehicleId}: ${alertData.title}`);
 
@@ -361,7 +362,8 @@ export class MaintenanceSchedulerService {
                 }
             }
 
-            // 🔔 Gửi notification qua Firebase
+            // 🔔 Gửi notification qua Firebase (ADD alertId từ saved alert)
+            alertData.alertId = savedAlert._id.toString();
             await this.sendNotification(alertData);
         } catch (error) {
             console.error(`Error creating alert:`, error);
@@ -401,8 +403,10 @@ export class MaintenanceSchedulerService {
                     body: alertData.content.substring(0, 200), // Giới hạn 200 ký tự cho body
                 },
                 data: {
-                    vehicleId: alertData.vehicleId,
-                    type: alertData.type,
+                    type: 'alert',                    // ← FIX: Send 'alert' type (mobile expects this)
+                    id: alertData.alertId || alertData.vehicleId,  // ← FIX: Use alertId if available, fallback to vehicleId
+                    vehicleId: alertData.vehicleId,   // ← Keep for context but id is primary
+                    alertType: alertData.type,        // ← ADD: Keep specific type (SERVICE_DUE, SUBSCRIPTION_EXPIRY)
                     priority: alertData.priority,
                     timestamp: new Date().toISOString(),
                     // Dữ liệu chi tiết để app xử lý
