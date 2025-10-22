@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { AlertService } from "../services/alert.service";
 import { CreateAlertRequest, UpdateAlertRequest, AlertQueryParams } from "../types/alert.type";
+import { Vehicle } from "../models/vehicle.model";
+import Customer from "../models/customer.model";
+import { firebaseNotificationService } from "../firebase/fcm.service";
 
 const alertService = new AlertService();
 
@@ -153,6 +156,37 @@ export class AlertController {
             }
 
             const newAlert = await alertService.createAlert(alertData);
+            try {
+                if (newAlert && newAlert._id) {
+                    const vehicle = await Vehicle.findById(alertData.vehicleId);
+                    if (vehicle && vehicle.customerId) {
+                        const customer = await Customer.findById(vehicle.customerId);
+                        if (customer && customer.deviceTokens && customer.deviceTokens.length > 0) {
+                            const notificationPayload = {
+                                tokens: customer.deviceTokens,
+                                notification: {
+                                    title: alertData.title,
+                                    body: alertData.content.substring(0, 200),
+                                },
+                                data: {
+                                    type: 'alert',
+                                    id: newAlert._id.toString(),  // Use alert._id
+                                    vehicleId: alertData.vehicleId,
+                                    alertType: alertData.type || 'SYSTEM',
+                                    priority: alertData.priority || 'MEDIUM',
+                                    timestamp: new Date().toISOString(),
+                                    fullContent: alertData.content,
+                                }
+                            };
+                            await firebaseNotificationService.sendMulticast(notificationPayload);
+                            console.log(`✅ Notification sent for alert ${newAlert._id}`);
+                        }
+                    }
+                }
+            } catch (notificationError) {
+                console.error('⚠️ Failed to send notification:', notificationError);
+                // Don't fail the request if notification fails
+            }
 
             res.status(201).json({
                 success: true,
