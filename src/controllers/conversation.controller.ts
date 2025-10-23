@@ -4,6 +4,9 @@ import { MessageService } from '../services/message.service';
 import { MessageSenderRole } from '../models/message.model';
 import Conversation, { ConversationStatus } from '../models/conversation.model';
 import chatSocketService from '../socket/chat.socket';
+import Customer from '../models/customer.model';
+import SystemUser from '../models/systemUser.model';
+import { firebaseNotificationService } from '../firebase/fcm.service';
 
 const conversationService = new ConversationService();
 const messageService = new MessageService();
@@ -252,6 +255,50 @@ export class ConversationController {
                 message: 'Message sent successfully',
                 data: message,
             });
+
+            // Emit socket event to conversation room
+            chatSocketService.emitNewMessage(conversationId, {
+                ...message.toObject?.() || message,
+                timestamp: new Date(),
+            });
+
+            // 🔴 Check if customer is online/offline and send push notification if offline
+            setTimeout(async () => {
+                try {
+                    const customerId = conversation.customerId.toString();
+                    const isCustomerOnline = chatSocketService.isUserConnected(customerId);
+
+                    if (!isCustomerOnline) {
+                        // Customer is offline - send push notification
+                        const customer = await Customer.findById(customerId);
+                        const staff = await SystemUser.findById(staffId, 'name');
+
+                        if (customer?.deviceTokens && customer.deviceTokens.length > 0) {
+                            console.log(`📤 Customer ${customerId} is offline. Sending push to ${customer.deviceTokens.length} devices`);
+
+                            await firebaseNotificationService.sendMulticast({
+                                tokens: customer.deviceTokens,
+                                notification: {
+                                    title: `New message from ${staff?.name || 'Staff'}`,
+                                    body: content.length > 100 ? content.substring(0, 100) + '...' : content,
+                                },
+                                data: {
+                                    conversationId,
+                                    type: 'message',
+                                    action: 'open_chat',
+                                }
+                            });
+                        } else {
+                            console.log(`⚠️ Customer ${customerId} offline but no device tokens found`);
+                        }
+                    } else {
+                        console.log(`✅ Customer ${customerId} is online - push not needed`);
+                    }
+                } catch (err) {
+                    // Non-blocking - don't fail the response if push notification fails
+                    console.error('❌ Push notification error (non-blocking):', err);
+                }
+            }, 0);
         } catch (error: any) {
             res.status(500).json({
                 success: false,
@@ -501,28 +548,39 @@ export class ConversationController {
     }
 
     /**
-     * Get conversation with full chat history
-     * GET /api/chat/:conversationId
+     * Get conversation with paginated chat history (Lazy Loading)
+     * GET /api/chat/:conversationId?page=1&limit=20
      */
     static async getConversationWithHistory(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
-        // #swagger.summary = 'Get conversation with chat history'
-        // #swagger.description = 'Get full conversation details and all messages'
+        // #swagger.summary = 'Get conversation with paginated chat history'
+        // #swagger.description = 'Get conversation details with paginated messages (newest first). Use page parameter to load older messages'
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
+        // #swagger.parameters['page'] = { in: 'query', required: false, type: 'integer', default: 1, description: 'Page number' }
+        // #swagger.parameters['limit'] = { in: 'query', required: false, type: 'integer', default: 20, description: 'Messages per page' }
         /* #swagger.responses[200] = {
-          description: 'Conversation details with history',
+          description: 'Conversation details with paginated history',
           schema: {
             success: true,
             data: {
               conversation: {},
-              messages: []
+              messages: [],
+              pagination: {
+                currentPage: 1,
+                limit: 20,
+                totalMessages: 100,
+                totalPages: 5,
+                hasMoreMessages: true
+              }
             }
           }
         } */
         try {
             const { conversationId } = req.params;
+            const page = Math.max(1, parseInt(req.query.page as string) || 1);
+            const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
 
-            const result = await conversationService.getConversationWithHistory(conversationId);
+            const result = await conversationService.getConversationWithHistory(conversationId, page, limit);
 
             res.status(200).json({
                 success: true,
@@ -532,6 +590,47 @@ export class ConversationController {
             res.status(404).json({
                 success: false,
                 message: error.message || 'Conversation not found',
+            });
+        }
+    }
+
+    /**
+     * Get older messages (when user scrolls up)
+     * GET /api/chat/:conversationId/older-messages?lastMessageId=xxx&limit=20
+     */
+    static async getOlderMessages(req: Request, res: Response): Promise<void> {
+        // #swagger.tags = ['Chat']
+        // #swagger.summary = 'Get older messages for infinite scroll'
+        // #swagger.description = 'Get older messages when user scrolls up to load message history'
+        // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
+        // #swagger.parameters['limit'] = { in: 'query', required: false, type: 'integer', default: 20, description: 'Messages to fetch' }
+        /* #swagger.responses[200] = {
+          description: 'Older messages loaded',
+          schema: {
+            success: true,
+            data: {
+              messages: [],
+              hasMoreMessages: true
+            }
+          }
+        } */
+        try {
+            const { conversationId } = req.params;
+            const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+
+            const result = await conversationService.getOlderMessages(
+                conversationId,
+                limit
+            );
+
+            res.status(200).json({
+                success: true,
+                data: result,
+            });
+        } catch (error: any) {
+            res.status(400).json({
+                success: false,
+                message: error.message || 'Error fetching older messages',
             });
         }
     }

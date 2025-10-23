@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
+import { ConversationService } from '../services/conversation.service';
 
 interface SocketUser {
     userId: string;
@@ -19,6 +20,7 @@ class ChatSocketService {
     private connectedUsers: Map<string, SocketUser> = new Map();
     private staffOnlineStatus: Map<string, boolean> = new Map();
     private userToConversation: Map<string, string> = new Map(); // userId -> conversationId
+    private conversationService = new ConversationService();
 
     /**
      * Initialize Socket.io
@@ -203,6 +205,8 @@ class ChatSocketService {
             this.staffOnlineStatus.set(userId, false);
             this.io?.emit('staff:online', { staffId: userId, isOnline: false });
             console.log(`Staff ${userId} is now offline`);
+            // Auto unassign conversations and notify
+            this.conversationService.handleStaffOffline(userId, 'offline');
         }
 
         // Leave all conversation rooms
@@ -432,6 +436,21 @@ class ChatSocketService {
      */
     getIO(): Server | null {
         return this.io;
+    }
+
+    /**
+     * Check if user is currently connected via socket
+     * Used to determine if customer is online/offline
+     * @param userId 
+     * @returns true if user has active socket connection
+     */
+    isUserConnected(userId: string): boolean {
+        for (const [, socketUser] of this.connectedUsers) {
+            if (socketUser.userId === userId) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

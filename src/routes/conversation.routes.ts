@@ -16,7 +16,7 @@ router.post('/:conversationId/staff-message', ConversationController.sendMessage
 // router.post('/:conversationId/transfer', ConversationController.transferChat);
 
 // // Staff going offline
-// router.post('/staff/:staffId/offline', ConversationController.handleStaffOffline);
+// router.post('/staff/:staffId/offline', ConversationController.handleStaffOffline); làm auto chứ ko phải route
 
 // Close conversation
 router.post('/:conversationId/close', ConversationController.closeConversation);
@@ -27,7 +27,10 @@ router.get('/waiting', ConversationController.getWaitingConversations);
 // Get conversations assigned to staff
 router.get('/staff/:staffId', ConversationController.getStaffConversations);
 
-// Get conversation with full history
+// Get older messages (infinite scroll) - Must be before /:conversationId route
+router.get('/:conversationId/older-messages', ConversationController.getOlderMessages);
+
+// Get conversation with paginated history
 router.get('/:conversationId', ConversationController.getConversationWithHistory);
 
 // Mark messages as read

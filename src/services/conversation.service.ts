@@ -306,9 +306,12 @@ export class ConversationService {
     }
 
     /**
-     * Get conversation details with full chat history
+     * Get conversation details with paginated chat history (Lazy Loading)
+     * @param conversationId - Conversation ID
+     * @param page - Page number (default: 1, load newest messages first)
+     * @param limit - Number of messages per page (default: 20)
      */
-    async getConversationWithHistory(conversationId: string) {
+    async getConversationWithHistory(conversationId: string, page: number = 1, limit: number = 20) {
         const convId = new Types.ObjectId(conversationId);
 
         const conversation = await Conversation.findById(convId)
@@ -320,16 +323,60 @@ export class ConversationService {
             throw new Error('Conversation not found');
         }
 
-        // Get all messages
+        // Get total message count
+        const totalMessages = await Message.countDocuments({
+            conversationId: convId,
+        });
+
+        // Calculate skip - load from newest first, then paginate backward
+        // Page 1 = most recent messages
+        const skip = Math.max(0, totalMessages - page * limit);
+
+        // Get paginated messages in ascending order
         const messages = await Message.find({
             conversationId: convId,
         })
             .populate('senderId', 'name')
-            .sort({ createdAt: 1 });
+            .sort({ createdAt: 1 })
+            .skip(skip)
+            .limit(limit);
 
         return {
             conversation,
             messages,
+            pagination: {
+                currentPage: page,
+                limit,
+                totalMessages,
+                totalPages: Math.ceil(totalMessages / limit),
+                hasMoreMessages: skip > 0, // true if there are older messages
+            },
+        };
+    }
+
+    /**
+     * Get older messages (called when user scrolls up)
+     * @param conversationId - Conversation ID
+     * @param lastMessageId - ID of the last message loaded
+     * @param limit - Number of messages to fetch (default: 20)
+     */
+    async getOlderMessages(conversationId: string, limit: number = 20) {
+        const convId = new Types.ObjectId(conversationId);
+
+        // Get older messages (messages before this one)
+        const olderMessages = await Message.find({
+            conversationId: convId,
+        })
+            .populate('senderId', 'name')
+            .sort({ createdAt: -1 })
+            .limit(limit);
+
+        // Reverse to maintain chronological order
+        olderMessages.reverse();
+
+        return {
+            messages: olderMessages,
+            hasMoreMessages: olderMessages.length === limit,
         };
     }
 }
