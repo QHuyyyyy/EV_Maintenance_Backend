@@ -380,3 +380,4 @@ export class ConversationService {
         };
     }
 }
+export default new ConversationService();
