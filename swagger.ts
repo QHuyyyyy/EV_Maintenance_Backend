@@ -109,6 +109,13 @@ const doc = {
             total_count: 23,
             per_page: 10
         },
+        CreateAlert: {
+            title: 'Maintenance Due',
+            content: 'Your vehicle requires maintenance',
+            vehicleId: '507f1f77bcf86cd799439011',
+            type: 'MAINTENANCE',
+            priority: 'HIGH'
+        },
         UsersListResponse: {
             success: true,
             message: 'Users retrieved successfully',

@@ -7,19 +7,9 @@ import Customer from '../models/customer.model';
 import { differenceInDays } from 'date-fns';
 import { firebaseNotificationService } from '../firebase/fcm.service';
 
-/**
- * MaintenanceSchedulerService
- * 
- * Chạy CRON job để:
- * 1. Kiểm tra mileage - nếu >= SERVICE_MILEAGE → tạo alert SERVICE_DUE
- * 2. Kiểm tra time interval - nếu >= SERVICE_INTERVAL → tạo alert SERVICE_DUE
- * 3. Kiểm tra subscription expiry - nếu gần hết → tạo alert SUBSCRIPTION_EXPIRY
- * 4. Reset counter khi last_service_date được cập nhật
- */
-
 interface AlertPayload {
     vehicleId: string;
-    alertId?: string;  // Add alert _id from database
+    alertId?: string;
     title: string;
     content: string;
     type: 'MAINTENANCE' | 'SUBSCRIPTION_EXPIRY' | 'SERVICE_DUE' | 'SYSTEM' | 'WARNING';
@@ -28,18 +18,6 @@ interface AlertPayload {
 
 export class MaintenanceSchedulerService {
     private cronJob: any;
-
-    /**
-     * Start CRON job
-     * Chạy mỗi 6 giờ hoặc có thể cấu hình theo ý muốn
-     * 
-     * Cron format: "0 *\/6 * * *"
-     * - 0: phút thứ 0
-     * - *\/6: mỗi 6 giờ
-     * - *: mỗi ngày
-     * - *: mỗi tháng
-     * - *: mỗi tuần (0-7, 0=Sunday)
-     */
     startScheduler() {
         console.log('🚀 Starting Maintenance Scheduler...');
 
@@ -146,7 +124,6 @@ export class MaintenanceSchedulerService {
                 ? differenceInDays(new Date(), new Date(vehicle.last_service_date))
                 : null;
 
-            // Use service_interval_days instead of duration
             const isServiceDueByTime = daysPassedSinceService
                 ? daysPassedSinceService >= servicePackage.service_interval_days
                 : true; // Nếu chưa có last_service_date, coi như cần service

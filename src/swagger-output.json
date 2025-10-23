@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5000/"
+      "url": "http://localhost:3000/"
     }
   ],
   "tags": [
@@ -3233,6 +3233,11 @@
             "description": "Internal Server Error"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4566,39 +4571,6 @@
         ],
         "summary": "Create a new alert",
         "description": "API to create a new alert for a vehicle",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Alert data",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string",
-                  "example": "Maintenance Due"
-                },
-                "content": {
-                  "type": "string",
-                  "example": "Your vehicle requires maintenance"
-                },
-                "vehicleId": {
-                  "type": "string",
-                  "example": "507f1f77bcf86cd799439011"
-                },
-                "type": {
-                  "type": "string",
-                  "example": "MAINTENANCE"
-                },
-                "priority": {
-                  "type": "string",
-                  "example": "HIGH"
-                }
-              }
-            }
-          }
-        ],
         "responses": {
           "201": {
             "description": "Alert created successfully",
@@ -4709,6 +4681,16 @@
           },
           "400": {
             "description": "Bad Request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAlert"
+              }
+            }
           }
         }
       }
@@ -6390,6 +6372,34 @@
         },
         "xml": {
           "name": "PaginationInfo"
+        }
+      },
+      "CreateAlert": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Maintenance Due"
+          },
+          "content": {
+            "type": "string",
+            "example": "Your vehicle requires maintenance"
+          },
+          "vehicleId": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "type": {
+            "type": "string",
+            "example": "MAINTENANCE"
+          },
+          "priority": {
+            "type": "string",
+            "example": "HIGH"
+          }
+        },
+        "xml": {
+          "name": "CreateAlert"
         }
       },
       "UsersListResponse": {

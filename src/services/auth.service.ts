@@ -297,14 +297,17 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
 // Assign vehicle to customer by phone
 export async function assignVehicleToCustomer(vehicleId: string, phone: string) {
     try {
+        // Normalize phone number to +84 format
+        const normalizedPhone = normalizePhoneNumber(phone);
+
         // Check if user exists with this phone
-        let user = await getUserByPhone(phone);
+        let user = await getUserByPhone(normalizedPhone);
         let customer;
 
         if (!user) {
             // Create new user account
             user = await createUser({
-                phone: phone,
+                phone: normalizedPhone,
                 role: "CUSTOMER",
                 isDeleted: false
             });
