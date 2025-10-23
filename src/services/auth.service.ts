@@ -62,6 +62,11 @@ export async function login(authLoginDto: AuthLoginDto) {
     // Save refresh token to user
     await User.findByIdAndUpdate(user._id, { refreshToken });
 
+    // Set isOnline = true if user is staff (ADMIN, STAFF, TECHNICIAN)
+    if (['ADMIN', 'STAFF', 'TECHNICIAN'].includes(user.role)) {
+        await systemUserService.setOnlineStatus(user._id.toString(), true);
+    }
+
     return {
         accessToken,
         refreshToken,
@@ -165,8 +170,33 @@ export async function logout(token: string): Promise<boolean> {
         // Validate token to get user ID
         const payload = validateToken(token);
 
+        // Get user to check role
+        const user = await User.findById(payload.sub);
+
         // Clear refresh token from user
         await User.findByIdAndUpdate(payload.sub, { refreshToken: null });
+
+        // Set isOnline = false if user is staff
+        if (user && ['ADMIN', 'STAFF', 'TECHNICIAN'].includes(user.role)) {
+            await systemUserService.setOnlineStatus(payload.sub, false);
+
+            // Notify via socket
+            try {
+                const chatSocketService = require('../socket/chat.socket').default;
+                chatSocketService.notifyStaffOffline(payload.sub);
+            } catch (e) {
+                console.log('Socket notification failed:', e);
+            }
+
+            // Also handle all conversations for this staff
+            try {
+                const { ConversationService } = await import('./conversation.service');
+                const conversationService = new ConversationService();
+                await conversationService.handleStaffOffline(payload.sub, 'logout');
+            } catch (e) {
+                console.log('Conversation handling failed:', e);
+            }
+        }
 
         return true;
     } catch (error) {

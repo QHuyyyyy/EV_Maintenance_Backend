@@ -18,7 +18,10 @@ import appointmentRoutes from "./routes/appointment.routes";
 import serviceRecordRoutes from "./routes/serviceRecord.routes";
 import serviceChecklistRoutes from "./routes/serviceChecklist.routes";
 import schedulerRoutes from "./routes/scheduler.routes";
+import conversationRoutes from "./routes/conversation.routes";
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
+import http from "http";
+import chatSocketService from "./socket/chat.socket";
 
 
 let swaggerFile: any;
@@ -72,6 +75,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/service-records', serviceRecordRoutes);
 app.use('/api/service-checklists', serviceChecklistRoutes);
 app.use('/api/scheduler', schedulerRoutes);
+app.use('/api/chat', conversationRoutes);
 
 // Root route redirect to API docs
 
@@ -89,8 +93,15 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(process.env.PORT ?? 3000, () => {
-    console.log(`App listening on port ${process.env.PORT || 3000}`);
+const PORT = process.env.PORT ?? 3000;
+const httpServer = http.createServer(app);
+
+// Initialize Socket.io
+chatSocketService.initializeSocket(httpServer);
+
+httpServer.listen(PORT, () => {
+    console.log(`App listening on port ${PORT}`);
+    console.log(`WebSocket server initialized`);
 });
 
 export default app;

@@ -6218,6 +6218,738 @@
           }
         ]
       }
+    },
+    "/api/chat/send": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "User sends a message",
+        "description": "User sends a message. Creates or reopens conversation if needed",
+        "responses": {
+          "201": {
+            "description": "Message sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Message sent successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversation": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "message": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "isNewConversation": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "isReopened": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Message sent successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversation": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "message": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "isNewConversation": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "isReopened": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "attachment": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "customerId",
+                  "content"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/{conversationId}/take": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Staff takes a waiting chat",
+        "description": "Assign conversation to the requesting staff member",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat taken successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Chat taken successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Chat taken successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "staffId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "staffId"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/{conversationId}/staff-message": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Staff sends a message",
+        "description": "Only assigned staff can send messages in a conversation",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Message sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Message sent successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Message sent successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "staffId": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "attachment": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "staffId",
+                  "content"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/{conversationId}/close": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Close a conversation",
+        "description": "Mark conversation as closed",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation closed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Conversation closed successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Conversation closed successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/chat/waiting": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Get waiting conversations",
+        "description": "Get list of all waiting conversations for staff",
+        "parameters": [
+          {
+            "name": "page",
+            "description": "Page number",
+            "default": 1,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Items per page",
+            "default": 20,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Waiting conversations retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversations": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        },
+                        "totalCount": {
+                          "type": "number",
+                          "example": 0
+                        },
+                        "currentPage": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "totalPages": {
+                          "type": "number",
+                          "example": 1
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversations": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        },
+                        "totalCount": {
+                          "type": "number",
+                          "example": 0
+                        },
+                        "currentPage": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "totalPages": {
+                          "type": "number",
+                          "example": 1
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/chat/staff/{staffId}": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Get staff conversations",
+        "description": "Get all conversations assigned to a specific staff member",
+        "parameters": [
+          {
+            "name": "staffId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "description": "Filter by status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Staff conversations retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "example": [],
+                      "items": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "example": [],
+                      "items": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/chat/{conversationId}": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Get conversation with chat history",
+        "description": "Get full conversation details and all messages",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation details with history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversation": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "messages": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversation": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "messages": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/chat/{conversationId}/mark-read": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Mark messages as read",
+        "description": "Mark all messages in a conversation as read",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Messages marked as read"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Messages marked as read"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
