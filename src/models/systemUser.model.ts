@@ -16,6 +16,10 @@ const systemUserSchema = new Schema({
     certification: {
         type: String,
         default: ''
+    },
+    isOnline: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
