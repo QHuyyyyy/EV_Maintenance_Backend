@@ -115,18 +115,14 @@ export class AlertController {
         // #swagger.tags = ['Alerts']
         // #swagger.summary = 'Create a new alert'
         // #swagger.description = 'API to create a new alert for a vehicle'
-        /* #swagger.parameters['body'] = {
-            in: 'body',
-            description: 'Alert data',
-            required: true,
-            schema: {
-                title: 'Maintenance Due',
-                content: 'Your vehicle requires maintenance',
-                vehicleId: '507f1f77bcf86cd799439011',
-                type: 'MAINTENANCE',
-                priority: 'HIGH'
-            }
-        } */
+        /* #swagger.requestBody = {
+               required: true,
+               content: {
+                   'application/json': {
+                       schema: { $ref: '#/components/schemas/CreateAlert' }
+                   }
+               }
+           } */
         /* #swagger.responses[201] = {
             description: 'Alert created successfully',
             schema: {
@@ -155,32 +151,42 @@ export class AlertController {
                 return;
             }
 
+            // Check if vehicle exists and has customerId before creating alert
+            const vehicle = await Vehicle.findById(alertData.vehicleId);
+            if (!vehicle || !vehicle.customerId) {
+                res.status(400).json({
+                    success: false,
+                    message: "Vehicle not found or vehicle does not have a customerId"
+                });
+                return;
+            }
+
             const newAlert = await alertService.createAlert(alertData);
             try {
                 if (newAlert && newAlert._id) {
-                    const vehicle = await Vehicle.findById(alertData.vehicleId);
-                    if (vehicle && vehicle.customerId) {
-                        const customer = await Customer.findById(vehicle.customerId);
-                        if (customer && customer.deviceTokens && customer.deviceTokens.length > 0) {
-                            const notificationPayload = {
-                                tokens: customer.deviceTokens,
-                                notification: {
-                                    title: alertData.title,
-                                    body: alertData.content.substring(0, 200),
-                                },
-                                data: {
-                                    type: 'alert',
-                                    id: newAlert._id.toString(),  // Use alert._id
-                                    vehicleId: alertData.vehicleId,
-                                    alertType: alertData.type || 'SYSTEM',
-                                    priority: alertData.priority || 'MEDIUM',
-                                    timestamp: new Date().toISOString(),
-                                    fullContent: alertData.content,
-                                }
-                            };
-                            await firebaseNotificationService.sendMulticast(notificationPayload);
-                            console.log(`✅ Notification sent for alert ${newAlert._id}`);
-                        }
+                    // vehicle is already verified above, so we can use it directly
+                    const customer = await Customer.findById(vehicle.customerId);
+                    if (customer && customer.deviceTokens && customer.deviceTokens.length > 0) {
+                        const notificationPayload = {
+                            tokens: customer.deviceTokens,
+                            notification: {
+                                title: alertData.title,
+                                body: alertData.content.substring(0, 200),
+                            },
+                            data: {
+                                type: 'alert',
+                                id: newAlert._id.toString(),  // Use alert._id
+                                vehicleId: alertData.vehicleId,
+                                alertType: alertData.type || 'SYSTEM',
+                                priority: alertData.priority || 'MEDIUM',
+                                timestamp: new Date().toISOString(),
+                                fullContent: alertData.content,
+                            }
+                        };
+                        await firebaseNotificationService.sendMulticast(notificationPayload);
+                        console.log(`✅ Notification sent for alert ${newAlert._id}`);
+                    } else {
+                        console.log('ℹ️ No device tokens found for customer, skipping notification.');
                     }
                 }
             } catch (notificationError) {

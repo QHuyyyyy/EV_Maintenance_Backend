@@ -172,4 +172,30 @@ export class SystemUserService {
             throw new Error('Failed to delete system user: Unknown error');
         }
     }
+
+    /**
+     * Set online status for a system user
+     */
+    async setOnlineStatus(userId: string, isOnline: boolean): Promise<void> {
+        try {
+            // Find SystemUser by userId (from User model)
+            const systemUser = await SystemUser.findOneAndUpdate(
+                { userId: userId },
+                { isOnline: isOnline },
+                { new: true }
+            );
+
+            if (!systemUser) {
+                console.log(`SystemUser not found for userId: ${userId}`);
+                return;
+            }
+
+            console.log(`Set SystemUser ${systemUser._id} isOnline to ${isOnline}`);
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to set online status: ${error.message}`);
+            }
+            throw new Error('Failed to set online status: Unknown error');
+        }
+    }
 }

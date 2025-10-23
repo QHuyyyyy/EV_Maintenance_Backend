@@ -437,6 +437,7 @@ export class VehicleController {
     async assignVehicleToCustomer(req: Request, res: Response) {
         // #swagger.tags = ['Vehicles']
         // #swagger.summary = 'Assign vehicle to customer by phone'
+        // #swagger.security = [{ "bearerAuth": [] }]
         /* #swagger.requestBody = {
             required: true,
             content: {
@@ -457,12 +458,12 @@ export class VehicleController {
                 });
             }
 
-            // Validate phone format
-            const phoneRegex = /^[0-9]{10,11}$/;
+            // Validate phone format (should be in +84xxxxxxxxx, 0xxxxxxxxx, or 84xxxxxxxxx format)
+            const phoneRegex = /^(\+84|0|84)[1-9][0-9]{8}$/;
             if (!phoneRegex.test(phone)) {
                 return res.status(400).json({
                     success: false,
-                    message: "Invalid phone number format (must be 10-11 digits)"
+                    message: "Invalid phone number format. Expected format: +84xxxxxxxxx, 0xxxxxxxxx, or 84xxxxxxxxx"
                 });
             }
 
