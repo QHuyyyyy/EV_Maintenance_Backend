@@ -6801,13 +6801,13 @@
         }
       }
     },
-    "/api/chat/{conversationId}": {
+    "/api/chat/{conversationId}/older-messages": {
       "get": {
         "tags": [
           "Chat"
         ],
-        "summary": "Get conversation with chat history",
-        "description": "Get full conversation details and all messages",
+        "summary": "Get older messages for infinite scroll",
+        "description": "Get older messages when user scrolls up to load message history",
         "parameters": [
           {
             "name": "conversationId",
@@ -6816,11 +6816,126 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "default": 20,
+            "description": "Messages to fetch",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Conversation details with history",
+            "description": "Older messages loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "messages": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        },
+                        "hasMoreMessages": {
+                          "type": "boolean",
+                          "example": true
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "messages": {
+                          "type": "array",
+                          "example": [],
+                          "items": {}
+                        },
+                        "hasMoreMessages": {
+                          "type": "boolean",
+                          "example": true
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/chat/{conversationId}": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Get conversation with paginated chat history",
+        "description": "Get conversation details with paginated messages (newest first). Use page parameter to load older messages",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "default": 1,
+            "description": "Page number",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "default": 20,
+            "description": "Messages per page",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation details with paginated history",
             "content": {
               "application/json": {
                 "schema": {
@@ -6841,6 +6956,31 @@
                           "type": "array",
                           "example": [],
                           "items": {}
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "currentPage": {
+                              "type": "number",
+                              "example": 1
+                            },
+                            "limit": {
+                              "type": "number",
+                              "example": 20
+                            },
+                            "totalMessages": {
+                              "type": "number",
+                              "example": 100
+                            },
+                            "totalPages": {
+                              "type": "number",
+                              "example": 5
+                            },
+                            "hasMoreMessages": {
+                              "type": "boolean",
+                              "example": true
+                            }
+                          }
                         }
                       }
                     }
@@ -6869,6 +7009,31 @@
                           "type": "array",
                           "example": [],
                           "items": {}
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "currentPage": {
+                              "type": "number",
+                              "example": 1
+                            },
+                            "limit": {
+                              "type": "number",
+                              "example": 20
+                            },
+                            "totalMessages": {
+                              "type": "number",
+                              "example": 100
+                            },
+                            "totalPages": {
+                              "type": "number",
+                              "example": 5
+                            },
+                            "hasMoreMessages": {
+                              "type": "boolean",
+                              "example": true
+                            }
+                          }
                         }
                       }
                     }
