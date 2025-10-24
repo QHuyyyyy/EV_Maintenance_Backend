@@ -30,7 +30,7 @@ export class SystemUserService {
      */
     async getSystemUserById(systemUserId: string): Promise<ISystemUser> {
         try {
-            const systemUser = await SystemUser.findById(systemUserId)
+            const systemUser = await SystemUser.findById(systemUserId).populate('userId', 'phone email role')
                 .lean();
 
             if (!systemUser) {
@@ -101,6 +101,7 @@ export class SystemUserService {
             }
 
             const systemUsers = await SystemUser.find(query)
+                .populate('userId', 'phone email role')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -112,7 +113,6 @@ export class SystemUserService {
             const mappedSystemUsers = systemUsers.map(systemUser => ({
                 ...systemUser,
                 _id: systemUser._id.toString(),
-                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
             })) as ISystemUser[];
 
             return {
