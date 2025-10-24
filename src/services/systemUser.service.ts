@@ -12,7 +12,7 @@ export class SystemUserService {
                 userId: userId,
                 name: '',
                 dateOfBirth: null,
-                certification: ''
+                certificates: []
             });
             const savedSystemUser = await systemUser.save();
             return await this.getSystemUserById(savedSystemUser._id.toString());
@@ -80,7 +80,6 @@ export class SystemUserService {
      */
     async getAllSystemUsers(filters?: {
         name?: string;
-        certification?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -99,9 +98,6 @@ export class SystemUserService {
             const query: any = {};
             if (filters?.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
-            }
-            if (filters?.certification) {
-                query.certification = { $regex: filters.certification, $options: 'i' };
             }
 
             const systemUsers = await SystemUser.find(query)
