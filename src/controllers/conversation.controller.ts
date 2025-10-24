@@ -595,47 +595,6 @@ export class ConversationController {
     }
 
     /**
-     * Get older messages (when user scrolls up)
-     * GET /api/chat/:conversationId/older-messages?lastMessageId=xxx&limit=20
-     */
-    static async getOlderMessages(req: Request, res: Response): Promise<void> {
-        // #swagger.tags = ['Chat']
-        // #swagger.summary = 'Get older messages for infinite scroll'
-        // #swagger.description = 'Get older messages when user scrolls up to load message history'
-        // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
-        // #swagger.parameters['limit'] = { in: 'query', required: false, type: 'integer', default: 20, description: 'Messages to fetch' }
-        /* #swagger.responses[200] = {
-          description: 'Older messages loaded',
-          schema: {
-            success: true,
-            data: {
-              messages: [],
-              hasMoreMessages: true
-            }
-          }
-        } */
-        try {
-            const { conversationId } = req.params;
-            const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-
-            const result = await conversationService.getOlderMessages(
-                conversationId,
-                limit
-            );
-
-            res.status(200).json({
-                success: true,
-                data: result,
-            });
-        } catch (error: any) {
-            res.status(400).json({
-                success: false,
-                message: error.message || 'Error fetching older messages',
-            });
-        }
-    }
-
-    /**
      * Mark messages as read
      * POST /api/chat/:conversationId/mark-read
      */

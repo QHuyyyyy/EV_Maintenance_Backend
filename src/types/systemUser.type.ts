@@ -1,3 +1,12 @@
+
+export interface Certificate {
+    name?: string;
+    issuingOrganization?: string;
+    issueDate?: Date;
+    expirationDate?: Date;
+    credentialUrl?: string;
+}
+
 export interface ISystemUser {
     _id?: string;
     userId: string | {
@@ -7,20 +16,22 @@ export interface ISystemUser {
     };
     name?: string;
     dateOfBirth?: Date;
-    certification?: string;
+    certificates?: Certificate[];
     createdAt?: Date;
     updatedAt?: Date;
 }
+
 
 export interface CreateSystemUserRequest {
     userId: string;
     name?: string;
     dateOfBirth?: Date;
-    certification?: string;
+    certificates?: Certificate[];
 }
+
 
 export interface UpdateSystemUserRequest {
     name?: string;
     dateOfBirth?: Date;
-    certification?: string;
+    certificates?: Certificate[];
 }
