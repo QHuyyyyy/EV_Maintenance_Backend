@@ -7858,10 +7858,6 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "center_id": {
-            "type": "string",
-            "example": "CTR001"
-          },
           "name": {
             "type": "string",
             "example": "Downtown Service Center"
@@ -7933,10 +7929,6 @@
           "_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
-          },
-          "appointment_id": {
-            "type": "string",
-            "example": "APT001"
           },
           "staffId": {
             "type": "string",
@@ -8042,10 +8034,6 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "record_id": {
-            "type": "string",
-            "example": "REC001"
-          },
           "appointment_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k2"
@@ -8141,10 +8129,6 @@
           "_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
-          },
-          "checklist_id": {
-            "type": "string",
-            "example": "CHK001"
           },
           "record_id": {
             "type": "string",

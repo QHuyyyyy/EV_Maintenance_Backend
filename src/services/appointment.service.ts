@@ -19,7 +19,7 @@ export class AppointmentService {
             return await Appointment.findById(appointmentId)
                 .populate('customer_id', 'customerName dateOfBirth address')
                 .populate('vehicle_id', 'vehicleName model plateNumber mileage')
-                .populate('center_id', 'center_id name address phone')
+                .populate('center_id', 'name address phone')
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {
@@ -73,7 +73,7 @@ export class AppointmentService {
                 Appointment.find(query)
                     .populate('customer_id', 'customerName dateOfBirth address')
                     .populate('vehicle_id', 'vehicleName model plateNumber mileage')
-                    .populate('center_id', 'center_id name address phone')
+                    .populate('center_id', 'name address phone')
                     .sort({ startTime: -1 })
                     .skip(skip)
                     .limit(limit)
@@ -105,7 +105,7 @@ export class AppointmentService {
             )
                 .populate('customer_id', 'customerName dateOfBirth address')
                 .populate('vehicle_id', 'vehicleName model plateNumber mileage')
-                .populate('center_id', 'center_id name address phone')
+                .populate('center_id', 'name address phone')
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {

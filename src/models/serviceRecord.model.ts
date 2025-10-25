@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IServiceRecord extends Document {
-    record_id: string;
     appointment_id: mongoose.Types.ObjectId;
     technician_id: string;
     start_time: Date;
@@ -14,12 +13,6 @@ export interface IServiceRecord extends Document {
 
 const ServiceRecordSchema: Schema = new Schema(
     {
-        record_id: {
-            type: String,
-            required: true,
-            unique: true,
-            default: () => 'REC' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase()
-        },
         appointment_id: {
             type: Schema.Types.ObjectId,
             ref: 'Appointment',

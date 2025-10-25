@@ -24,7 +24,7 @@ export class ServiceDetailService {
                         populate: [
                             { path: 'customer_id', select: 'customerName dateOfBirth address' },
                             { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'center_id name address phone' }
+                            { path: 'center_id', select: 'name address phone' }
                         ]
                     }
                 })
@@ -72,7 +72,7 @@ export class ServiceDetailService {
                             populate: [
                                 { path: 'customer_id', select: 'customerName dateOfBirth address' },
                                 { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                                { path: 'center_id', select: 'center_id name address phone' }
+                                { path: 'center_id', select: 'name address phone' }
                             ]
                         }
                     })
@@ -109,7 +109,7 @@ export class ServiceDetailService {
                         populate: [
                             { path: 'customer_id', select: 'customerName dateOfBirth address' },
                             { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'center_id name address phone' }
+                            { path: 'center_id', select: 'name address phone' }
                         ]
                     }
                 })

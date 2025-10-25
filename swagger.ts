@@ -180,7 +180,6 @@ const doc = {
         },
         Center: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            center_id: 'CTR001',
             name: 'Downtown Service Center',
             address: '456 Main St, City, State 54321',
             phone: '+1234567890',
@@ -199,7 +198,6 @@ const doc = {
         },
         Appointment: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            appointment_id: 'APT001',
             staffId: '60f1b2b3c4e5f6g7h8i9j0k2',
             customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             vehicle_id: '60f1b2b3c4e5f6g7h8i9j0k4',
@@ -226,7 +224,6 @@ const doc = {
         },
         ServiceRecord: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            record_id: 'REC001',
             appointment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             technician_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             start_time: '2025-10-16T09:00:00.000Z',
@@ -251,7 +248,6 @@ const doc = {
         },
         ServiceChecklist: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            checklist_id: 'CHK001',
             record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             name: 'Oil Change',
             status: 'completed',
