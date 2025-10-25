@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/"
+      "url": "http://localhost:5000/"
     }
   ],
   "tags": [
@@ -58,6 +58,14 @@
     {
       "name": "Service Checklists",
       "description": "Service checklist management endpoints"
+    },
+    {
+      "name": "Auto Parts",
+      "description": "Auto part inventory management endpoints"
+    },
+    {
+      "name": "Service Details",
+      "description": "Service detail management endpoints"
     }
   ],
   "paths": {
@@ -6098,6 +6106,438 @@
         ]
       }
     },
+    "/api/auto-parts": {
+      "post": {
+        "tags": [
+          "Auto Parts"
+        ],
+        "description": "Create a new auto part",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAutoPart"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Auto Parts"
+        ],
+        "description": "Get all auto parts with optional filters",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by part name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lowStock",
+            "in": "query",
+            "description": "Filter parts where quantity is below minimum stock",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auto-parts/{id}": {
+      "get": {
+        "tags": [
+          "Auto Parts"
+        ],
+        "description": "Get auto part by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Auto Part ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Auto Parts"
+        ],
+        "description": "Update an auto part",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Auto Part ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAutoPart"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Auto Parts"
+        ],
+        "description": "Delete an auto part",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Auto Part ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-details": {
+      "post": {
+        "tags": [
+          "Service Details"
+        ],
+        "description": "Create a new service detail entry",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceDetail"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Service Details"
+        ],
+        "description": "Get all service details with optional filters",
+        "parameters": [
+          {
+            "name": "record_id",
+            "in": "query",
+            "description": "Filter by service record ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part_id",
+            "in": "query",
+            "description": "Filter by auto part ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-details/{id}": {
+      "get": {
+        "tags": [
+          "Service Details"
+        ],
+        "description": "Get service detail by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Detail ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Service Details"
+        ],
+        "description": "Update a service detail entry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Detail ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceDetail"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Details"
+        ],
+        "description": "Delete a service detail entry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Detail ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/scheduler/trigger": {
       "post": {
         "tags": [
@@ -7868,6 +8308,214 @@
         },
         "xml": {
           "name": "UpdateServiceChecklist"
+        }
+      },
+      "AutoPart": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Brake Pad"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 15
+          },
+          "cost_price": {
+            "type": "number",
+            "example": 35
+          },
+          "selling_price": {
+            "type": "number",
+            "example": 55
+          },
+          "min_stock": {
+            "type": "number",
+            "example": 5
+          },
+          "recommended_min_stock": {
+            "type": "number",
+            "example": 10
+          },
+          "last_forecast_date": {
+            "type": "string",
+            "example": "2025-09-15T10:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "AutoPart"
+        }
+      },
+      "CreateAutoPart": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Brake Pad"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 20
+          },
+          "cost_price": {
+            "type": "number",
+            "example": 35
+          },
+          "selling_price": {
+            "type": "number",
+            "example": 55
+          },
+          "min_stock": {
+            "type": "number",
+            "example": 5
+          },
+          "recommended_min_stock": {
+            "type": "number",
+            "example": 10
+          },
+          "last_forecast_date": {
+            "type": "string",
+            "example": "2025-09-15T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "CreateAutoPart"
+        }
+      },
+      "UpdateAutoPart": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Brake Pad"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 18
+          },
+          "cost_price": {
+            "type": "number",
+            "example": 36
+          },
+          "selling_price": {
+            "type": "number",
+            "example": 58
+          },
+          "min_stock": {
+            "type": "number",
+            "example": 6
+          },
+          "recommended_min_stock": {
+            "type": "number",
+            "example": 12
+          },
+          "last_forecast_date": {
+            "type": "string",
+            "example": "2025-10-01T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "UpdateAutoPart"
+        }
+      },
+      "ServiceDetail": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "description": {
+            "type": "string",
+            "example": "Replaced brake pads"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "unit_price": {
+            "type": "number",
+            "example": 58
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "ServiceDetail"
+        }
+      },
+      "CreateServiceDetail": {
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "description": {
+            "type": "string",
+            "example": "Replaced brake pads"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "unit_price": {
+            "type": "number",
+            "example": 58
+          }
+        },
+        "xml": {
+          "name": "CreateServiceDetail"
+        }
+      },
+      "UpdateServiceDetail": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Replaced brake pads and rotors"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 4
+          },
+          "unit_price": {
+            "type": "number",
+            "example": 60
+          }
+        },
+        "xml": {
+          "name": "UpdateServiceDetail"
         }
       }
     },

@@ -68,6 +68,14 @@ const doc = {
         {
             name: 'Service Checklists',
             description: 'Service checklist management endpoints'
+        },
+        {
+            name: 'Auto Parts',
+            description: 'Auto part inventory management endpoints'
+        },
+        {
+            name: 'Service Details',
+            description: 'Service detail management endpoints'
         }
     ],
     definitions: {
@@ -256,6 +264,58 @@ const doc = {
             name: 'Oil Change',
             status: 'completed',
             note: 'Used synthetic oil'
+        },
+        AutoPart: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            name: 'Brake Pad',
+            quantity: 15,
+            cost_price: 35,
+            selling_price: 55,
+            min_stock: 5,
+            recommended_min_stock: 10,
+            last_forecast_date: '2025-09-15T10:00:00.000Z',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateAutoPart: {
+            name: 'Brake Pad',
+            quantity: 20,
+            cost_price: 35,
+            selling_price: 55,
+            min_stock: 5,
+            recommended_min_stock: 10,
+            last_forecast_date: '2025-09-15T10:00:00.000Z'
+        },
+        UpdateAutoPart: {
+            name: 'Brake Pad',
+            quantity: 18,
+            cost_price: 36,
+            selling_price: 58,
+            min_stock: 6,
+            recommended_min_stock: 12,
+            last_forecast_date: '2025-10-01T10:00:00.000Z'
+        },
+        ServiceDetail: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            description: 'Replaced brake pads',
+            quantity: 2,
+            unit_price: 58,
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateServiceDetail: {
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            description: 'Replaced brake pads',
+            quantity: 2,
+            unit_price: 58
+        },
+        UpdateServiceDetail: {
+            description: 'Replaced brake pads and rotors',
+            quantity: 4,
+            unit_price: 60
         }
     },
     securityDefinitions: {
