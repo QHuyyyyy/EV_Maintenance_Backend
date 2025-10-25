@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 export interface IAppointment {
     _id: string;
-    appointment_id: string;
     staffId: string;
     customer_id: mongoose.Types.ObjectId | string;
     vehicle_id: mongoose.Types.ObjectId | string;

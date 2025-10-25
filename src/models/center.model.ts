@@ -1,12 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const centerSchema = new Schema({
-    center_id: {
-        type: String,
-        required: true,
-        unique: true,
-        default: () => 'CTR' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase()
-    },
     name: {
         type: String,
         required: [true, 'Center name is required']

@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 export interface IServiceChecklist {
     _id: string;
-    checklist_id: string;
     record_id: mongoose.Types.ObjectId | string;
     name: string;
     status: 'pending' | 'completed' | 'skipped';

@@ -17,6 +17,8 @@ import centerRoutes from "./routes/center.routes";
 import appointmentRoutes from "./routes/appointment.routes";
 import serviceRecordRoutes from "./routes/serviceRecord.routes";
 import serviceChecklistRoutes from "./routes/serviceChecklist.routes";
+import autoPartRoutes from "./routes/autoPart.routes";
+import serviceDetailRoutes from "./routes/serviceDetail.routes";
 import schedulerRoutes from "./routes/scheduler.routes";
 import conversationRoutes from "./routes/conversation.routes";
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
@@ -74,6 +76,8 @@ app.use('/api/centers', centerRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/service-records', serviceRecordRoutes);
 app.use('/api/service-checklists', serviceChecklistRoutes);
+app.use('/api/auto-parts', autoPartRoutes);
+app.use('/api/service-details', serviceDetailRoutes);
 app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/chat', conversationRoutes);
 

@@ -1,6 +1,5 @@
 export interface ICenter {
     _id?: string;
-    center_id: string;
     name: string;
     address: string;
     phone: string;
