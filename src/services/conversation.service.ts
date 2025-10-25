@@ -354,30 +354,6 @@ export class ConversationService {
         };
     }
 
-    /**
-     * Get older messages (called when user scrolls up)
-     * @param conversationId - Conversation ID
-     * @param lastMessageId - ID of the last message loaded
-     * @param limit - Number of messages to fetch (default: 20)
-     */
-    async getOlderMessages(conversationId: string, limit: number = 20) {
-        const convId = new Types.ObjectId(conversationId);
 
-        // Get older messages (messages before this one)
-        const olderMessages = await Message.find({
-            conversationId: convId,
-        })
-            .populate('senderId', 'name')
-            .sort({ createdAt: -1 })
-            .limit(limit);
-
-        // Reverse to maintain chronological order
-        olderMessages.reverse();
-
-        return {
-            messages: olderMessages,
-            hasMoreMessages: olderMessages.length === limit,
-        };
-    }
 }
 export default new ConversationService();

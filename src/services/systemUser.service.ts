@@ -12,7 +12,7 @@ export class SystemUserService {
                 userId: userId,
                 name: '',
                 dateOfBirth: null,
-                certification: ''
+                certificates: []
             });
             const savedSystemUser = await systemUser.save();
             return await this.getSystemUserById(savedSystemUser._id.toString());
@@ -30,7 +30,7 @@ export class SystemUserService {
      */
     async getSystemUserById(systemUserId: string): Promise<ISystemUser> {
         try {
-            const systemUser = await SystemUser.findById(systemUserId)
+            const systemUser = await SystemUser.findById(systemUserId).populate('userId', 'phone email role')
                 .lean();
 
             if (!systemUser) {
@@ -80,7 +80,6 @@ export class SystemUserService {
      */
     async getAllSystemUsers(filters?: {
         name?: string;
-        certification?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -100,11 +99,9 @@ export class SystemUserService {
             if (filters?.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
             }
-            if (filters?.certification) {
-                query.certification = { $regex: filters.certification, $options: 'i' };
-            }
 
             const systemUsers = await SystemUser.find(query)
+                .populate('userId', 'phone email role')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -116,7 +113,6 @@ export class SystemUserService {
             const mappedSystemUsers = systemUsers.map(systemUser => ({
                 ...systemUser,
                 _id: systemUser._id.toString(),
-                userId: (systemUser.userId as any)?._id?.toString() || (systemUser.userId as any)?.toString() || systemUser.userId
             })) as ISystemUser[];
 
             return {

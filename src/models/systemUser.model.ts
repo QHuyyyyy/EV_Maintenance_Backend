@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-
 const systemUserSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
@@ -13,9 +12,17 @@ const systemUserSchema = new Schema({
     dateOfBirth: {
         type: Date
     },
-    certification: {
-        type: String,
-        default: ''
+    certificates: {
+        type: [
+            {
+                name: { type: String },
+                issuingOrganization: { type: String },
+                issueDate: { type: Date },
+                expirationDate: { type: Date },
+                credentialUrl: { type: String }
+            }
+        ],
+        default: [],
     },
     isOnline: {
         type: Boolean,

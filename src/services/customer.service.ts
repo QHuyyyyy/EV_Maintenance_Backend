@@ -31,7 +31,7 @@ export class CustomerService {
     async getCustomerById(customerId: string): Promise<ICustomer> {
         try {
             const customer = await Customer.findById(customerId)
-                .populate('userId', 'email role')
+                .populate('userId', 'phone email role')
                 .lean();
 
             if (!customer) {
@@ -104,7 +104,7 @@ export class CustomerService {
             // Execute queries
             const [customersRaw, total] = await Promise.all([
                 Customer.find(query)
-                    .populate('userId', 'email role')
+                    .populate('userId', 'phone email role')
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit)
@@ -142,7 +142,7 @@ export class CustomerService {
                 customerId,
                 { ...updateData },
                 { new: true, runValidators: true }
-            ).populate('userId', 'email role').lean();
+            ).populate('userId', 'phone email role').lean();
 
             if (!customer) {
                 return null;
@@ -194,7 +194,7 @@ export class CustomerService {
                     { address: { $regex: searchTerm, $options: 'i' } }
                 ]
             })
-                .populate('userId', 'email role')
+                .populate('userId', 'phone email role')
                 .sort({ createdAt: -1 })
                 .limit(20)
                 .lean();

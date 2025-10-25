@@ -1831,14 +1831,6 @@
             }
           },
           {
-            "name": "certification",
-            "in": "query",
-            "description": "Filter by certification",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "page",
             "in": "query",
             "description": "Page number (default: 1)",
@@ -7241,101 +7233,6 @@
         }
       }
     },
-    "/api/chat/{conversationId}/older-messages": {
-      "get": {
-        "tags": [
-          "Chat"
-        ],
-        "summary": "Get older messages for infinite scroll",
-        "description": "Get older messages when user scrolls up to load message history",
-        "parameters": [
-          {
-            "name": "conversationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "default": 20,
-            "description": "Messages to fetch",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Older messages loaded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "messages": {
-                          "type": "array",
-                          "example": [],
-                          "items": {}
-                        },
-                        "hasMoreMessages": {
-                          "type": "boolean",
-                          "example": true
-                        }
-                      }
-                    }
-                  },
-                  "xml": {
-                    "name": "main"
-                  }
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "messages": {
-                          "type": "array",
-                          "example": [],
-                          "items": {}
-                        },
-                        "hasMoreMessages": {
-                          "type": "boolean",
-                          "example": true
-                        }
-                      }
-                    }
-                  },
-                  "xml": {
-                    "name": "main"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        }
-      }
-    },
     "/api/chat/{conversationId}": {
       "get": {
         "tags": [
@@ -7865,9 +7762,33 @@
             "type": "string",
             "example": "1990-01-15"
           },
-          "certification": {
-            "type": "string",
-            "example": "string"
+          "certificates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "AWS Certified Solutions Architect"
+                },
+                "issuingOrganization": {
+                  "type": "string",
+                  "example": "Amazon"
+                },
+                "issueDate": {
+                  "type": "string",
+                  "example": "2020-01-01"
+                },
+                "expirationDate": {
+                  "type": "string",
+                  "example": "2023-01-01"
+                },
+                "credentialUrl": {
+                  "type": "string",
+                  "example": "https://www.cert-url.com/123"
+                }
+              }
+            }
           }
         },
         "xml": {

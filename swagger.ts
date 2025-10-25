@@ -154,7 +154,15 @@ const doc = {
         UpdateSystemUser: {
             name: 'John Doe',
             dateOfBirth: '1990-01-15',
-            certification: 'string'
+            certificates: [
+                {
+                    name: 'AWS Certified Solutions Architect',
+                    issuingOrganization: 'Amazon',
+                    issueDate: '2020-01-01',
+                    expirationDate: '2023-01-01',
+                    credentialUrl: 'https://www.cert-url.com/123'
+                }
+            ]
         },
         AssignVehicle: {
             vehicleId: '60f1b2b3c4e5f6g7h8i9j0k1',
