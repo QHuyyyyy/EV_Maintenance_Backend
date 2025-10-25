@@ -22,8 +22,8 @@ export class ServiceChecklistService {
                     populate: {
                         path: 'appointment_id',
                         populate: [
-                            { path: 'customer_id', select: 'customerId fullName email phone' },
-                            { path: 'vehicle_id', select: 'vehicleId brand model licensePlate' },
+                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
+                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
                             { path: 'center_id', select: 'center_id name address phone' }
                         ]
                     }
@@ -69,8 +69,8 @@ export class ServiceChecklistService {
                         populate: {
                             path: 'appointment_id',
                             populate: [
-                                { path: 'customer_id', select: 'customerId fullName email phone' },
-                                { path: 'vehicle_id', select: 'vehicleId brand model licensePlate' },
+                                { path: 'customer_id', select: 'customerName dateOfBirth address' },
+                                { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
                                 { path: 'center_id', select: 'center_id name address phone' }
                             ]
                         }
@@ -109,8 +109,8 @@ export class ServiceChecklistService {
                     populate: {
                         path: 'appointment_id',
                         populate: [
-                            { path: 'customer_id', select: 'customerId fullName email phone' },
-                            { path: 'vehicle_id', select: 'vehicleId brand model licensePlate' },
+                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
+                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
                             { path: 'center_id', select: 'center_id name address phone' }
                         ]
                     }

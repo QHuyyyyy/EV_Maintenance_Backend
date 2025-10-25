@@ -17,8 +17,8 @@ export class AppointmentService {
     async getAppointmentById(appointmentId: string): Promise<IAppointment | null> {
         try {
             return await Appointment.findById(appointmentId)
-                .populate('customer_id', 'customerId fullName email phone')
-                .populate('vehicle_id', 'vehicleId brand model licensePlate')
+                .populate('customer_id', 'customerName dateOfBirth address')
+                .populate('vehicle_id', 'vehicleName model plateNumber mileage')
                 .populate('center_id', 'center_id name address phone')
                 .lean() as any;
         } catch (error) {
@@ -71,8 +71,8 @@ export class AppointmentService {
 
             const [appointments, total] = await Promise.all([
                 Appointment.find(query)
-                    .populate('customer_id', 'customerId fullName email phone')
-                    .populate('vehicle_id', 'vehicleId brand model licensePlate')
+                    .populate('customer_id', 'customerName dateOfBirth address')
+                    .populate('vehicle_id', 'vehicleName model plateNumber mileage')
                     .populate('center_id', 'center_id name address phone')
                     .sort({ startTime: -1 })
                     .skip(skip)
@@ -103,8 +103,8 @@ export class AppointmentService {
                 updateData,
                 { new: true, runValidators: true }
             )
-                .populate('customer_id', 'customerId fullName email phone')
-                .populate('vehicle_id', 'vehicleId brand model licensePlate')
+                .populate('customer_id', 'customerName dateOfBirth address')
+                .populate('vehicle_id', 'vehicleName model plateNumber mileage')
                 .populate('center_id', 'center_id name address phone')
                 .lean() as any;
         } catch (error) {
