@@ -233,7 +233,6 @@ const doc = {
             end_time: '2025-10-16T11:00:00.000Z',
             description: 'Regular maintenance completed',
             status: 'completed',
-            mileage: 50000,
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
@@ -243,14 +242,12 @@ const doc = {
             start_time: '2025-10-16T09:00:00.000Z',
             end_time: '2025-10-16T11:00:00.000Z',
             description: 'Regular maintenance completed',
-            status: 'completed',
-            mileage: 50000
+            status: 'completed'
         },
         UpdateServiceRecord: {
             end_time: '2025-10-16T12:00:00.000Z',
             description: 'Maintenance and inspection completed',
-            status: 'completed',
-            mileage: 51000
+            status: 'completed'
         },
         ServiceChecklist: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',

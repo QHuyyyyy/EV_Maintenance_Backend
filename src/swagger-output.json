@@ -8070,10 +8070,6 @@
             "type": "string",
             "example": "completed"
           },
-          "mileage": {
-            "type": "number",
-            "example": 50000
-          },
           "createdAt": {
             "type": "string",
             "example": "2025-09-21T10:00:00.000Z"
@@ -8113,10 +8109,6 @@
           "status": {
             "type": "string",
             "example": "completed"
-          },
-          "mileage": {
-            "type": "number",
-            "example": 50000
           }
         },
         "xml": {
@@ -8137,10 +8129,6 @@
           "status": {
             "type": "string",
             "example": "completed"
-          },
-          "mileage": {
-            "type": "number",
-            "example": 51000
           }
         },
         "xml": {

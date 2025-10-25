@@ -8,7 +8,6 @@ export interface IServiceRecord extends Document {
     end_time: Date;
     description: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-    mileage: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -46,10 +45,6 @@ const ServiceRecordSchema: Schema = new Schema(
             type: String,
             enum: ['pending', 'in-progress', 'completed', 'cancelled'],
             default: 'pending'
-        },
-        mileage: {
-            type: Number,
-            required: true
         }
     },
     {

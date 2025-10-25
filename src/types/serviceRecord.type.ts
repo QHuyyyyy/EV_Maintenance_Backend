@@ -9,7 +9,6 @@ export interface IServiceRecord {
     end_time: Date;
     description: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-    mileage: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -21,7 +20,6 @@ export interface CreateServiceRecordRequest {
     end_time: Date;
     description: string;
     status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-    mileage: number;
 }
 
 export interface UpdateServiceRecordRequest {
@@ -31,5 +29,4 @@ export interface UpdateServiceRecordRequest {
     end_time?: Date;
     description?: string;
     status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-    mileage?: number;
 }
