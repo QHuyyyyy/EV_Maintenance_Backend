@@ -66,6 +66,14 @@
     {
       "name": "Service Details",
       "description": "Service detail management endpoints"
+    },
+    {
+      "name": "Payments",
+      "description": "Payment processing and management endpoints"
+    },
+    {
+      "name": "Invoices",
+      "description": "Invoice management endpoints"
     }
   ],
   "paths": {
@@ -7452,6 +7460,551 @@
           }
         }
       }
+    },
+    "/api/payments": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Create a new payment link",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayment"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get all payments with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "paid",
+              "cancelled",
+              "expired"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "description": "Filter by customer ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointment_id",
+            "in": "query",
+            "description": "Filter by appointment ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/{id}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get payment by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/order/{orderCode}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get payment by order code",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/webhook": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Handle PayOS webhook",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentWebhook"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/cancel/{orderCode}": {
+      "put": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Cancel a payment",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/info/{orderCode}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get payment information from PayOS",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/invoices": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Create a new invoice",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoice"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Get all invoices with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "issued",
+              "cancelled"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment_id",
+            "in": "query",
+            "description": "Filter by payment ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/invoices/payment/{paymentId}": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Get invoice by payment ID",
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/invoices/{id}": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Get invoice by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Invoice ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Update an invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Invoice ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvoice"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Delete an invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Invoice ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -8409,6 +8962,210 @@
         },
         "xml": {
           "name": "UpdateServiceDetail"
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "appointment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "order_code": {
+            "type": "number",
+            "example": 123456
+          },
+          "amount": {
+            "type": "number",
+            "example": 250000
+          },
+          "description": {
+            "type": "string",
+            "example": "Payment for maintenance service"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "payment_url": {
+            "type": "string",
+            "example": "https://payos.vn/pay/123456"
+          },
+          "transaction_id": {
+            "type": "string",
+            "example": "TXN123456789"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "QR"
+          },
+          "paid_at": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Payment"
+        }
+      },
+      "CreatePayment": {
+        "type": "object",
+        "properties": {
+          "appointment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "amount": {
+            "type": "number",
+            "example": 250000
+          },
+          "description": {
+            "type": "string",
+            "example": "Payment for maintenance service"
+          }
+        },
+        "xml": {
+          "name": "CreatePayment"
+        }
+      },
+      "PaymentWebhook": {
+        "type": "object",
+        "properties": {
+          "order_code": {
+            "type": "number",
+            "example": 123456
+          },
+          "status": {
+            "type": "string",
+            "example": "PAID"
+          },
+          "transaction_id": {
+            "type": "string",
+            "example": "TXN123456789"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "QR"
+          },
+          "paid_at": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "PaymentWebhook"
+        }
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "payment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "invoiceType": {
+            "type": "string",
+            "example": "VAT"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 0
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 250000
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "QR"
+          },
+          "transaction_code": {
+            "type": "string",
+            "example": "TXN123456789"
+          },
+          "status": {
+            "type": "string",
+            "example": "issued"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Invoice"
+        }
+      },
+      "CreateInvoice": {
+        "type": "object",
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "invoiceType": {
+            "type": "string",
+            "example": "VAT"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 0
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 250000
+          }
+        },
+        "xml": {
+          "name": "CreateInvoice"
+        }
+      },
+      "UpdateInvoice": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "issued"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 5000
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 245000
+          }
+        },
+        "xml": {
+          "name": "UpdateInvoice"
         }
       }
     },
