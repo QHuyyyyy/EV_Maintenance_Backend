@@ -59,7 +59,7 @@ export async function getUserByPhone(phone: string) {
  */
 export async function getAllUsers(filters?: {
     role?: string;
-    status?: string;
+    isDeleted?: string;
     page?: number;
     limit?: number;
 }) {
@@ -73,8 +73,8 @@ export async function getAllUsers(filters?: {
         if (filters?.role) {
             query.role = filters.role;
         }
-        if (filters?.status) {
-            query.status = filters.status;
+        if (filters?.isDeleted) {
+            query.isDeleted = filters.isDeleted;
         }
 
         // Execute queries
