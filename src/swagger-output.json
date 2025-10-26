@@ -989,14 +989,13 @@
             }
           },
           {
-            "name": "status",
+            "name": "isDeleted",
             "in": "query",
             "enum": [
-              "active",
-              "inactive",
-              "suspended"
+              "true",
+              "false"
             ],
-            "description": "Filter by user status",
+            "description": "Filter by user deletion status",
             "schema": {
               "type": "string"
             }

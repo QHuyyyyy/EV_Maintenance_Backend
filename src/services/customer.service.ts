@@ -1,3 +1,4 @@
+import User from '../models/user.model';
 import Customer from '../models/customer.model';
 import { CreateCustomerRequest, UpdateCustomerRequest, ICustomer } from '../types/customer.type';
 
@@ -31,10 +32,13 @@ export class CustomerService {
     async getCustomerById(customerId: string): Promise<ICustomer> {
         try {
             const customer = await Customer.findById(customerId)
-                .populate('userId', 'phone email role')
+                .populate({
+                    path: 'userId',
+                    match: { isDeleted: false },
+                    select: 'phone email role'
+                })
                 .lean();
-
-            if (!customer) {
+            if (!customer || !customer.userId) {
                 throw new Error('Customer not found');
             }
             return {
@@ -56,17 +60,19 @@ export class CustomerService {
     async getCustomerByUserId(userId: string): Promise<ICustomer | null> {
         try {
             const customer = await Customer.findOne({ userId })
-                .populate('userId', 'phone email role')
+                .populate({
+                    path: 'userId',
+                    match: { isDeleted: false },
+                    select: 'phone email role'
+                })
                 .lean();
-
-            if (!customer) {
+            if (!customer || !customer.userId) {
                 return null;
             }
-
             return {
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId // Giữ nguyên object populate
+                userId: customer.userId
             } as ICustomer;
         } catch (error) {
             if (error instanceof Error) {
@@ -102,28 +108,27 @@ export class CustomerService {
             }
 
             // Execute queries
-            const [customersRaw, total] = await Promise.all([
-                Customer.find(query)
-                    .populate('userId', 'phone email role')
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit)
-                    .lean(),
-                Customer.countDocuments(query)
-            ]);
-
-            const customers = customersRaw.map(customer => ({
+            const customersRaw = await Customer.find(query)
+                .populate({
+                    path: 'userId',
+                    match: { isDeleted: false },
+                    select: 'phone email role'
+                })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean();
+            const customers = customersRaw.filter(c => c.userId).map(customer => ({
                 ...customer,
                 _id: customer._id.toString(),
-                userId: customer.userId // Giữ nguyên object populate
+                userId: customer.userId
             })) as ICustomer[];
-
             return {
                 customers,
-                total,
+                total: customers.length,
                 page,
                 limit,
-                totalPages: Math.ceil(total / limit)
+                totalPages: Math.ceil(customers.length / limit)
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -164,17 +169,14 @@ export class CustomerService {
     /**
      * Delete customer by ID (soft delete)
      */
-    async deleteCustomer(customerId: string): Promise<ICustomer> {
+    async deleteCustomer(customerId: string) {
         try {
-            const customer = await Customer.findByIdAndDelete(customerId).lean();
+            const customer = await Customer.findById(customerId);
             if (!customer) {
                 throw new Error('Customer not found');
             }
-            return {
-                ...customer,
-                _id: customer._id.toString(),
-                userId: customer.userId // Giữ nguyên object populate
-            } as ICustomer;
+            await User.findByIdAndUpdate(customer.userId, { isDeleted: true });
+            return true;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to delete customer: ${error.message}`);
