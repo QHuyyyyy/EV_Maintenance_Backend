@@ -7524,10 +7524,32 @@
             }
           },
           {
-            "name": "appointment_id",
+            "name": "service_record_id",
             "in": "query",
-            "description": "Filter by appointment ID",
+            "description": "Filter by service record ID",
             "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscription_id",
+            "in": "query",
+            "description": "Filter by subscription ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment_type",
+            "in": "query",
+            "description": "Filter by payment type",
+            "required": false,
+            "enum": [
+              "service_record",
+              "subscription"
+            ],
             "schema": {
               "type": "string"
             }
@@ -8970,13 +8992,17 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "appointment_id": {
+          "service_record_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k2"
           },
-          "customer_id": {
+          "subscription_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
           },
           "order_code": {
             "type": "number",
@@ -8989,6 +9015,10 @@
           "description": {
             "type": "string",
             "example": "Payment for maintenance service"
+          },
+          "payment_type": {
+            "type": "string",
+            "example": "service_record"
           },
           "status": {
             "type": "string",
@@ -9026,13 +9056,17 @@
       "CreatePayment": {
         "type": "object",
         "properties": {
-          "appointment_id": {
+          "service_record_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k2"
           },
-          "customer_id": {
+          "subscription_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
           },
           "amount": {
             "type": "number",
@@ -9040,7 +9074,11 @@
           },
           "description": {
             "type": "string",
-            "example": "Payment for maintenance service"
+            "example": "Payment for service or subscription"
+          },
+          "payment_type": {
+            "type": "string",
+            "example": "service_record"
           }
         },
         "xml": {

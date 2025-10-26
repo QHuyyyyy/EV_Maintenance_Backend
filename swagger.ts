@@ -328,11 +328,13 @@ const doc = {
         },
         Payment: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            appointment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
-            customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            subscription_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
             order_code: 123456,
             amount: 250000,
             description: 'Payment for maintenance service',
+            payment_type: 'service_record',
             status: 'pending',
             payment_url: 'https://payos.vn/pay/123456',
             transaction_id: 'TXN123456789',
@@ -342,10 +344,12 @@ const doc = {
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreatePayment: {
-            appointment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
-            customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',  // Optional - for service record payments
+            subscription_id: '60f1b2b3c4e5f6g7h8i9j0k3',  // Optional - for subscription payments
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
             amount: 250000,
-            description: 'Payment for maintenance service'
+            description: 'Payment for service or subscription',
+            payment_type: 'service_record'  // or 'subscription'
         },
         PaymentWebhook: {
             order_code: 123456,

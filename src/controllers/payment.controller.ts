@@ -130,11 +130,24 @@ export class PaymentController {
                required: false,
                type: 'string'
            }
-           #swagger.parameters['appointment_id'] = {
+           #swagger.parameters['service_record_id'] = {
                in: 'query',
-               description: 'Filter by appointment ID',
+               description: 'Filter by service record ID',
                required: false,
                type: 'string'
+           }
+           #swagger.parameters['subscription_id'] = {
+               in: 'query',
+               description: 'Filter by subscription ID',
+               required: false,
+               type: 'string'
+           }
+           #swagger.parameters['payment_type'] = {
+               in: 'query',
+               description: 'Filter by payment type',
+               required: false,
+               type: 'string',
+               enum: ['service_record', 'subscription']
            }
            #swagger.parameters['page'] = {
                in: 'query',
@@ -155,7 +168,9 @@ export class PaymentController {
             const filters = {
                 status: req.query.status as string,
                 customer_id: req.query.customer_id as string,
-                appointment_id: req.query.appointment_id as string,
+                service_record_id: req.query.service_record_id as string,
+                subscription_id: req.query.subscription_id as string,
+                payment_type: req.query.payment_type as string,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
             };

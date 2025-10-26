@@ -1,11 +1,14 @@
+
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPayment extends Document {
-    appointment_id: mongoose.Types.ObjectId;
+    service_record_id?: mongoose.Types.ObjectId;  // For completed service payments
+    subscription_id?: mongoose.Types.ObjectId;  // For subscription/package payments
     customer_id: mongoose.Types.ObjectId;
     order_code: number;
     amount: number;
     description: string;
+    payment_type: 'service_record' | 'subscription';  // Track which type of payment
     status: 'pending' | 'paid' | 'cancelled' | 'expired';
     payment_url?: string;
     transaction_id?: string;
@@ -17,10 +20,15 @@ export interface IPayment extends Document {
 
 const PaymentSchema: Schema = new Schema(
     {
-        appointment_id: {
+        service_record_id: {
             type: Schema.Types.ObjectId,
-            ref: 'Appointment',
-            required: true
+            ref: 'ServiceRecord',
+            required: false  // Optional - only for service record payments
+        },
+        subscription_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'VehicleSubscription',
+            required: false  // Optional - only for subscription payments
         },
         customer_id: {
             type: Schema.Types.ObjectId,
@@ -39,6 +47,11 @@ const PaymentSchema: Schema = new Schema(
         },
         description: {
             type: String,
+            required: true
+        },
+        payment_type: {
+            type: String,
+            enum: ['service_record', 'subscription'],
             required: true
         },
         status: {
@@ -63,5 +76,19 @@ const PaymentSchema: Schema = new Schema(
         timestamps: true
     }
 );
+
+// Validation: Must have exactly one of: service_record_id or subscription_id
+PaymentSchema.pre('save', function(next) {
+    const hasServiceRecord = !!this.service_record_id;
+    const hasSubscription = !!this.subscription_id;
+    const count = [hasServiceRecord, hasSubscription].filter(Boolean).length;
+    if (count === 0) {
+        next(new Error('Payment must have either service_record_id or subscription_id'));
+    } else if (count > 1) {
+        next(new Error('Payment cannot have both service_record_id and subscription_id'));
+    } else {
+        next();
+    }
+});
 
 export default mongoose.model<IPayment>('Payment', PaymentSchema);
