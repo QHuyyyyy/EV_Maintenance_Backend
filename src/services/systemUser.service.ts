@@ -1,3 +1,4 @@
+import User from '../../src/models/user.model';
 import SystemUser from '../models/systemUser.model';
 import { CreateSystemUserRequest, UpdateSystemUserRequest, ISystemUser } from '../types/systemUser.type';
 
@@ -30,17 +31,19 @@ export class SystemUserService {
      */
     async getSystemUserById(systemUserId: string): Promise<ISystemUser> {
         try {
-            const systemUser = await SystemUser.findById(systemUserId).populate('userId', 'phone email role')
+            const systemUser = await SystemUser.findById(systemUserId)
+                .populate({
+                    path: 'userId',
+                    match: { isDeleted: false },
+                    select: 'phone email role'
+                })
                 .lean();
-
-            if (!systemUser) {
+            if (!systemUser || !systemUser.userId) {
                 throw new Error('System user not found');
             }
-            console.log(systemUser);
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
-
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -55,17 +58,19 @@ export class SystemUserService {
      */
     async getSystemUserByUserId(userId: string): Promise<ISystemUser | null> {
         try {
-            const systemUser = await SystemUser.findOne({ userId }).populate('userId', 'phone email role')
+            const systemUser = await SystemUser.findOne({ userId })
+                .populate({
+                    path: 'userId',
+                    match: { isDeleted: false },
+                    select: 'phone email role'
+                })
                 .lean();
-
-            if (!systemUser) {
+            if (!systemUser || !systemUser.userId) {
                 return null;
             }
-            console.log(systemUser);
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
-
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -100,27 +105,27 @@ export class SystemUserService {
                 query.name = { $regex: filters.name, $options: 'i' };
             }
 
-            const systemUsers = await SystemUser.find(query)
-                .populate('userId', 'phone email role')
+            const systemUsersRaw = await SystemUser.find(query)
+                .populate({
+                    path: 'userId',
+                    match: { isDeleted: false },
+                    select: 'phone email role'
+                })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean();
-
-            const total = await SystemUser.countDocuments(query);
-            const totalPages = Math.ceil(total / limit);
-
-            const mappedSystemUsers = systemUsers.map(systemUser => ({
+            const filteredSystemUsers = systemUsersRaw.filter(su => su.userId);
+            const mappedSystemUsers = filteredSystemUsers.map(systemUser => ({
                 ...systemUser,
                 _id: systemUser._id.toString(),
             })) as ISystemUser[];
-
             return {
                 systemUsers: mappedSystemUsers,
-                total,
+                total: mappedSystemUsers.length,
                 page,
                 limit,
-                totalPages
+                totalPages: Math.ceil(mappedSystemUsers.length / limit)
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -159,8 +164,13 @@ export class SystemUserService {
      */
     async deleteSystemUser(systemUserId: string): Promise<boolean> {
         try {
-            const deletedSystemUser = await SystemUser.findByIdAndDelete(systemUserId);
-            return !!deletedSystemUser;
+            const systemUser = await SystemUser.findById(systemUserId);
+            if (!systemUser) {
+                throw new Error('System user not found');
+            }
+            // Set isDeleted on the referenced user
+            await User.findByIdAndUpdate(systemUser.userId, { isDeleted: true });
+            return true;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to delete system user: ${error.message}`);

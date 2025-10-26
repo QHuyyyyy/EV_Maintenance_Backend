@@ -68,6 +68,14 @@ const doc = {
         {
             name: 'Service Checklists',
             description: 'Service checklist management endpoints'
+        },
+        {
+            name: 'Auto Parts',
+            description: 'Auto part inventory management endpoints'
+        },
+        {
+            name: 'Service Details',
+            description: 'Service detail management endpoints'
         }
     ],
     definitions: {
@@ -172,7 +180,6 @@ const doc = {
         },
         Center: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            center_id: 'CTR001',
             name: 'Downtown Service Center',
             address: '456 Main St, City, State 54321',
             phone: '+1234567890',
@@ -191,7 +198,6 @@ const doc = {
         },
         Appointment: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            appointment_id: 'APT001',
             staffId: '60f1b2b3c4e5f6g7h8i9j0k2',
             customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             vehicle_id: '60f1b2b3c4e5f6g7h8i9j0k4',
@@ -218,14 +224,12 @@ const doc = {
         },
         ServiceRecord: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            record_id: 'REC001',
             appointment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             technician_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             start_time: '2025-10-16T09:00:00.000Z',
             end_time: '2025-10-16T11:00:00.000Z',
             description: 'Regular maintenance completed',
             status: 'completed',
-            mileage: 50000,
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
@@ -235,18 +239,15 @@ const doc = {
             start_time: '2025-10-16T09:00:00.000Z',
             end_time: '2025-10-16T11:00:00.000Z',
             description: 'Regular maintenance completed',
-            status: 'completed',
-            mileage: 50000
+            status: 'completed'
         },
         UpdateServiceRecord: {
             end_time: '2025-10-16T12:00:00.000Z',
             description: 'Maintenance and inspection completed',
-            status: 'completed',
-            mileage: 51000
+            status: 'completed'
         },
         ServiceChecklist: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            checklist_id: 'CHK001',
             record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             name: 'Oil Change',
             status: 'completed',
@@ -264,6 +265,58 @@ const doc = {
             name: 'Oil Change',
             status: 'completed',
             note: 'Used synthetic oil'
+        },
+        AutoPart: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            name: 'Brake Pad',
+            quantity: 15,
+            cost_price: 35,
+            selling_price: 55,
+            min_stock: 5,
+            recommended_min_stock: 10,
+            last_forecast_date: '2025-09-15T10:00:00.000Z',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateAutoPart: {
+            name: 'Brake Pad',
+            quantity: 20,
+            cost_price: 35,
+            selling_price: 55,
+            min_stock: 5,
+            recommended_min_stock: 10,
+            last_forecast_date: '2025-09-15T10:00:00.000Z'
+        },
+        UpdateAutoPart: {
+            name: 'Brake Pad',
+            quantity: 18,
+            cost_price: 36,
+            selling_price: 58,
+            min_stock: 6,
+            recommended_min_stock: 12,
+            last_forecast_date: '2025-10-01T10:00:00.000Z'
+        },
+        ServiceDetail: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            description: 'Replaced brake pads',
+            quantity: 2,
+            unit_price: 58,
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateServiceDetail: {
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            description: 'Replaced brake pads',
+            quantity: 2,
+            unit_price: 58
+        },
+        UpdateServiceDetail: {
+            description: 'Replaced brake pads and rotors',
+            quantity: 4,
+            unit_price: 60
         }
     },
     securityDefinitions: {

@@ -72,7 +72,7 @@ export class UserController {
            "bearerAuth": []
    }] */
         // #swagger.parameters['role'] = { in: 'query', type: 'string', enum: ['admin', 'mechanic', 'customer'], description: 'Filter by user role' }
-        // #swagger.parameters['status'] = { in: 'query', type: 'string', enum: ['active', 'inactive', 'suspended'], description: 'Filter by user status' }
+        // #swagger.parameters['isDeleted'] = { in: 'query', type: 'string', enum: ['true', 'false'], description: 'Filter by user deletion status' }
         // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number (default: 1)' }
         // #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page (default: 10)' }
         /* #swagger.responses[200] = {
@@ -80,17 +80,16 @@ export class UserController {
             schema: { $ref: '#/definitions/UsersListResponse' }
         } */
         try {
-            const { role, status, page, limit } = req.query;
+            const { role, isDeleted, page, limit } = req.query;
 
             const filters = {
                 role: role as string,
-                status: status as string,
+                isDeleted: isDeleted as string,
                 page: page ? parseInt(page as string) : undefined,
                 limit: limit ? parseInt(limit as string) : undefined
             };
 
             const result = await getAllUsers(filters);
-            console.log(result);
             res.status(200).json({
                 success: true,
                 message: 'Users retrieved successfully',
