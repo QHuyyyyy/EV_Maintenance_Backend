@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5000/"
+      "url": "http://localhost:3000/"
     }
   ],
   "tags": [
@@ -2312,35 +2312,8 @@
             }
           },
           {
-            "name": "year",
-            "description": "Filter by manufacturing year",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "model",
-            "description": "Filter by vehicle model",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "vehicleName",
             "description": "Filter by vehicle name",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "plateNumber",
-            "description": "Filter by plate number",
             "required": false,
             "in": "query",
             "schema": {
@@ -2386,6 +2359,24 @@
           {
             "name": "maxPrice",
             "description": "Filter by maximum price",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number (default: 1)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page (default: 10)",
             "required": false,
             "in": "query",
             "schema": {
@@ -5234,9 +5225,33 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCenter"
+                "type": "object",
+                "required": [
+                  "name",
+                  "address",
+                  "phone"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Service Center A"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "123 Main St"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+84901234567"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Center image"
+                  }
+                }
               }
             }
           }
@@ -5374,9 +5389,25 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCenter"
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Center image"
+                  }
+                }
               }
             }
           }

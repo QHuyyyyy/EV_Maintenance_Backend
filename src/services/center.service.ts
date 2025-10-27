@@ -72,9 +72,21 @@ export class CenterService {
 
     async updateCenter(centerId: string, updateData: UpdateCenterRequest): Promise<ICenter | null> {
         try {
+            const filteredUpdateData: any = {};
+
+            for (const [key, value] of Object.entries(updateData)) {
+                // Chỉ thêm vào filteredUpdateData nếu giá trị không phải là empty
+                if (value !== null && value !== undefined && value !== '' &&
+                    !(Array.isArray(value) && value.length === 0)) {
+                    filteredUpdateData[key] = value;
+                }
+            }
+            if (Object.keys(filteredUpdateData).length === 0) {
+                return await this.getCenterById(centerId);
+            }
             return await Center.findByIdAndUpdate(
                 centerId,
-                updateData,
+                filteredUpdateData,
                 { new: true, runValidators: true }
             ).lean() as any;
         } catch (error) {
