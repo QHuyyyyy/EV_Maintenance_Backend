@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IServiceRecord extends Document {
     appointment_id: mongoose.Types.ObjectId;
-    technician_id: string;
+    technician_id: mongoose.Types.ObjectId;
     start_time: Date;
     end_time: Date;
     description: string;
@@ -19,20 +19,24 @@ const ServiceRecordSchema: Schema = new Schema(
             required: true
         },
         technician_id: {
-            type: String,
+            type: Schema.Types.ObjectId,
+            ref: 'SystemUser',
             required: true
         },
         start_time: {
             type: Date,
-            required: true
+            required: false,
+            default: null
         },
         end_time: {
             type: Date,
-            required: true
+            required: false,
+            default: null
         },
         description: {
             type: String,
-            required: true
+            required: false,
+            default: ''
         },
         status: {
             type: String,

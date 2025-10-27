@@ -116,51 +116,51 @@ export class ServicePackageService {
         }
     }
 
-    // Lấy gói dịch vụ phổ biến nhất
-    async getPopularPackages(limit: number = 5) {
-        try {
-            const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+    // // Lấy gói dịch vụ phổ biến nhất
+    // async getPopularPackages(limit: number = 5) {
+    //     try {
+    //         const { VehicleSubscription } = require('../models/vehicleSubcription.model');
 
-            const popularPackages = await VehicleSubscription.aggregate([
-                {
-                    $group: {
-                        _id: '$package_id',
-                        subscriptionCount: { $sum: 1 }
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'servicepackages',
-                        localField: '_id',
-                        foreignField: '_id',
-                        as: 'package'
-                    }
-                },
-                {
-                    $unwind: '$package'
-                },
-                {
-                    $sort: { subscriptionCount: -1 }
-                },
-                {
-                    $limit: limit
-                },
-                {
-                    $project: {
-                        _id: '$package._id',
-                        name: '$package.name',
-                        description: '$package.description',
-                        price: '$package.price',
-                        duration: '$package.duration',
-                        km_interval: '$package.km_interval',
-                        subscriptionCount: 1
-                    }
-                }
-            ]);
+    //         const popularPackages = await VehicleSubscription.aggregate([
+    //             {
+    //                 $group: {
+    //                     _id: '$package_id',
+    //                     subscriptionCount: { $sum: 1 }
+    //                 }
+    //             },
+    //             {
+    //                 $lookup: {
+    //                     from: 'servicepackages',
+    //                     localField: '_id',
+    //                     foreignField: '_id',
+    //                     as: 'package'
+    //                 }
+    //             },
+    //             {
+    //                 $unwind: '$package'
+    //             },
+    //             {
+    //                 $sort: { subscriptionCount: -1 }
+    //             },
+    //             {
+    //                 $limit: limit
+    //             },
+    //             {
+    //                 $project: {
+    //                     _id: '$package._id',
+    //                     name: '$package.name',
+    //                     description: '$package.description',
+    //                     price: '$package.price',
+    //                     duration: '$package.duration',
+    //                     km_interval: '$package.km_interval',
+    //                     subscriptionCount: 1
+    //                 }
+    //             }
+    //         ]);
 
-            return popularPackages;
-        } catch (error) {
-            throw new Error(`Error fetching popular packages: ${error}`);
-        }
-    }
+    //         return popularPackages;
+    //     } catch (error) {
+    //         throw new Error(`Error fetching popular packages: ${error}`);
+    //     }
+    // }
 }

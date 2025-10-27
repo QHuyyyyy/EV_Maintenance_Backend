@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IServiceDetailDocument extends Document {
     record_id: mongoose.Types.ObjectId;
-    part_id: mongoose.Types.ObjectId;
+    centerpart_id: mongoose.Types.ObjectId;
     description?: string;
     quantity: number;
     unit_price: number;
@@ -17,10 +17,10 @@ const ServiceDetailSchema: Schema = new Schema(
             ref: 'ServiceRecord',
             required: [true, 'Record reference is required']
         },
-        part_id: {
+        centerpart_id: {
             type: Schema.Types.ObjectId,
-            ref: 'AutoPart',
-            required: [true, 'Part reference is required']
+            ref: 'CenterAutoPart',
+            required: [true, 'Center part reference is required']
         },
         description: {
             type: String,

@@ -4,6 +4,7 @@ import serviceChecklistService from '../services/serviceChecklist.service';
 export class ServiceChecklistController {
     async createServiceChecklist(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+          #swagger.summary = 'Create Service Checklist'
            #swagger.description = 'Create a new service checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -39,6 +40,7 @@ export class ServiceChecklistController {
 
     async getServiceChecklistById(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+            #swagger.summary = 'Get Service Checklist by ID'
            #swagger.description = 'Get service checklist by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -77,15 +79,9 @@ export class ServiceChecklistController {
 
     async getAllServiceChecklists(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+           #swagger.summary = 'Get All Service Checklists'
            #swagger.description = 'Get all service checklists with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
-           #swagger.parameters['status'] = {
-               in: 'query',
-               description: 'Filter by status',
-               required: false,
-               type: 'string',
-               enum: ['pending', 'completed', 'skipped']
-           }
            #swagger.parameters['record_id'] = {
                in: 'query',
                description: 'Filter by service record ID',
@@ -109,8 +105,6 @@ export class ServiceChecklistController {
         */
         try {
             const filters = {
-                status: req.query.status as string,
-                record_id: req.query.record_id as string,
                 page: req.query.page ? parseInt(req.query.page as string) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string) : undefined
             };
@@ -136,6 +130,7 @@ export class ServiceChecklistController {
 
     async updateServiceChecklist(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+           #swagger.summary = 'Update Service Checklist Item'
            #swagger.description = 'Update a service checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -183,6 +178,7 @@ export class ServiceChecklistController {
 
     async deleteServiceChecklist(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+              #swagger.summary = 'Delete Service Checklist Item'
            #swagger.description = 'Delete a service checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

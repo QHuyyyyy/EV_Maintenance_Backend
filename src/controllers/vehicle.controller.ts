@@ -17,15 +17,14 @@ export class VehicleController {
         // #swagger.description = 'API to get all electric vehicles with optional filters'
         // #swagger.security = [{ "bearerAuth": [] }]
         // #swagger.parameters['customerId'] = { description: 'Filter by customer ID', required: false, type: 'string', in: 'query' }
-        // #swagger.parameters['year'] = { description: 'Filter by manufacturing year', required: false, type: 'number', in: 'query' }
-        // #swagger.parameters['model'] = { description: 'Filter by vehicle model', required: false, type: 'string', in: 'query' }
         // #swagger.parameters['vehicleName'] = { description: 'Filter by vehicle name', required: false, type: 'string', in: 'query' }
-        // #swagger.parameters['plateNumber'] = { description: 'Filter by plate number', required: false, type: 'string', in: 'query' }
         // #swagger.parameters['VIN'] = { description: 'Filter by VIN', required: false, type: 'string', in: 'query' }
         // #swagger.parameters['minMileage'] = { description: 'Filter by minimum mileage', required: false, type: 'number', in: 'query' }
         // #swagger.parameters['maxMileage'] = { description: 'Filter by maximum mileage', required: false, type: 'number', in: 'query' }
         // #swagger.parameters['minPrice'] = { description: 'Filter by minimum price', required: false, type: 'number', in: 'query' }
         // #swagger.parameters['maxPrice'] = { description: 'Filter by maximum price', required: false, type: 'number', in: 'query' }
+        // #swagger.parameters['page'] = { description: 'Page number (default: 1)', required: false, type: 'number', in: 'query' }
+        // #swagger.parameters['limit'] = { description: 'Number of items per page (default: 10)', required: false, type: 'number', in: 'query' }
         /* #swagger.responses[200] = {
             description: 'Successfully retrieved vehicles list',
             schema: {
@@ -49,10 +48,11 @@ export class VehicleController {
         } */
         try {
             const filters = req.query;
-            const vehicles = await this.vehicleService.getAllVehicles(filters);
+            const result = await this.vehicleService.getAllVehicles(filters);
+            // result contains { vehicles, total, page, limit, totalPages }
             res.status(200).json({
                 success: true,
-                data: vehicles
+                data: result
             });
         } catch (error: any) {
             res.status(500).json({

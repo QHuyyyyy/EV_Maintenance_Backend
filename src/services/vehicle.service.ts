@@ -7,6 +7,9 @@ export class VehicleService {
     async getAllVehicles(filters: any = {}) {
         try {
             const query: any = {};
+            const page = filters.page ? Number(filters.page) : 1;
+            const limit = filters.limit ? Number(filters.limit) : 10;
+            const skip = (page - 1) * limit;
 
             // Filter theo customerId
             if (filters.customerId) {
@@ -60,8 +63,22 @@ export class VehicleService {
                 }
             }
 
-            const vehicles = await Vehicle.find(query).populate('customerId', 'customerName address');
-            return vehicles;
+            const [vehicles, total] = await Promise.all([
+                Vehicle.find(query)
+                    .populate('customerId', 'customerName address')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit),
+                Vehicle.countDocuments(query)
+            ]);
+
+            return {
+                vehicles,
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit) || 1
+            };
         } catch (error) {
             throw new Error(`Error fetching vehicles: ${error}`);
         }

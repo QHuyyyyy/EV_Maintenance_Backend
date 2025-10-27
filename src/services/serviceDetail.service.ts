@@ -17,18 +17,6 @@ export class ServiceDetailService {
     async getServiceDetailById(id: string): Promise<IServiceDetail | null> {
         try {
             return await ServiceDetail.findById(id)
-                .populate({
-                    path: 'record_id',
-                    populate: {
-                        path: 'appointment_id',
-                        populate: [
-                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'name address phone' }
-                        ]
-                    }
-                })
-                .populate({ path: 'part_id' })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {
@@ -40,7 +28,7 @@ export class ServiceDetailService {
 
     async getAllServiceDetails(filters?: {
         record_id?: string;
-        part_id?: string;
+        centerpart_id?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -59,24 +47,12 @@ export class ServiceDetailService {
             if (filters?.record_id) {
                 query.record_id = filters.record_id;
             }
-            if (filters?.part_id) {
-                query.part_id = filters.part_id;
+            if (filters?.centerpart_id) {
+                query.centerpart_id = filters.centerpart_id;
             }
 
             const [details, total] = await Promise.all([
                 ServiceDetail.find(query)
-                    .populate({
-                        path: 'record_id',
-                        populate: {
-                            path: 'appointment_id',
-                            populate: [
-                                { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                                { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                                { path: 'center_id', select: 'name address phone' }
-                            ]
-                        }
-                    })
-                    .populate({ path: 'part_id' })
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit)
@@ -102,18 +78,6 @@ export class ServiceDetailService {
     async updateServiceDetail(id: string, updateData: UpdateServiceDetailRequest): Promise<IServiceDetail | null> {
         try {
             return await ServiceDetail.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
-                .populate({
-                    path: 'record_id',
-                    populate: {
-                        path: 'appointment_id',
-                        populate: [
-                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'name address phone' }
-                        ]
-                    }
-                })
-                .populate({ path: 'part_id' })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {

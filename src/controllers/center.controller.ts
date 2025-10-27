@@ -1,22 +1,50 @@
 import { Request, Response } from 'express';
 import centerService from '../services/center.service';
+import { FirebaseStorageService } from '../firebase/storage.service';
+
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
+}
 
 export class CenterController {
+    private firebaseStorageService = new FirebaseStorageService();
     async createCenter(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+          #swagger.summary = 'Create a new center'
            #swagger.description = 'Create a new service center'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
                required: true,
                content: {
-                   'application/json': {
-                       schema: { $ref: '#/components/schemas/CreateCenter' }
+                   "multipart/form-data": {
+                       schema: {
+                           type: "object",
+                           required: ["name", "address", "phone"],
+                           properties: {
+                               name: { type: "string", example: "Service Center A" },
+                               address: { type: "string", example: "123 Main St" },
+                               phone: { type: "string", example: "+84901234567" },
+                               image: { type: "string", format: "binary", description: "Center image" }
+                           }
+                       }
                    }
                }
            }
         */
         try {
-            const center = await centerService.createCenter(req.body);
+            const centerData: any = req.body;
+
+            // If multipart upload with image
+            if ((req as MulterRequest).file) {
+                const imageUrl = await this.firebaseStorageService.uploadFile(
+                    (req as MulterRequest).file as Express.Multer.File,
+                    undefined,
+                    'centers'
+                );
+                centerData.image = imageUrl;
+            }
+
+            const center = await centerService.createCenter(centerData);
             res.status(201).json({
                 success: true,
                 message: 'Center created successfully',
@@ -39,6 +67,7 @@ export class CenterController {
 
     async getCenterById(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+              #swagger.summary = 'Get center by ID'
            #swagger.description = 'Get center by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -77,6 +106,7 @@ export class CenterController {
 
     async getAllCenters(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+           #swagger.summary = 'Get all service centers'
            #swagger.description = 'Get all service centers with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['name'] = {
@@ -128,6 +158,7 @@ export class CenterController {
 
     async updateCenter(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+           #swagger.summary = 'Update a service center'
            #swagger.description = 'Update a service center'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -139,14 +170,34 @@ export class CenterController {
            #swagger.requestBody = {
                required: true,
                content: {
-                   'application/json': {
-                       schema: { $ref: '#/components/schemas/UpdateCenter' }
+                   "multipart/form-data": {
+                       schema: {
+                           type: "object",
+                           properties: {
+                               name: { type: "string" },
+                               address: { type: "string" },
+                               phone: { type: "string" },
+                               image: { type: "string", format: "binary", description: "Center image" }
+                           }
+                       }
                    }
                }
            }
         */
         try {
-            const center = await centerService.updateCenter(req.params.id, req.body);
+            const updateData: any = req.body;
+
+            // If multipart upload with image
+            if ((req as MulterRequest).file) {
+                const imageUrl = await this.firebaseStorageService.uploadFile(
+                    (req as MulterRequest).file as Express.Multer.File,
+                    undefined,
+                    'centers'
+                );
+                updateData.image = imageUrl;
+            }
+
+            const center = await centerService.updateCenter(req.params.id, updateData);
             if (!center) {
                 return res.status(404).json({
                     success: false,
@@ -175,6 +226,7 @@ export class CenterController {
 
     async deleteCenter(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+              #swagger.summary = 'Delete a service center'
            #swagger.description = 'Delete a service center'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

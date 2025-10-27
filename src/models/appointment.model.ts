@@ -16,8 +16,9 @@ const AppointmentSchema: Schema = new Schema(
     {
         staffId: {
             type: Schema.Types.ObjectId,
-            ref: 'systemUser',
-            required: true
+            ref: 'SystemUser',
+            required: false,
+            default: null
         },
         customer_id: {
             type: Schema.Types.ObjectId,
