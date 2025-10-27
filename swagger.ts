@@ -103,6 +103,7 @@ const doc = {
             email: 'user@example.com',
             password: 'password123',
             role: 'STAFF',
+            centerId: "string"
         },
         UserUpdate: {
             email: 'newemail@example.com',
@@ -157,7 +158,8 @@ const doc = {
         UpdateCustomer: {
             customerName: 'John Doe',
             dateOfBirth: '1990-01-15',
-            address: '123 Main St, City, State'
+            address: '123 Main St, City, State',
+
         },
         UpdateSystemUser: {
             name: 'John Doe',

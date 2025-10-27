@@ -7,12 +7,14 @@ export interface AuthRegisterDto {
     email: string;
     password: string;
     role?: "CUSTOMER" | "ADMIN" | "TECHNICIAN" | "STAFF";
+    centerId?: string;
 }
 
 export interface Payload {
     sub: string;
     email?: string;
     phone?: string;
+    centerId?: string;
     originalIssuedAt?: number; // Thời gian đăng nhập ban đầu
 }
 
