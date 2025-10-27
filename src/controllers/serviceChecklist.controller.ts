@@ -79,13 +79,6 @@ export class ServiceChecklistController {
         /* #swagger.tags = ['Service Checklists']
            #swagger.description = 'Get all service checklists with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
-           #swagger.parameters['status'] = {
-               in: 'query',
-               description: 'Filter by status',
-               required: false,
-               type: 'string',
-               enum: ['pending', 'completed', 'skipped']
-           }
            #swagger.parameters['record_id'] = {
                in: 'query',
                description: 'Filter by service record ID',
@@ -109,8 +102,6 @@ export class ServiceChecklistController {
         */
         try {
             const filters = {
-                status: req.query.status as string,
-                record_id: req.query.record_id as string,
                 page: req.query.page ? parseInt(req.query.page as string) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string) : undefined
             };

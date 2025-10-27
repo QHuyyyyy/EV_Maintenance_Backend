@@ -258,23 +258,18 @@ const doc = {
         },
         ServiceChecklist: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             name: 'Oil Change',
-            status: 'completed',
-            note: 'Used synthetic oil',
+            order: 1,
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreateServiceChecklist: {
-            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             name: 'Oil Change',
-            status: 'pending',
-            note: 'Schedule oil change'
+            order: 1,
         },
         UpdateServiceChecklist: {
             name: 'Oil Change',
-            status: 'completed',
-            note: 'Used synthetic oil'
+            order: 1,
         },
         AutoPart: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
@@ -377,7 +372,7 @@ const doc = {
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreatePayment: {
-            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2', 
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
             amount: 250000,
             description: 'Payment for service or subscription',
@@ -414,6 +409,32 @@ const doc = {
             status: 'issued',
             minusAmount: 5000,
             totalAmount: 245000
+        },
+        StaffAppointment: {
+            staffId: '60f1b2b3c4e5f6g7h8i9j0k2'
+        },
+        TechnicianAppointment: {
+            technicianId: '60f1b2b3c4e5f6g7h8i9j0k3'
+        }
+        ,
+        RecordChecklist: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            checklist_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            status: 'pending',
+            note: 'Optional note for this checklist item on the record',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateRecordChecklist: {
+            checklist_ids: ['60f1b2b3c4e5f6g7h8i9j0k2', "60f1b2b3c4e5f6g7h8i9j0k4"],
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            status: 'pending',
+            note: 'Optional note for this checklist item on the record'
+        },
+        UpdateRecordChecklist: {
+            status: 'completed',
+            note: 'Inspected and completed'
         }
     },
     securityDefinitions: {

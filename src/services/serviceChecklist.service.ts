@@ -6,19 +6,7 @@ export class ServiceChecklistService {
         try {
             const checklist = new ServiceChecklist(checklistData);
             await checklist.save();
-            return await ServiceChecklist.findById(checklist._id)
-                .populate({
-                    path: 'record_id',
-                    populate: {
-                        path: 'appointment_id',
-                        populate: [
-                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'name address phone' }
-                        ]
-                    }
-                })
-                .lean() as any;
+            return await ServiceChecklist.findById(checklist._id).lean() as any;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to create service checklist: ${error.message}`);
@@ -29,19 +17,7 @@ export class ServiceChecklistService {
 
     async getServiceChecklistById(checklistId: string): Promise<IServiceChecklist | null> {
         try {
-            return await ServiceChecklist.findById(checklistId)
-                .populate({
-                    path: 'record_id',
-                    populate: {
-                        path: 'appointment_id',
-                        populate: [
-                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'name address phone' }
-                        ]
-                    }
-                })
-                .lean() as any;
+            return await ServiceChecklist.findById(checklistId).lean() as any;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get service checklist: ${error.message}`);
@@ -51,8 +27,6 @@ export class ServiceChecklistService {
     }
 
     async getAllServiceChecklists(filters?: {
-        status?: string;
-        record_id?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -68,26 +42,9 @@ export class ServiceChecklistService {
             const skip = (page - 1) * limit;
 
             const query: any = {};
-            if (filters?.status) {
-                query.status = filters.status;
-            }
-            if (filters?.record_id) {
-                query.record_id = filters.record_id;
-            }
 
             const [checklists, total] = await Promise.all([
                 ServiceChecklist.find(query)
-                    .populate({
-                        path: 'record_id',
-                        populate: {
-                            path: 'appointment_id',
-                            populate: [
-                                { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                                { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                                { path: 'center_id', select: 'name address phone' }
-                            ]
-                        }
-                    })
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit)
@@ -117,17 +74,6 @@ export class ServiceChecklistService {
                 updateData,
                 { new: true, runValidators: true }
             )
-                .populate({
-                    path: 'record_id',
-                    populate: {
-                        path: 'appointment_id',
-                        populate: [
-                            { path: 'customer_id', select: 'customerName dateOfBirth address' },
-                            { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
-                            { path: 'center_id', select: 'name address phone' }
-                        ]
-                    }
-                })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {

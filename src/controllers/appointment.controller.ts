@@ -1,5 +1,41 @@
 import { Request, Response } from 'express';
 import appointmentService from '../services/appointment.service';
+import serviceRecordService from '../services/serviceRecord.service';
+import { SystemUserService } from '../services/systemUser.service';
+import { ShiftAssignmentService } from '../services/shiftAssignment.service';
+
+const systemUserService = new SystemUserService();
+const shiftAssignmentService = new ShiftAssignmentService();
+
+function timeStringToMinutes(t?: string): number | null {
+    if (!t) return null;
+    const parts = t.split(':').map(p => parseInt(p, 10));
+    if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return null;
+    return parts[0] * 60 + parts[1];
+}
+
+function isSameDate(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function isDateTimeWithinShifts(dt: Date, shifts: any[]): boolean {
+    if (!dt || !Array.isArray(shifts)) return false;
+    const dtMinutes = dt.getHours() * 60 + dt.getMinutes();
+    for (const s of shifts) {
+        try {
+            const shiftDate = s.shift_date ? new Date(s.shift_date) : null;
+            if (!shiftDate) continue;
+            if (!isSameDate(dt, shiftDate)) continue;
+            const startMin = timeStringToMinutes(s.start_time);
+            const endMin = timeStringToMinutes(s.end_time);
+            if (startMin === null || endMin === null) continue;
+            if (startMin <= dtMinutes && dtMinutes <= endMin) return true;
+        } catch (e) {
+            continue;
+        }
+    }
+    return false;
+}
 
 export class AppointmentController {
     async createAppointment(req: Request, res: Response) {
@@ -239,6 +275,134 @@ export class AppointmentController {
                     success: false,
                     message: 'Failed to delete appointment'
                 });
+            }
+        }
+    }
+
+    async assignStaff(req: Request, res: Response) {
+        //  #swagger.tags = ['Appointments']
+        //    #swagger.description = 'Assign or remove staff for an appointment (admin only)'
+        //    #swagger.security = [{ "bearerAuth": [] }]
+        // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
+        /* #swagger.requestBody = {
+      required: true,
+      content: {
+          "application/json": {
+              schema: {
+                  $ref: '#/definitions/StaffAppointment'
+              }
+          }
+      }
+  } */
+        try {
+            const user = req.user as any;
+            if (!user || user.role !== 'ADMIN') {
+                return res.status(403).json({ success: false, message: 'Forbidden: Admins only' });
+            }
+            const staffId = req.body.staffId;
+            if (!staffId) {
+                return res.status(400).json({ success: false, message: 'staffId is required' });
+            }
+            let systemUser;
+            try {
+                systemUser = await systemUserService.getSystemUserById(staffId);
+            } catch (err: any) {
+                return res.status(400).json({ success: false, message: 'Invalid staffId or system user not found' });
+            }
+            const role = (systemUser.userId as any)?.role;
+            if (role !== 'STAFF') {
+                return res.status(400).json({ success: false, message: `User role must be STAFF to be assigned as staff (current: ${role})` });
+            }
+            const appointmentObj = await appointmentService.getAppointmentById(req.params.id);
+            if (!appointmentObj) {
+                return res.status(404).json({ success: false, message: 'Appointment not found' });
+            }
+
+            const shifts = await shiftAssignmentService.getShiftsOfUser(staffId);
+            const inShift = isDateTimeWithinShifts(appointmentObj.startTime, shifts);
+            if (!inShift) {
+                return res.status(400).json({ success: false, message: 'Staff is not scheduled for a shift covering the appointment time' });
+            }
+
+            const appointment = await appointmentService.assignStaff(req.params.id, staffId);
+            if (!appointment) {
+                return res.status(404).json({ success: false, message: 'Appointment not found' });
+            }
+            res.status(200).json({ success: true, message: 'Staff assigned successfully', data: appointment });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to assign staff' });
+            }
+        }
+    }
+
+    async assignTechnician(req: Request, res: Response) {
+        /* #swagger.tags = ['Appointments']
+           #swagger.description = 'Assign a technician to an appointment and create a service record (admin only)'
+           #swagger.security = [{ "bearerAuth": [] }]
+         #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
+         #swagger.requestBody = {
+      required: true,
+      content: {
+          "application/json": {
+              schema: {
+                  $ref: '#/definitions/TechnicianAppointment'
+              }
+          }
+      }
+  } */
+        try {
+            const user = req.user as any;
+            if (!user || user.role !== 'ADMIN') {
+                return res.status(403).json({ success: false, message: 'Forbidden: Admins only' });
+            }
+
+            const appointmentId = req.params.id;
+            const technician_id = req.body.technician_id;
+            if (!technician_id) {
+                return res.status(400).json({ success: false, message: 'technician_id is required' });
+            }
+
+            // Ensure appointment exists
+            const appointment = await appointmentService.getAppointmentById(appointmentId);
+            if (!appointment) {
+                return res.status(404).json({ success: false, message: 'Appointment not found' });
+            }
+
+            // Validate technician system user and role
+            let techUser;
+            try {
+                techUser = await systemUserService.getSystemUserById(technician_id);
+            } catch (err: any) {
+                return res.status(400).json({ success: false, message: 'Invalid technician_id or system user not found' });
+            }
+            const techRole = (techUser.userId as any)?.role;
+            if (techRole !== 'TECHNICIAN') {
+                return res.status(400).json({ success: false, message: `User role must be TECHNICIAN to be assigned as technician (current: ${techRole})` });
+            }
+
+            // Ensure technician has a shift covering the appointment time
+            const techShifts = await shiftAssignmentService.getShiftsOfUser(technician_id);
+            const techInShift = isDateTimeWithinShifts(appointment.startTime, techShifts);
+            if (!techInShift) {
+                return res.status(400).json({ success: false, message: 'Technician is not scheduled for a shift covering the appointment time' });
+            }
+
+            // Create minimal service record; technician will update remaining fields later
+            const record = await serviceRecordService.createServiceRecord({
+                appointment_id: appointmentId,
+                technician_id,
+                status: 'pending'
+            } as any);
+
+            res.status(201).json({ success: true, message: 'Technician assigned and service record created', data: record });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to assign technician' });
             }
         }
     }
