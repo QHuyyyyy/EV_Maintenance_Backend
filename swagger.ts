@@ -76,6 +76,14 @@ const doc = {
         {
             name: 'Service Details',
             description: 'Service detail management endpoints'
+        },
+        {
+            name: 'Payments',
+            description: 'Payment processing and management endpoints'
+        },
+        {
+            name: 'Invoices',
+            description: 'Invoice management endpoints'
         }
     ],
     definitions: {
@@ -319,6 +327,62 @@ const doc = {
             description: 'Replaced brake pads and rotors',
             quantity: 4,
             unit_price: 60
+        },
+        Payment: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            subscription_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            order_code: 123456,
+            amount: 250000,
+            description: 'Payment for maintenance service',
+            payment_type: 'service_record',
+            status: 'pending',
+            payment_url: 'https://payos.vn/pay/123456',
+            transaction_id: 'TXN123456789',
+            payment_method: 'QR',
+            paid_at: '2025-09-21T10:00:00.000Z',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreatePayment: {
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2', 
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            amount: 250000,
+            description: 'Payment for service or subscription',
+            payment_type: 'service_record',
+            returnUrl: 'https://example.com/payment/success',
+            cancelUrl: 'https://example.com/payment/cancel'
+        },
+        PaymentWebhook: {
+            order_code: 123456,
+            status: 'PAID',
+            transaction_id: 'TXN123456789',
+            payment_method: 'QR',
+            paid_at: '2025-09-21T10:00:00.000Z'
+        },
+        Invoice: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            payment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            invoiceType: 'VAT',
+            minusAmount: 0,
+            totalAmount: 250000,
+            payment_method: 'QR',
+            transaction_code: 'TXN123456789',
+            status: 'issued',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateInvoice: {
+            payment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            invoiceType: 'VAT',
+            minusAmount: 0,
+            totalAmount: 250000
+        },
+        UpdateInvoice: {
+            status: 'issued',
+            minusAmount: 5000,
+            totalAmount: 245000
         }
     },
     securityDefinitions: {

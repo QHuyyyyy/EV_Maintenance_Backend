@@ -21,6 +21,8 @@ import autoPartRoutes from "./routes/autoPart.routes";
 import serviceDetailRoutes from "./routes/serviceDetail.routes";
 import schedulerRoutes from "./routes/scheduler.routes";
 import conversationRoutes from "./routes/conversation.routes";
+import paymentRoutes from "./routes/payment.routes";
+import invoiceRoutes from "./routes/invoice.routes";
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
 import http from "http";
 import chatSocketService from "./socket/chat.socket";
@@ -80,6 +82,8 @@ app.use('/api/auto-parts', autoPartRoutes);
 app.use('/api/service-details', serviceDetailRoutes);
 app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/chat', conversationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 // Root route redirect to API docs
 
