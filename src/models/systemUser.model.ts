@@ -27,6 +27,10 @@ const systemUserSchema = new Schema({
     isOnline: {
         type: Boolean,
         default: false
+    },
+    centerId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Center',
     }
 }, {
     timestamps: true

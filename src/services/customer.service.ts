@@ -12,7 +12,8 @@ export class CustomerService {
             const customer = new Customer({
                 userId: userId,
                 customerName: '',
-                address: ''
+                address: '',
+                dateOfBirth: null,
             });
             const savedCustomer = await customer.save();
             return await this.getCustomerById(savedCustomer._id.toString());
