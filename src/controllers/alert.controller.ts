@@ -114,6 +114,7 @@ export class AlertController {
     static async createAlert(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Alerts']
         // #swagger.summary = 'Create a new alert'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'API to create a new alert for a vehicle'
         /* #swagger.requestBody = {
                required: true,
@@ -213,6 +214,7 @@ export class AlertController {
     static async updateAlert(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Alerts']
         // #swagger.summary = 'Update alert'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'API to update an existing alert'
         // #swagger.parameters['id'] = { description: 'Alert ID', required: true, type: 'string' }
         /* #swagger.parameters['body'] = {
@@ -267,6 +269,7 @@ export class AlertController {
     static async markAsRead(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Alerts']
         // #swagger.summary = 'Mark alert as read'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'API to mark a specific alert as read'
         // #swagger.parameters['id'] = { description: 'Alert ID', required: true, type: 'string' }
         /* #swagger.responses[200] = {

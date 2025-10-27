@@ -13,6 +13,10 @@ const centerSchema = new Schema({
         type: String,
         required: [true, 'Phone is required']
     }
+    ,
+    image: {
+        type: String,
+    }
 }, {
     timestamps: true
 });

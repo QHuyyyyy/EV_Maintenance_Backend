@@ -21,7 +21,6 @@ export class MaintenanceSchedulerService {
     startScheduler() {
         console.log('🚀 Starting Maintenance Scheduler...');
 
-        // Chạy mỗi 6 giờ: 00:00, 06:00, 12:00, 18:00
         this.cronJob = cron.schedule('0 */6 * * *', async () => {
             console.log(`[${new Date().toISOString()}] Timer Running maintenance check...`);
             try {
@@ -30,6 +29,9 @@ export class MaintenanceSchedulerService {
             } catch (error) {
                 console.error('❌ Error in maintenance check:', error);
             }
+        }, {
+            scheduled: true,
+            timezone: 'Asia/Ho_Chi_Minh'
         });
 
         console.log('✅ Maintenance Scheduler started');

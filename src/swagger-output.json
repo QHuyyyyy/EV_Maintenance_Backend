@@ -64,8 +64,20 @@
       "description": "Auto part inventory management endpoints"
     },
     {
+      "name": "Center Auto Parts",
+      "description": "Center-scoped auto part inventory management endpoints"
+    },
+    {
       "name": "Service Details",
       "description": "Service detail management endpoints"
+    },
+    {
+      "name": "Payments",
+      "description": "Payment processing and management endpoints"
+    },
+    {
+      "name": "Invoices",
+      "description": "Invoice management endpoints"
     }
   ],
   "paths": {
@@ -2300,35 +2312,8 @@
             }
           },
           {
-            "name": "year",
-            "description": "Filter by manufacturing year",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "model",
-            "description": "Filter by vehicle model",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "vehicleName",
             "description": "Filter by vehicle name",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "plateNumber",
-            "description": "Filter by plate number",
             "required": false,
             "in": "query",
             "schema": {
@@ -2374,6 +2359,24 @@
           {
             "name": "maxPrice",
             "description": "Filter by maximum price",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number (default: 1)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page (default: 10)",
             "required": false,
             "in": "query",
             "schema": {
@@ -4559,6 +4562,9 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -4680,8 +4686,16 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4835,6 +4849,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Alert not found",
@@ -5033,8 +5050,16 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/alerts/{id}/read": {
@@ -5162,8 +5187,16 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/centers": {
@@ -5171,6 +5204,7 @@
         "tags": [
           "Centers"
         ],
+        "summary": "Create a new center",
         "description": "Create a new service center",
         "responses": {
           "201": {
@@ -5191,9 +5225,33 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCenter"
+                "type": "object",
+                "required": [
+                  "name",
+                  "address",
+                  "phone"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Service Center A"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "123 Main St"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+84901234567"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Center image"
+                  }
+                }
               }
             }
           }
@@ -5203,6 +5261,7 @@
         "tags": [
           "Centers"
         ],
+        "summary": "Get all service centers",
         "description": "Get all service centers with optional filters",
         "parameters": [
           {
@@ -5258,6 +5317,7 @@
         "tags": [
           "Centers"
         ],
+        "summary": "Get center by ID",
         "description": "Get center by ID",
         "parameters": [
           {
@@ -5294,6 +5354,7 @@
         "tags": [
           "Centers"
         ],
+        "summary": "Update a service center",
         "description": "Update a service center",
         "parameters": [
           {
@@ -5328,9 +5389,25 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCenter"
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Center image"
+                  }
+                }
               }
             }
           }
@@ -5340,6 +5417,7 @@
         "tags": [
           "Centers"
         ],
+        "summary": "Delete a service center",
         "description": "Delete a service center",
         "parameters": [
           {
@@ -5378,6 +5456,7 @@
         "tags": [
           "Appointments"
         ],
+        "summary": "Create Appointment",
         "description": "Create a new appointment",
         "responses": {
           "201": {
@@ -5410,7 +5489,8 @@
         "tags": [
           "Appointments"
         ],
-        "description": "Get all appointments with optional filters",
+        "summary": "Get all appointments with optional filters",
+        "description": "",
         "parameters": [
           {
             "name": "status",
@@ -5510,6 +5590,7 @@
         "tags": [
           "Appointments"
         ],
+        "summary": "Get Appointment by ID",
         "description": "Get appointment by ID",
         "parameters": [
           {
@@ -5546,6 +5627,7 @@
         "tags": [
           "Appointments"
         ],
+        "summary": "Update an appointment",
         "description": "Update an appointment",
         "parameters": [
           {
@@ -5592,6 +5674,7 @@
         "tags": [
           "Appointments"
         ],
+        "summary": "Delete an appointment",
         "description": "Delete an appointment",
         "parameters": [
           {
@@ -5625,11 +5708,116 @@
         ]
       }
     },
+    "/api/appointments/{id}/assign-staff": {
+      "put": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Assign or remove staff for an appointment (admin only)",
+        "description": "Assign or remove staff for an appointment (admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffAppointment"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/appointments/{id}/assign-technician": {
+      "post": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Assign Technician to Appointment and Create Service Record (admin only)",
+        "description": "Assign a technician to an appointment and create a service record (admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TechnicianAppointment"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/service-records": {
       "post": {
         "tags": [
           "Service Records"
         ],
+        "summary": "Create Service Record",
         "description": "Create a new service record",
         "responses": {
           "201": {
@@ -5662,6 +5850,7 @@
         "tags": [
           "Service Records"
         ],
+        "summary": "Get All Service Records",
         "description": "Get all service records with optional filters",
         "parameters": [
           {
@@ -5761,6 +5950,7 @@
         "tags": [
           "Service Records"
         ],
+        "summary": "Get Service Record by ID",
         "description": "Get service record by ID",
         "parameters": [
           {
@@ -5797,7 +5987,8 @@
         "tags": [
           "Service Records"
         ],
-        "description": "Update a service record",
+        "summary": "Update a service record",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -5843,6 +6034,7 @@
         "tags": [
           "Service Records"
         ],
+        "summary": "Delete a service record",
         "description": "Delete a service record",
         "parameters": [
           {
@@ -5881,6 +6073,7 @@
         "tags": [
           "Service Checklists"
         ],
+        "summary": "Create Service Checklist",
         "description": "Create a new service checklist item",
         "responses": {
           "201": {
@@ -5913,22 +6106,9 @@
         "tags": [
           "Service Checklists"
         ],
+        "summary": "Get All Service Checklists",
         "description": "Get all service checklists with optional filters",
         "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "description": "Filter by status",
-            "required": false,
-            "enum": [
-              "pending",
-              "completed",
-              "skipped"
-            ],
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "record_id",
             "in": "query",
@@ -5982,6 +6162,7 @@
         "tags": [
           "Service Checklists"
         ],
+        "summary": "Get Service Checklist by ID",
         "description": "Get service checklist by ID",
         "parameters": [
           {
@@ -6018,6 +6199,7 @@
         "tags": [
           "Service Checklists"
         ],
+        "summary": "Update Service Checklist Item",
         "description": "Update a service checklist item",
         "parameters": [
           {
@@ -6064,6 +6246,7 @@
         "tags": [
           "Service Checklists"
         ],
+        "summary": "Delete Service Checklist Item",
         "description": "Delete a service checklist item",
         "parameters": [
           {
@@ -6097,11 +6280,169 @@
         ]
       }
     },
+    "/api/record-checklists": {
+      "post": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "summary": "Create Record Checklist Items",
+        "description": "Create record checklist items. You can pass `checklist_id` for a single link or `checklist_ids` (array) to link multiple checklist templates to the same service record.",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecordChecklist"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/record-checklists/by-record/{recordId}": {
+      "get": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "summary": "Get Record Checklists by Service Record ID",
+        "description": "Get checklist items for a given service record",
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/record-checklists/{id}": {
+      "put": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "summary": "Update Record Checklist Item",
+        "description": "Update a record checklist item (status or note)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record Checklist ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRecordChecklist"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Checklists"
+        ],
+        "summary": "Delete Record Checklist Item",
+        "description": "Delete a record checklist item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record Checklist ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/auto-parts": {
       "post": {
         "tags": [
           "Auto Parts"
         ],
+        "summary": "Create a new auto part",
         "description": "Create a new auto part",
         "responses": {
           "201": {
@@ -6134,6 +6475,7 @@
         "tags": [
           "Auto Parts"
         ],
+        "summary": "Get all auto parts with optional filters",
         "description": "Get all auto parts with optional filters",
         "parameters": [
           {
@@ -6143,15 +6485,6 @@
             "required": false,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "lowStock",
-            "in": "query",
-            "description": "Filter parts where quantity is below minimum stock",
-            "required": false,
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -6198,6 +6531,7 @@
         "tags": [
           "Auto Parts"
         ],
+        "summary": "Get auto part by ID",
         "description": "Get auto part by ID",
         "parameters": [
           {
@@ -6234,6 +6568,7 @@
         "tags": [
           "Auto Parts"
         ],
+        "summary": "Update an auto part",
         "description": "Update an auto part",
         "parameters": [
           {
@@ -6280,6 +6615,7 @@
         "tags": [
           "Auto Parts"
         ],
+        "summary": "Delete an auto part",
         "description": "Delete an auto part",
         "parameters": [
           {
@@ -6313,11 +6649,218 @@
         ]
       }
     },
+    "/api/center-auto-parts": {
+      "post": {
+        "tags": [
+          "Center Auto Parts"
+        ],
+        "summary": "Create a new center-scoped auto part entry",
+        "description": "Create a new center-scoped auto part entry",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCenterAutoPart"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Center Auto Parts"
+        ],
+        "summary": "Get all center auto parts with optional filters",
+        "description": "Get all center auto parts with optional filters",
+        "parameters": [
+          {
+            "name": "center_id",
+            "in": "query",
+            "description": "Filter by center ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part_id",
+            "in": "query",
+            "description": "Filter by auto part ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/center-auto-parts/{id}": {
+      "get": {
+        "tags": [
+          "Center Auto Parts"
+        ],
+        "summary": "Get center auto part by ID",
+        "description": "Get center auto part by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "CenterAutoPart ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Center Auto Parts"
+        ],
+        "summary": "Update a center auto part entry",
+        "description": "Update a center auto part entry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "CenterAutoPart ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCenterAutoPart"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Center Auto Parts"
+        ],
+        "summary": "Delete a center auto part entry",
+        "description": "Delete a center auto part entry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "CenterAutoPart ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/service-details": {
       "post": {
         "tags": [
           "Service Details"
         ],
+        "summary": "Create a new service detail entry",
         "description": "Create a new service detail entry",
         "responses": {
           "201": {
@@ -6350,6 +6893,7 @@
         "tags": [
           "Service Details"
         ],
+        "summary": "Get all service details with optional filters",
         "description": "Get all service details with optional filters",
         "parameters": [
           {
@@ -6362,9 +6906,9 @@
             }
           },
           {
-            "name": "part_id",
+            "name": "centerpart_id",
             "in": "query",
-            "description": "Filter by auto part ID",
+            "description": "Filter by center auto part ID (CenterAutoPart _id)",
             "required": false,
             "schema": {
               "type": "string"
@@ -6414,6 +6958,7 @@
         "tags": [
           "Service Details"
         ],
+        "summary": "Get service detail by ID",
         "description": "Get service detail by ID",
         "parameters": [
           {
@@ -6450,6 +6995,7 @@
         "tags": [
           "Service Details"
         ],
+        "summary": "Update a service detail entry",
         "description": "Update a service detail entry",
         "parameters": [
           {
@@ -6496,6 +7042,7 @@
         "tags": [
           "Service Details"
         ],
+        "summary": "Delete a service detail entry",
         "description": "Delete a service detail entry",
         "parameters": [
           {
@@ -6744,10 +7291,18 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -6844,8 +7399,16 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -6936,6 +7499,9 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "403": {
             "description": "Forbidden"
           },
@@ -6946,6 +7512,11 @@
             "description": "Internal Server Error"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -7040,10 +7611,18 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/chat/waiting": {
@@ -7151,10 +7730,18 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/chat/staff/{staffId}": {
@@ -7226,10 +7813,18 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/chat/{conversationId}": {
@@ -7381,10 +7976,18 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not Found"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/chat/{conversationId}/mark-read": {
@@ -7446,10 +8049,1025 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Create a new payment link",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayment"
+              }
+            }
+          }
         }
+      },
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get all payments with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "paid",
+              "cancelled",
+              "expired"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "description": "Filter by customer ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service_record_id",
+            "in": "query",
+            "description": "Filter by service record ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscription_id",
+            "in": "query",
+            "description": "Filter by subscription ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment_type",
+            "in": "query",
+            "description": "Filter by payment type",
+            "required": false,
+            "enum": [
+              "service_record",
+              "subscription"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/{id}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get payment by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/order/{orderCode}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get payment by order code",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/webhook": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Handle PayOS webhook",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentWebhook"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/cancel/{orderCode}": {
+      "put": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Cancel a payment",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/info/{orderCode}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Get payment information from PayOS",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/invoices": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Create a new invoice",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoice"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Get all invoices with optional filters",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "enum": [
+              "pending",
+              "issued",
+              "cancelled"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment_id",
+            "in": "query",
+            "description": "Filter by payment ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/invoices/payment/{paymentId}": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Get invoice by payment ID",
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/invoices/{id}": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Get invoice by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Invoice ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Update an invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Invoice ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvoice"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Delete an invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Invoice ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/workshifts": {
+      "post": {
+        "tags": [
+          "Work Shifts"
+        ],
+        "summary": "Create a new work shift",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Work shift created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/WorkShift"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/WorkShift"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkShift"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Work Shifts"
+        ],
+        "summary": "Get all work shifts",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "List of work shifts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WorkShift"
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WorkShift"
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/workshifts/{id}": {
+      "put": {
+        "tags": [
+          "Work Shifts"
+        ],
+        "summary": "Update a work shift by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Work shift updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/WorkShift"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/WorkShift"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkShift"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Work Shifts"
+        ],
+        "summary": "Delete a work shift by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Work shift deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Deleted successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Deleted successfully"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/shift-assignments/assign": {
+      "post": {
+        "tags": [
+          "Shift Assignments"
+        ],
+        "summary": "Assign multiple shifts to a system user",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignShiftsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shift-assignments/user/{system_user_id}": {
+      "get": {
+        "tags": [
+          "Shift Assignments"
+        ],
+        "summary": "Get all shifts assigned to a system user",
+        "description": "",
+        "parameters": [
+          {
+            "name": "system_user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/shift-assignments/shift/{shift_id}": {
+      "get": {
+        "tags": [
+          "Shift Assignments"
+        ],
+        "summary": "Get all system users assigned to a shift",
+        "description": "",
+        "parameters": [
+          {
+            "name": "shift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/shift-assignments/{id}": {
+      "delete": {
+        "tags": [
+          "Shift Assignments"
+        ],
+        "summary": "Delete a shift assignment by id",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -8133,21 +9751,13 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "record_id": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
-          },
           "name": {
             "type": "string",
             "example": "Oil Change"
           },
-          "status": {
-            "type": "string",
-            "example": "completed"
-          },
-          "note": {
-            "type": "string",
-            "example": "Used synthetic oil"
+          "order": {
+            "type": "number",
+            "example": 1
           },
           "createdAt": {
             "type": "string",
@@ -8165,21 +9775,13 @@
       "CreateServiceChecklist": {
         "type": "object",
         "properties": {
-          "record_id": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
-          },
           "name": {
             "type": "string",
             "example": "Oil Change"
           },
-          "status": {
-            "type": "string",
-            "example": "pending"
-          },
-          "note": {
-            "type": "string",
-            "example": "Schedule oil change"
+          "order": {
+            "type": "number",
+            "example": 1
           }
         },
         "xml": {
@@ -8193,13 +9795,9 @@
             "type": "string",
             "example": "Oil Change"
           },
-          "status": {
-            "type": "string",
-            "example": "completed"
-          },
-          "note": {
-            "type": "string",
-            "example": "Used synthetic oil"
+          "order": {
+            "type": "number",
+            "example": 1
           }
         },
         "xml": {
@@ -8217,10 +9815,6 @@
             "type": "string",
             "example": "Brake Pad"
           },
-          "quantity": {
-            "type": "number",
-            "example": 15
-          },
           "cost_price": {
             "type": "number",
             "example": 35
@@ -8228,18 +9822,6 @@
           "selling_price": {
             "type": "number",
             "example": 55
-          },
-          "min_stock": {
-            "type": "number",
-            "example": 5
-          },
-          "recommended_min_stock": {
-            "type": "number",
-            "example": 10
-          },
-          "last_forecast_date": {
-            "type": "string",
-            "example": "2025-09-15T10:00:00.000Z"
           },
           "createdAt": {
             "type": "string",
@@ -8261,10 +9843,6 @@
             "type": "string",
             "example": "Brake Pad"
           },
-          "quantity": {
-            "type": "number",
-            "example": 20
-          },
           "cost_price": {
             "type": "number",
             "example": 35
@@ -8272,18 +9850,6 @@
           "selling_price": {
             "type": "number",
             "example": 55
-          },
-          "min_stock": {
-            "type": "number",
-            "example": 5
-          },
-          "recommended_min_stock": {
-            "type": "number",
-            "example": 10
-          },
-          "last_forecast_date": {
-            "type": "string",
-            "example": "2025-09-15T10:00:00.000Z"
           }
         },
         "xml": {
@@ -8297,10 +9863,6 @@
             "type": "string",
             "example": "Brake Pad"
           },
-          "quantity": {
-            "type": "number",
-            "example": 18
-          },
           "cost_price": {
             "type": "number",
             "example": 36
@@ -8308,22 +9870,248 @@
           "selling_price": {
             "type": "number",
             "example": 58
-          },
-          "min_stock": {
-            "type": "number",
-            "example": 6
-          },
-          "recommended_min_stock": {
-            "type": "number",
-            "example": 12
-          },
-          "last_forecast_date": {
-            "type": "string",
-            "example": "2025-10-01T10:00:00.000Z"
           }
         },
         "xml": {
           "name": "UpdateAutoPart"
+        }
+      },
+      "CenterAutoPart": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k9"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 10
+          },
+          "min_stock": {
+            "type": "number",
+            "example": 5
+          },
+          "recommended_min_stock": {
+            "type": "number",
+            "example": 8
+          },
+          "last_forecast_date": {
+            "type": "string",
+            "example": "2025-10-01T00:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-10-10T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-10-20T12:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "CenterAutoPart"
+        }
+      },
+      "CreateCenterAutoPart": {
+        "type": "object",
+        "properties": {
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 10
+          },
+          "min_stock": {
+            "type": "number",
+            "example": 5
+          },
+          "recommended_min_stock": {
+            "type": "number",
+            "example": 8
+          },
+          "last_forecast_date": {
+            "type": "string",
+            "example": "2025-10-01T00:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "CreateCenterAutoPart"
+        }
+      },
+      "UpdateCenterAutoPart": {
+        "type": "object",
+        "properties": {
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 12
+          },
+          "min_stock": {
+            "type": "number",
+            "example": 5
+          },
+          "recommended_min_stock": {
+            "type": "number",
+            "example": 8
+          },
+          "last_forecast_date": {
+            "type": "string",
+            "example": "2025-10-15T00:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "UpdateCenterAutoPart"
+        }
+      },
+      "AssignShiftsRequest": {
+        "type": "object",
+        "properties": {
+          "system_user_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "shift_ids": {
+            "type": "array",
+            "example": [
+              "string",
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "xml": {
+          "name": "AssignShiftsRequest"
+        }
+      },
+      "ShiftAssignment": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k9"
+          },
+          "system_user_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "shift_id": {
+            "type": "string",
+            "example": "shift-2025-10-27-1"
+          }
+        },
+        "xml": {
+          "name": "ShiftAssignment"
+        }
+      },
+      "WorkShift": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "shift_id": {
+            "type": "string",
+            "example": "shift-2025-10-27-1"
+          },
+          "shift_date": {
+            "type": "string",
+            "example": "2025-10-27"
+          },
+          "start_time": {
+            "type": "string",
+            "example": "08:00"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "12:00"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          }
+        },
+        "xml": {
+          "name": "WorkShift"
+        }
+      },
+      "CreateWorkShift": {
+        "type": "object",
+        "properties": {
+          "shift_id": {
+            "type": "string",
+            "example": "shift-2025-10-27-1"
+          },
+          "shift_date": {
+            "type": "string",
+            "example": "2025-10-27"
+          },
+          "start_time": {
+            "type": "string",
+            "example": "08:00"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "12:00"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          }
+        },
+        "xml": {
+          "name": "CreateWorkShift"
+        }
+      },
+      "UpdateWorkShift": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "example": "09:00"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "13:00"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed"
+          }
+        },
+        "xml": {
+          "name": "UpdateWorkShift"
         }
       },
       "ServiceDetail": {
@@ -8337,7 +10125,7 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k2"
           },
-          "part_id": {
+          "centerpart_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k3"
           },
@@ -8373,7 +10161,7 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k2"
           },
-          "part_id": {
+          "centerpart_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k3"
           },
@@ -8412,6 +10200,328 @@
         },
         "xml": {
           "name": "UpdateServiceDetail"
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "service_record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "subscription_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "order_code": {
+            "type": "number",
+            "example": 123456
+          },
+          "amount": {
+            "type": "number",
+            "example": 250000
+          },
+          "description": {
+            "type": "string",
+            "example": "Payment for maintenance service"
+          },
+          "payment_type": {
+            "type": "string",
+            "example": "service_record"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "payment_url": {
+            "type": "string",
+            "example": "https://payos.vn/pay/123456"
+          },
+          "transaction_id": {
+            "type": "string",
+            "example": "TXN123456789"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "QR"
+          },
+          "paid_at": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Payment"
+        }
+      },
+      "CreatePayment": {
+        "type": "object",
+        "properties": {
+          "service_record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "amount": {
+            "type": "number",
+            "example": 250000
+          },
+          "description": {
+            "type": "string",
+            "example": "Payment for service or subscription"
+          },
+          "payment_type": {
+            "type": "string",
+            "example": "service_record"
+          },
+          "returnUrl": {
+            "type": "string",
+            "example": "https://example.com/payment/success"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "example": "https://example.com/payment/cancel"
+          }
+        },
+        "xml": {
+          "name": "CreatePayment"
+        }
+      },
+      "PaymentWebhook": {
+        "type": "object",
+        "properties": {
+          "order_code": {
+            "type": "number",
+            "example": 123456
+          },
+          "status": {
+            "type": "string",
+            "example": "PAID"
+          },
+          "transaction_id": {
+            "type": "string",
+            "example": "TXN123456789"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "QR"
+          },
+          "paid_at": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "PaymentWebhook"
+        }
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "payment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "invoiceType": {
+            "type": "string",
+            "example": "VAT"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 0
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 250000
+          },
+          "status": {
+            "type": "string",
+            "example": "issued"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Invoice"
+        }
+      },
+      "CreateInvoice": {
+        "type": "object",
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "invoiceType": {
+            "type": "string",
+            "example": "VAT"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 0
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 250000
+          }
+        },
+        "xml": {
+          "name": "CreateInvoice"
+        }
+      },
+      "UpdateInvoice": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "issued"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 5000
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 245000
+          }
+        },
+        "xml": {
+          "name": "UpdateInvoice"
+        }
+      },
+      "StaffAppointment": {
+        "type": "object",
+        "properties": {
+          "staffId": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          }
+        },
+        "xml": {
+          "name": "StaffAppointment"
+        }
+      },
+      "TechnicianAppointment": {
+        "type": "object",
+        "properties": {
+          "technicianId": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          }
+        },
+        "xml": {
+          "name": "TechnicianAppointment"
+        }
+      },
+      "RecordChecklist": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "checklist_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "note": {
+            "type": "string",
+            "example": "Optional note for this checklist item on the record"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "RecordChecklist"
+        }
+      },
+      "CreateRecordChecklist": {
+        "type": "object",
+        "properties": {
+          "checklist_ids": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0k2",
+              "60f1b2b3c4e5f6g7h8i9j0k4"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "note": {
+            "type": "string",
+            "example": "Optional note for this checklist item on the record"
+          }
+        },
+        "xml": {
+          "name": "CreateRecordChecklist"
+        }
+      },
+      "UpdateRecordChecklist": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "completed"
+          },
+          "note": {
+            "type": "string",
+            "example": "Inspected and completed"
+          }
+        },
+        "xml": {
+          "name": "UpdateRecordChecklist"
         }
       }
     },

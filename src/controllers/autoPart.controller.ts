@@ -4,6 +4,7 @@ import autoPartService from '../services/autoPart.service';
 export class AutoPartController {
     async createAutoPart(req: Request, res: Response) {
         /* #swagger.tags = ['Auto Parts']
+           #swagger.summary = 'Create a new auto part'
            #swagger.description = 'Create a new auto part'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -39,6 +40,7 @@ export class AutoPartController {
 
     async getAutoPartById(req: Request, res: Response) {
         /* #swagger.tags = ['Auto Parts']
+              #swagger.summary = 'Get auto part by ID'
            #swagger.description = 'Get auto part by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -77,6 +79,7 @@ export class AutoPartController {
 
     async getAllAutoParts(req: Request, res: Response) {
         /* #swagger.tags = ['Auto Parts']
+           #swagger.summary = 'Get all auto parts with optional filters'
            #swagger.description = 'Get all auto parts with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['name'] = {
@@ -85,12 +88,7 @@ export class AutoPartController {
                required: false,
                type: 'string'
            }
-           #swagger.parameters['lowStock'] = {
-               in: 'query',
-               description: 'Filter parts where quantity is below minimum stock',
-               required: false,
-               type: 'boolean'
-           }
+           // Inventory-level filters are provided by center scoped endpoints (CenterAutoPart)
            #swagger.parameters['page'] = {
                in: 'query',
                description: 'Page number',
@@ -109,7 +107,6 @@ export class AutoPartController {
         try {
             const filters = {
                 name: req.query.name as string,
-                lowStock: req.query.lowStock ? req.query.lowStock === 'true' : undefined,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
             };
@@ -135,6 +132,7 @@ export class AutoPartController {
 
     async updateAutoPart(req: Request, res: Response) {
         /* #swagger.tags = ['Auto Parts']
+           #swagger.summary = 'Update an auto part'
            #swagger.description = 'Update an auto part'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -182,6 +180,7 @@ export class AutoPartController {
 
     async deleteAutoPart(req: Request, res: Response) {
         /* #swagger.tags = ['Auto Parts']
+              #swagger.summary = 'Delete an auto part'
            #swagger.description = 'Delete an auto part'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

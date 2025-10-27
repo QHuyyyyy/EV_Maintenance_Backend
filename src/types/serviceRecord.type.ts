@@ -4,9 +4,9 @@ export interface IServiceRecord {
     _id: string;
     appointment_id: mongoose.Types.ObjectId | string;
     technician_id: string;
-    start_time: Date;
-    end_time: Date;
-    description: string;
+    start_time?: Date | null;
+    end_time?: Date | null;
+    description?: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
     createdAt: Date;
     updatedAt: Date;
@@ -15,9 +15,9 @@ export interface IServiceRecord {
 export interface CreateServiceRecordRequest {
     appointment_id: string;
     technician_id: string;
-    start_time: Date;
-    end_time: Date;
-    description: string;
+    start_time?: Date | null;
+    end_time?: Date | null;
+    description?: string;
     status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
 }
 

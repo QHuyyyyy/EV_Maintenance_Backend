@@ -1,17 +1,18 @@
 import express from "express";
 import AlertController from "../controllers/alert.controller";
+import { validate } from "../middlewares/auth";
 
 const router = express.Router();
 
-router.get("/", AlertController.getAllAlerts.bind(AlertController));
+router.get("/", validate, AlertController.getAllAlerts.bind(AlertController));
 
-router.post("/", AlertController.createAlert.bind(AlertController));
+router.post("/", validate, AlertController.createAlert.bind(AlertController));
 
-router.get("/:id", AlertController.getAlertById.bind(AlertController));
+router.get("/:id", validate, AlertController.getAlertById.bind(AlertController));
 
-router.patch("/:id", AlertController.updateAlert.bind(AlertController));
+router.patch("/:id", validate, AlertController.updateAlert.bind(AlertController));
 
-router.patch("/:id/read", AlertController.markAsRead.bind(AlertController));
+router.patch("/:id/read", validate, AlertController.markAsRead.bind(AlertController));
 
 
 

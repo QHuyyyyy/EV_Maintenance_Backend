@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export interface IAppointment {
     _id: string;
-    staffId: string;
+    staffId: string | null;
     customer_id: mongoose.Types.ObjectId | string;
     vehicle_id: mongoose.Types.ObjectId | string;
     center_id: mongoose.Types.ObjectId | string;
@@ -14,7 +14,7 @@ export interface IAppointment {
 }
 
 export interface CreateAppointmentRequest {
-    staffId: string;
+    staffId?: string | null;
     customer_id: string;
     vehicle_id: string;
     center_id: string;

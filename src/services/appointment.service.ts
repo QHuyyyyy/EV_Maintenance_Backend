@@ -115,6 +115,26 @@ export class AppointmentService {
         }
     }
 
+    async assignStaff(appointmentId: string, staffId: string | null): Promise<IAppointment | null> {
+        try {
+            // allow setting to null to remove staff
+            return await Appointment.findByIdAndUpdate(
+                appointmentId,
+                { staffId },
+                { new: true, runValidators: true }
+            )
+                .populate('customer_id', 'customerName dateOfBirth address')
+                .populate('vehicle_id', 'vehicleName model plateNumber mileage')
+                .populate('center_id', 'name address phone')
+                .lean() as any;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to assign staff: ${error.message}`);
+            }
+            throw new Error('Failed to assign staff: Unknown error');
+        }
+    }
+
     async deleteAppointment(appointmentId: string): Promise<IAppointment | null> {
         try {
             return await Appointment.findByIdAndDelete(appointmentId).lean() as any;

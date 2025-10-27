@@ -74,8 +74,20 @@ const doc = {
             description: 'Auto part inventory management endpoints'
         },
         {
+            name: 'Center Auto Parts',
+            description: 'Center-scoped auto part inventory management endpoints'
+        },
+        {
             name: 'Service Details',
             description: 'Service detail management endpoints'
+        },
+        {
+            name: 'Payments',
+            description: 'Payment processing and management endpoints'
+        },
+        {
+            name: 'Invoices',
+            description: 'Invoice management endpoints'
         }
     ],
     definitions: {
@@ -250,58 +262,99 @@ const doc = {
         },
         ServiceChecklist: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             name: 'Oil Change',
-            status: 'completed',
-            note: 'Used synthetic oil',
+            order: 1,
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreateServiceChecklist: {
-            record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             name: 'Oil Change',
-            status: 'pending',
-            note: 'Schedule oil change'
+            order: 1,
         },
         UpdateServiceChecklist: {
             name: 'Oil Change',
-            status: 'completed',
-            note: 'Used synthetic oil'
+            order: 1,
         },
         AutoPart: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
             name: 'Brake Pad',
-            quantity: 15,
             cost_price: 35,
             selling_price: 55,
-            min_stock: 5,
-            recommended_min_stock: 10,
-            last_forecast_date: '2025-09-15T10:00:00.000Z',
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreateAutoPart: {
             name: 'Brake Pad',
-            quantity: 20,
             cost_price: 35,
             selling_price: 55,
-            min_stock: 5,
-            recommended_min_stock: 10,
-            last_forecast_date: '2025-09-15T10:00:00.000Z'
         },
         UpdateAutoPart: {
             name: 'Brake Pad',
-            quantity: 18,
             cost_price: 36,
             selling_price: 58,
-            min_stock: 6,
-            recommended_min_stock: 12,
-            last_forecast_date: '2025-10-01T10:00:00.000Z'
+        },
+        CenterAutoPart: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k9',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            quantity: 10,
+            min_stock: 5,
+            recommended_min_stock: 8,
+            last_forecast_date: '2025-10-01T00:00:00.000Z',
+            createdAt: '2025-10-10T10:00:00.000Z',
+            updatedAt: '2025-10-20T12:00:00.000Z'
+        },
+        CreateCenterAutoPart: {
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            quantity: 10,
+            min_stock: 5,
+            recommended_min_stock: 8,
+            last_forecast_date: '2025-10-01T00:00:00.000Z'
+        },
+        UpdateCenterAutoPart: {
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            quantity: 12,
+            min_stock: 5,
+            recommended_min_stock: 8,
+            last_forecast_date: '2025-10-15T00:00:00.000Z'
+        },
+        AssignShiftsRequest: {
+            system_user_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            shift_ids: ['string', 'string']
+        },
+        ShiftAssignment: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k9',
+            system_user_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            shift_id: 'shift-2025-10-27-1'
+        },
+        WorkShift: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            shift_id: 'shift-2025-10-27-1',
+            shift_date: '2025-10-27',
+            start_time: '08:00',
+            end_time: '12:00',
+            status: 'active',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2'
+        },
+        CreateWorkShift: {
+            shift_id: 'shift-2025-10-27-1',
+            shift_date: '2025-10-27',
+            start_time: '08:00',
+            end_time: '12:00',
+            status: 'active',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2'
+        },
+        UpdateWorkShift: {
+            start_time: '09:00',
+            end_time: '13:00',
+            status: 'completed'
         },
         ServiceDetail: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
             record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
-            part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            centerpart_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             description: 'Replaced brake pads',
             quantity: 2,
             unit_price: 58,
@@ -310,7 +363,7 @@ const doc = {
         },
         CreateServiceDetail: {
             record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
-            part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            centerpart_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             description: 'Replaced brake pads',
             quantity: 2,
             unit_price: 58
@@ -319,6 +372,86 @@ const doc = {
             description: 'Replaced brake pads and rotors',
             quantity: 4,
             unit_price: 60
+        },
+        Payment: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            subscription_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            order_code: 123456,
+            amount: 250000,
+            description: 'Payment for maintenance service',
+            payment_type: 'service_record',
+            status: 'pending',
+            payment_url: 'https://payos.vn/pay/123456',
+            transaction_id: 'TXN123456789',
+            payment_method: 'QR',
+            paid_at: '2025-09-21T10:00:00.000Z',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreatePayment: {
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            amount: 250000,
+            description: 'Payment for service or subscription',
+            payment_type: 'service_record',
+            returnUrl: 'https://example.com/payment/success',
+            cancelUrl: 'https://example.com/payment/cancel'
+        },
+        PaymentWebhook: {
+            order_code: 123456,
+            status: 'PAID',
+            transaction_id: 'TXN123456789',
+            payment_method: 'QR',
+            paid_at: '2025-09-21T10:00:00.000Z'
+        },
+        Invoice: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            payment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            invoiceType: 'VAT',
+            minusAmount: 0,
+            totalAmount: 250000,
+            status: 'issued',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateInvoice: {
+            payment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            invoiceType: 'VAT',
+            minusAmount: 0,
+            totalAmount: 250000
+        },
+        UpdateInvoice: {
+            status: 'issued',
+            minusAmount: 5000,
+            totalAmount: 245000
+        },
+        StaffAppointment: {
+            staffId: '60f1b2b3c4e5f6g7h8i9j0k2'
+        },
+        TechnicianAppointment: {
+            technicianId: '60f1b2b3c4e5f6g7h8i9j0k3'
+        }
+        ,
+        RecordChecklist: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            checklist_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            status: 'pending',
+            note: 'Optional note for this checklist item on the record',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateRecordChecklist: {
+            checklist_ids: ['60f1b2b3c4e5f6g7h8i9j0k2', "60f1b2b3c4e5f6g7h8i9j0k4"],
+            record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            status: 'pending',
+            note: 'Optional note for this checklist item on the record'
+        },
+        UpdateRecordChecklist: {
+            status: 'completed',
+            note: 'Inspected and completed'
         }
     },
     securityDefinitions: {

@@ -20,6 +20,7 @@ export class ConversationController {
     static async sendMessageByUser(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'User sends a message'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'User sends a message. Creates or reopens conversation if needed'
         /* #swagger.requestBody = {
             required: true,
@@ -122,6 +123,7 @@ export class ConversationController {
     static async takeChat(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Staff takes a waiting chat'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'Assign conversation to the requesting staff member'
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
         /* #swagger.requestBody = {
@@ -186,6 +188,7 @@ export class ConversationController {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Staff sends a message'
         // #swagger.description = 'Only assigned staff can send messages in a conversation'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
         /* #swagger.requestBody = {
             required: true,
@@ -316,6 +319,7 @@ export class ConversationController {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Transfer conversation to another staff'
         // #swagger.description = 'Current staff transfers conversation to another staff member'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
         /* #swagger.requestBody = {
             required: true,
@@ -397,6 +401,7 @@ export class ConversationController {
     static async handleStaffOffline(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Handle staff going offline'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'Release all assigned conversations when staff goes offline'
         // #swagger.parameters['staffId'] = { in: 'path', required: true, type: 'string' }
         /* #swagger.requestBody = {
@@ -445,6 +450,7 @@ export class ConversationController {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Close a conversation'
         // #swagger.description = 'Mark conversation as closed'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
         /* #swagger.responses[200] = {
           description: 'Conversation closed successfully',
@@ -479,6 +485,7 @@ export class ConversationController {
     static async getWaitingConversations(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Get waiting conversations'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'Get list of all waiting conversations for staff'
         // #swagger.parameters['page'] = { description: 'Page number', type: 'integer', default: 1 }
         // #swagger.parameters['limit'] = { description: 'Items per page', type: 'integer', default: 20 }
@@ -519,6 +526,7 @@ export class ConversationController {
     static async getStaffConversations(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Get staff conversations'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'Get all conversations assigned to a specific staff member'
         // #swagger.parameters['staffId'] = { in: 'path', required: true, type: 'string' }
         // #swagger.parameters['status'] = { description: 'Filter by status', type: 'string' }
@@ -554,6 +562,7 @@ export class ConversationController {
     static async getConversationWithHistory(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Get conversation with paginated chat history'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'Get conversation details with paginated messages (newest first). Use page parameter to load older messages'
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
         // #swagger.parameters['page'] = { in: 'query', required: false, type: 'integer', default: 1, description: 'Page number' }
@@ -601,6 +610,7 @@ export class ConversationController {
     static async markMessagesAsRead(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Chat']
         // #swagger.summary = 'Mark messages as read'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'Mark all messages in a conversation as read'
         // #swagger.parameters['conversationId'] = { in: 'path', required: true, type: 'string' }
         /* #swagger.responses[200] = {
