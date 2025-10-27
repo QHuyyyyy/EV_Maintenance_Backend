@@ -4,8 +4,6 @@ export interface IInvoice {
     invoiceType: string;
     minusAmount: number;
     totalAmount: number;
-    payment_method: string;
-    transaction_code: string;
     status: 'pending' | 'issued' | 'cancelled';
     createdAt: Date;
     updatedAt: Date;
@@ -16,8 +14,6 @@ export interface CreateInvoiceRequest {
     invoiceType: string;
     minusAmount?: number;
     totalAmount: number;
-    payment_method?: string; // Optional, will use from payment if not provided
-    // transaction_code is auto-populated from payment
 }
 
 export interface UpdateInvoiceRequest {

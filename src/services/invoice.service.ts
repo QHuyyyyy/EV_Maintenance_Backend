@@ -5,7 +5,7 @@ import { CreateInvoiceRequest, IInvoice, UpdateInvoiceRequest } from '../types/i
 export class InvoiceService {
     async createInvoice(invoiceData: CreateInvoiceRequest): Promise<IInvoice> {
         try {
-            // Get payment details to populate transaction_code
+            // Get payment details to validate and check payment status
             const payment = await Payment.findById(invoiceData.payment_id);
             if (!payment) {
                 throw new Error('Payment not found');
@@ -19,11 +19,7 @@ export class InvoiceService {
                 throw new Error('Payment does not have a transaction ID yet');
             }
 
-            const invoice = new Invoice({
-                ...invoiceData,
-                transaction_code: payment.transaction_id,
-                payment_method: payment.payment_method || invoiceData.payment_method
-            });
+            const invoice = new Invoice(invoiceData);
 
             await invoice.save();
 

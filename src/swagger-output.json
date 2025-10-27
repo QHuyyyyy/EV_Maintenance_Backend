@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/"
+      "url": "http://localhost:5000/"
     }
   ],
   "tags": [
@@ -10325,14 +10325,6 @@
           "totalAmount": {
             "type": "number",
             "example": 250000
-          },
-          "payment_method": {
-            "type": "string",
-            "example": "QR"
-          },
-          "transaction_code": {
-            "type": "string",
-            "example": "TXN123456789"
           },
           "status": {
             "type": "string",
