@@ -16,6 +16,7 @@ export interface ISystemUser {
     };
     name?: string;
     dateOfBirth?: Date;
+    centerId?: string;
     certificates?: Certificate[];
     createdAt?: Date;
     updatedAt?: Date;
@@ -26,6 +27,7 @@ export interface CreateSystemUserRequest {
     userId: string;
     name?: string;
     dateOfBirth?: Date;
+    centerId?: string;
     certificates?: Certificate[];
 }
 
@@ -33,5 +35,6 @@ export interface CreateSystemUserRequest {
 export interface UpdateSystemUserRequest {
     name?: string;
     dateOfBirth?: Date;
+    centerId?: string;
     certificates?: Certificate[];
 }

@@ -94,7 +94,7 @@ export async function registerController(req: Request, res: Response) {
             description: 'Invalid email or password',
             schema: { $ref: '#/definitions/ErrorResponse' }
         } */
-        const { email, password, role } = req.body;
+        const { email, password, role, centerId } = req.body;
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
@@ -114,14 +114,25 @@ export async function registerController(req: Request, res: Response) {
                 message: "Password must be at least 6 characters long"
             });
         }
-        const validRoles = ["CUSTOMER", "ADMIN", "TECHNICIAN", "STAFF"];
-        if (role && !validRoles.includes(role)) {
+        const validRoles = ["ADMIN", "TECHNICIAN", "STAFF"];
+        // If role provided must be one of staff roles. Default role is STAFF.
+        const roleToUse = role || "STAFF";
+        if (!validRoles.includes(roleToUse)) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid role"
+                message: "Registration only allowed for staff roles (ADMIN, TECHNICIAN, STAFF)"
             });
         }
-        const authRegisterDto: AuthRegisterDto = { email, password, role };
+
+        // For STAFF and TECHNICIAN, centerId is required
+        if ((roleToUse === 'STAFF' || roleToUse === 'TECHNICIAN') && !centerId) {
+            return res.status(400).json({
+                success: false,
+                message: 'centerId is required when registering STAFF or TECHNICIAN'
+            });
+        }
+
+        const authRegisterDto: AuthRegisterDto = { email, password, role: roleToUse, centerId };
         const registerResponse = await register(authRegisterDto);
         return res.status(201).json({
             success: true,

@@ -76,37 +76,30 @@ export async function login(authLoginDto: AuthLoginDto) {
 }
 
 export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthRegisterResponse> {
-    const existed = await User.findOne({ email: authRegisterDto.email });
 
+    const roleToCreate = authRegisterDto.role || "STAFF";
+    if (roleToCreate === "CUSTOMER") {
+        throw new Error('Registration for customers is disabled. Use OTP login instead.');
+    }
+
+    const existed = await User.findOne({ email: authRegisterDto.email });
     if (existed) throw new Error("Email existed");
 
-    //   Hash password with bcrypt first
     const hashedPassword = await hashPassword(authRegisterDto.password);
 
     const user = await createUser({
         email: authRegisterDto.email,
         password: hashedPassword,
-        role: authRegisterDto.role || "STAFF",
+        role: roleToCreate,
         isDeleted: false
     });
 
-    // If role is CUSTOMER, automatically create an empty customer profile
-    if (user.role === "CUSTOMER") {
-        try {
-            await customerService.createEmptyCustomer(user._id.toString());
-        } catch (error) {
-            console.error("Failed to create customer profile:", error);
-            // Continue with registration even if customer profile creation fails
-        }
-    }
 
-    // If role is TECHNICIAN or STAFF, automatically create an empty system user profile
-    if (user.role === "TECHNICIAN" || user.role === "STAFF" || user.role === "ADMIN") {
+    if (['TECHNICIAN', 'STAFF', 'ADMIN'].includes(user.role)) {
         try {
-            await systemUserService.createEmptySystemUser(user._id.toString());
+            await systemUserService.createEmptySystemUser(user._id.toString(), authRegisterDto.centerId);
         } catch (error) {
             console.error("Failed to create system user profile:", error);
-            // Continue with registration even if system user profile creation fails
         }
     }
 

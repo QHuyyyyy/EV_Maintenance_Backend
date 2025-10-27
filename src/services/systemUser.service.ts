@@ -7,12 +7,13 @@ export class SystemUserService {
     /**
      * Create a new system user profile with empty fields (used during registration)
      */
-    async createEmptySystemUser(userId: string): Promise<ISystemUser> {
+    async createEmptySystemUser(userId: string, centerId?: string): Promise<ISystemUser> {
         try {
             const systemUser = new SystemUser({
                 userId: userId,
                 name: '',
                 dateOfBirth: null,
+                centerId: centerId || null,
                 certificates: []
             });
             const savedSystemUser = await systemUser.save();
