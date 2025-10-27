@@ -4,6 +4,7 @@ import centerService from '../services/center.service';
 export class CenterController {
     async createCenter(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+          #swagger.summary = 'Create a new center'
            #swagger.description = 'Create a new service center'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -39,6 +40,7 @@ export class CenterController {
 
     async getCenterById(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+              #swagger.summary = 'Get center by ID'
            #swagger.description = 'Get center by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -77,6 +79,7 @@ export class CenterController {
 
     async getAllCenters(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+           #swagger.summary = 'Get all service centers'
            #swagger.description = 'Get all service centers with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['name'] = {
@@ -128,6 +131,7 @@ export class CenterController {
 
     async updateCenter(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+           #swagger.summary = 'Update a service center'
            #swagger.description = 'Update a service center'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -175,6 +179,7 @@ export class CenterController {
 
     async deleteCenter(req: Request, res: Response) {
         /* #swagger.tags = ['Centers']
+              #swagger.summary = 'Delete a service center'
            #swagger.description = 'Delete a service center'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

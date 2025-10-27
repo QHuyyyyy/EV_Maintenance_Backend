@@ -40,6 +40,7 @@ function isDateTimeWithinShifts(dt: Date, shifts: any[]): boolean {
 export class AppointmentController {
     async createAppointment(req: Request, res: Response) {
         /* #swagger.tags = ['Appointments']
+           #swagger.summary = 'Create Appointment'
            #swagger.description = 'Create a new appointment'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -75,6 +76,7 @@ export class AppointmentController {
 
     async getAppointmentById(req: Request, res: Response) {
         /* #swagger.tags = ['Appointments']
+           #swagger.summary = 'Get Appointment by ID'
            #swagger.description = 'Get appointment by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -113,7 +115,7 @@ export class AppointmentController {
 
     async getAllAppointments(req: Request, res: Response) {
         /* #swagger.tags = ['Appointments']
-           #swagger.description = 'Get all appointments with optional filters'
+           #swagger.summary = 'Get all appointments with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['status'] = {
                in: 'query',
@@ -195,6 +197,7 @@ export class AppointmentController {
 
     async updateAppointment(req: Request, res: Response) {
         /* #swagger.tags = ['Appointments']
+           #swagger.summary = 'Update an appointment'
            #swagger.description = 'Update an appointment'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -242,6 +245,7 @@ export class AppointmentController {
 
     async deleteAppointment(req: Request, res: Response) {
         /* #swagger.tags = ['Appointments']
+              #swagger.summary = 'Delete an appointment'
            #swagger.description = 'Delete an appointment'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -281,6 +285,7 @@ export class AppointmentController {
 
     async assignStaff(req: Request, res: Response) {
         //  #swagger.tags = ['Appointments']
+        //    #swagger.summary = 'Assign or remove staff for an appointment (admin only)'
         //    #swagger.description = 'Assign or remove staff for an appointment (admin only)'
         //    #swagger.security = [{ "bearerAuth": [] }]
         // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
@@ -340,6 +345,7 @@ export class AppointmentController {
 
     async assignTechnician(req: Request, res: Response) {
         /* #swagger.tags = ['Appointments']
+              #swagger.summary = 'Assign Technician to Appointment and Create Service Record (admin only)'
            #swagger.description = 'Assign a technician to an appointment and create a service record (admin only)'
            #swagger.security = [{ "bearerAuth": [] }]
          #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }

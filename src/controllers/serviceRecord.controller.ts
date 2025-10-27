@@ -4,6 +4,7 @@ import serviceRecordService from '../services/serviceRecord.service';
 export class ServiceRecordController {
     async createServiceRecord(req: Request, res: Response) {
         /* #swagger.tags = ['Service Records']
+          #swagger.summary = 'Create Service Record'
            #swagger.description = 'Create a new service record'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -39,6 +40,7 @@ export class ServiceRecordController {
 
     async getServiceRecordById(req: Request, res: Response) {
         /* #swagger.tags = ['Service Records']
+           #swagger.summary = 'Get Service Record by ID'
            #swagger.description = 'Get service record by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -77,6 +79,7 @@ export class ServiceRecordController {
 
     async getAllServiceRecords(req: Request, res: Response) {
         /* #swagger.tags = ['Service Records']
+           #swagger.summary = 'Get All Service Records'
            #swagger.description = 'Get all service records with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['status'] = {
@@ -159,7 +162,7 @@ export class ServiceRecordController {
 
     async updateServiceRecord(req: Request, res: Response) {
         /* #swagger.tags = ['Service Records']
-           #swagger.description = 'Update a service record'
+           #swagger.summary = 'Update a service record'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
                in: 'path',
@@ -206,6 +209,7 @@ export class ServiceRecordController {
 
     async deleteServiceRecord(req: Request, res: Response) {
         /* #swagger.tags = ['Service Records']
+           #swagger.summary = 'Delete a service record'
            #swagger.description = 'Delete a service record'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

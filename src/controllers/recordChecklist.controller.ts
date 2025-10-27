@@ -4,6 +4,7 @@ import recordChecklistService from '../services/recordChecklist.service';
 export class RecordChecklistController {
     async createRecordChecklist(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+          #swagger.summary = 'Create Record Checklist Items'
            #swagger.description = 'Create record checklist items. You can pass `checklist_id` for a single link or `checklist_ids` (array) to link multiple checklist templates to the same service record.'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -28,16 +29,17 @@ export class RecordChecklistController {
     }
 
     async getByRecord(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Checklists']
-           #swagger.description = 'Get checklist items for a given service record'
-           #swagger.security = [{ "bearerAuth": [] }]
-           #swagger.parameters['recordId'] = {
-               in: 'path',
-               description: 'Service Record ID'
-               required: true,
-               type: 'string'
-           }
-        */
+        // #swagger.tags = ['Service Checklists']
+        // #swagger.summary = 'Get Record Checklists by Service Record ID'
+        //  #swagger.description = 'Get checklist items for a given service record'
+        //  #swagger.security = [{ "bearerAuth": [] }]
+        /*   #swagger.parameters['recordId'] = {
+              in: 'path',
+              description: 'Service Record ID',
+                 required: true,
+              type: 'string'
+          }
+  */
         try {
             // support optional pagination query params in service later; for now controller forwards recordId
             const list = await recordChecklistService.getRecordChecklistsByRecord(req.params.recordId);
@@ -53,6 +55,7 @@ export class RecordChecklistController {
 
     async updateRecordChecklist(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+           #swagger.summary = 'Update Record Checklist Item'
            #swagger.description = 'Update a record checklist item (status or note)'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -85,6 +88,7 @@ export class RecordChecklistController {
 
     async deleteRecordChecklist(req: Request, res: Response) {
         /* #swagger.tags = ['Service Checklists']
+              #swagger.summary = 'Delete Record Checklist Item'
            #swagger.description = 'Delete a record checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

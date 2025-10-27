@@ -237,23 +237,23 @@ export class ServicePackageController {
         }
     }
 
-    async getPopularPackages(req: Request, res: Response): Promise<void> {
-        // #swagger.tags = ['Service Packages']
-        // #swagger.summary = 'Get popular service packages'
-        // #swagger.description = 'API to get the most popular service packages'
-        try {
-            const popularPackages = await this.servicePackageService.getPopularPackages();
+    // async getPopularPackages(req: Request, res: Response): Promise<void> {
+    //     // #swagger.tags = ['Service Packages']
+    //     // #swagger.summary = 'Get popular service packages'
+    //     // #swagger.description = 'API to get the most popular service packages'
+    //     try {
+    //         const popularPackages = await this.servicePackageService.getPopularPackages();
 
-            res.status(200).json({
-                success: true,
-                data: popularPackages
-            });
-        } catch (error: any) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
+    //         res.status(200).json({
+    //             success: true,
+    //             data: popularPackages
+    //         });
+    //     } catch (error: any) {
+    //         res.status(500).json({
+    //             success: false,
+    //             message: error.message
+    //         });
+    //     }
+    // }
 }
 export default new ServicePackageController();

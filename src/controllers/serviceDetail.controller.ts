@@ -4,6 +4,7 @@ import serviceDetailService from '../services/serviceDetail.service';
 export class ServiceDetailController {
     async createServiceDetail(req: Request, res: Response) {
         /* #swagger.tags = ['Service Details']
+           #swagger.summary = 'Create a new service detail entry'
            #swagger.description = 'Create a new service detail entry'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
@@ -39,6 +40,7 @@ export class ServiceDetailController {
 
     async getServiceDetailById(req: Request, res: Response) {
         /* #swagger.tags = ['Service Details']
+           #swagger.summary = 'Get service detail by ID'
            #swagger.description = 'Get service detail by ID'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -77,6 +79,7 @@ export class ServiceDetailController {
 
     async getAllServiceDetails(req: Request, res: Response) {
         /* #swagger.tags = ['Service Details']
+           #swagger.summary = 'Get all service details with optional filters'
            #swagger.description = 'Get all service details with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['record_id'] = {
@@ -85,9 +88,9 @@ export class ServiceDetailController {
                required: false,
                type: 'string'
            }
-           #swagger.parameters['part_id'] = {
+             #swagger.parameters['centerpart_id'] = {
                in: 'query',
-               description: 'Filter by auto part ID',
+               description: 'Filter by center auto part ID (CenterAutoPart _id)',
                required: false,
                type: 'string'
            }
@@ -109,7 +112,7 @@ export class ServiceDetailController {
         try {
             const filters = {
                 record_id: req.query.record_id as string,
-                part_id: req.query.part_id as string,
+                centerpart_id: req.query.centerpart_id as string,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
             };
@@ -135,6 +138,7 @@ export class ServiceDetailController {
 
     async updateServiceDetail(req: Request, res: Response) {
         /* #swagger.tags = ['Service Details']
+           #swagger.summary = 'Update a service detail entry'
            #swagger.description = 'Update a service detail entry'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {
@@ -182,6 +186,7 @@ export class ServiceDetailController {
 
     async deleteServiceDetail(req: Request, res: Response) {
         /* #swagger.tags = ['Service Details']
+              #swagger.summary = 'Delete a service detail entry'
            #swagger.description = 'Delete a service detail entry'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.parameters['id'] = {

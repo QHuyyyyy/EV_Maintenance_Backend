@@ -27,7 +27,6 @@ export class AutoPartService {
 
     async getAllAutoParts(filters?: {
         name?: string;
-        lowStock?: boolean;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -46,9 +45,7 @@ export class AutoPartService {
             if (filters?.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
             }
-            if (filters?.lowStock) {
-                query.$expr = { $lte: ['$quantity', '$min_stock'] };
-            }
+            // lowStock is now handled at CenterAutoPart level (per center)
 
             const [parts, total] = await Promise.all([
                 AutoPart.find(query)
