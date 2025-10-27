@@ -21,6 +21,8 @@ import autoPartRoutes from "./routes/autoPart.routes";
 import serviceDetailRoutes from "./routes/serviceDetail.routes";
 import schedulerRoutes from "./routes/scheduler.routes";
 import conversationRoutes from "./routes/conversation.routes";
+import paymentRoutes from "./routes/payment.routes";
+import invoiceRoutes from "./routes/invoice.routes";
 import shiftAssignmentRoutes from "./routes/shift-assignment.routes";
 import shift from './routes/workshift.routes';
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
@@ -82,6 +84,8 @@ app.use('/api/auto-parts', autoPartRoutes);
 app.use('/api/service-details', serviceDetailRoutes);
 app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/chat', conversationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/invoices', invoiceRoutes);
 app.use('/api/workshifts', shift);
 app.use('/api/shift-assignments', shiftAssignmentRoutes);
 
