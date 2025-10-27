@@ -367,8 +367,6 @@ const doc = {
             invoiceType: 'VAT',
             minusAmount: 0,
             totalAmount: 250000,
-            payment_method: 'QR',
-            transaction_code: 'TXN123456789',
             status: 'issued',
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'

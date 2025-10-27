@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/"
+      "url": "http://localhost:5000/"
     }
   ],
   "tags": [
@@ -9064,10 +9064,6 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k2"
           },
-          "subscription_id": {
-            "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
-          },
           "customer_id": {
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k4"
@@ -9147,14 +9143,6 @@
           "totalAmount": {
             "type": "number",
             "example": 250000
-          },
-          "payment_method": {
-            "type": "string",
-            "example": "QR"
-          },
-          "transaction_code": {
-            "type": "string",
-            "example": "TXN123456789"
           },
           "status": {
             "type": "string",

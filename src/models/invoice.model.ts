@@ -5,8 +5,6 @@ export interface IInvoice extends Document {
     invoiceType: string;
     minusAmount: number;
     totalAmount: number;
-    payment_method: string;
-    transaction_code: string;
     status: 'pending' | 'issued' | 'cancelled';
     createdAt: Date;
     updatedAt: Date;
@@ -30,14 +28,6 @@ const invoiceSchema = new Schema<IInvoice>(
         },
         totalAmount: {
             type: Number,
-            required: true
-        },
-        payment_method: {
-            type: String,
-            required: true
-        },
-        transaction_code: {
-            type: String,
             required: true
         },
         status: {
