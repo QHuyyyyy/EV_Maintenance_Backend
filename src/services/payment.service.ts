@@ -1,8 +1,32 @@
 import Payment from '../models/payment.model';
 import payOS from '../config/payos.config';
 import { CreatePaymentRequest, IPayment, PaymentWebhookData } from '../types/payment.type';
+import { VehicleSubscription } from '../models/vehicleSubcription.model';
 
 export class PaymentService {
+
+    async getSubscriptionPackagePrice(subscription_id: string): Promise<number> {
+        try {
+            const subscription = await VehicleSubscription.findById(subscription_id)
+                .populate('package_id');
+
+            if (!subscription) {
+                throw new Error('Subscription not found');
+            }
+
+            const packageData = subscription.package_id as any;
+            if (!packageData || !packageData.price) {
+                throw new Error('Package price not found');
+            }
+
+            return packageData.price;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get package price: ${error.message}`);
+            }
+            throw new Error('Failed to get package price: Unknown error');
+        }
+    }
     async createPayment(paymentData: CreatePaymentRequest): Promise<{ payment: IPayment; paymentUrl: string }> {
         try {
             // Validate payment type and corresponding ID
@@ -13,17 +37,50 @@ export class PaymentService {
                 throw new Error('subscription_id is required for subscription payments');
             }
 
+            // Determine final amount and description
+            let finalAmount: number;
+            let finalDescription: string;
+
+            // For service_record payments, amount must be provided by frontend
+            if (paymentData.payment_type === 'service_record') {
+                if (!paymentData.amount || paymentData.amount <= 0) {
+                    throw new Error('Amount is required for service_record payments. Please calculate from service details on the frontend.');
+                }
+                finalAmount = paymentData.amount;
+                finalDescription = paymentData.description || 'Payment for service completion';
+            } 
+            // For subscription payments, auto-calculate from package price if not provided
+            else if (paymentData.payment_type === 'subscription') {
+                if (paymentData.amount && paymentData.amount > 0) {
+                    // Frontend provided amount
+                    finalAmount = paymentData.amount;
+                    finalDescription = paymentData.description || 'Payment for subscription';
+                } else {
+                    // Auto-calculate from package price
+                    finalAmount = await this.getSubscriptionPackagePrice(paymentData.subscription_id!);
+                    finalDescription = paymentData.description || 'Payment for subscription';
+                }
+            } else {
+                throw new Error('Invalid payment type');
+            }
+
             // Generate unique order code
             const orderCode = Number(String(Date.now()).slice(-6));
 
             // Create payment link with PayOS
+
+            // Ensure finalAmount is set (TypeScript safety check)
+            if (finalAmount === undefined) {
+                throw new Error('Failed to determine payment amount');
+            }
+
             const baseUrl = process.env.FRONTEND_URL || process.env.BASE_URL || 'http://localhost:3000';
             const paymentLinkData = {
                 orderCode: orderCode,
-                amount: paymentData.amount,
-                description: paymentData.description,
-                returnUrl: `${baseUrl}/payment/success`,
-                cancelUrl: `${baseUrl}/payment/cancel`
+                amount: finalAmount,
+                description: finalDescription || 'Payment',
+                returnUrl: paymentData.returnUrl || `${baseUrl}/payment/success`,
+                cancelUrl: paymentData.cancelUrl || `${baseUrl}/payment/cancel`
             };
 
             const paymentLinkResponse = await payOS.paymentRequests.create(paymentLinkData);
@@ -34,8 +91,8 @@ export class PaymentService {
                 subscription_id: paymentData.subscription_id,
                 customer_id: paymentData.customer_id,
                 order_code: orderCode,
-                amount: paymentData.amount,
-                description: paymentData.description,
+                amount: finalAmount,
+                description: finalDescription,
                 payment_type: paymentData.payment_type,
                 payment_url: paymentLinkResponse.checkoutUrl,
                 status: 'pending'

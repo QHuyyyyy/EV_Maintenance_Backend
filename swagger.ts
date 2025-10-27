@@ -344,12 +344,13 @@ const doc = {
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreatePayment: {
-            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2',  // Optional - for service record payments
-            subscription_id: '60f1b2b3c4e5f6g7h8i9j0k3',  // Optional - for subscription payments
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0k2', 
             customer_id: '60f1b2b3c4e5f6g7h8i9j0k4',
             amount: 250000,
             description: 'Payment for service or subscription',
-            payment_type: 'service_record'  // or 'subscription'
+            payment_type: 'service_record',
+            returnUrl: 'https://example.com/payment/success',
+            cancelUrl: 'https://example.com/payment/cancel'
         },
         PaymentWebhook: {
             order_code: 123456,

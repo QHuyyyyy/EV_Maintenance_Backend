@@ -21,12 +21,14 @@ export interface IPayment {
 
 
 export interface CreatePaymentRequest {
-    service_record_id?: string;  // Optional - for service record payments
-    subscription_id?: string;  // Optional - for subscription payments
+    service_record_id?: string;
+    subscription_id?: string;
     customer_id: string;
-    amount: number;
-    description: string;
+    amount?: number;
+    description?: string;
     payment_type: 'service_record' | 'subscription';
+    returnUrl?: string;
+    cancelUrl?: string;
 }
 
 export interface PaymentWebhookData {

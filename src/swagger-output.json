@@ -9079,6 +9079,14 @@
           "payment_type": {
             "type": "string",
             "example": "service_record"
+          },
+          "returnUrl": {
+            "type": "string",
+            "example": "https://example.com/payment/success"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "example": "https://example.com/payment/cancel"
           }
         },
         "xml": {
