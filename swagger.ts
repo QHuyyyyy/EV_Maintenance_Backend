@@ -298,6 +298,37 @@ const doc = {
             recommended_min_stock: 12,
             last_forecast_date: '2025-10-01T10:00:00.000Z'
         },
+        AssignShiftsRequest: {
+            system_user_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            shift_ids: ['string', 'string']
+        },
+        ShiftAssignment: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k9',
+            system_user_id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            shift_id: 'shift-2025-10-27-1'
+        },
+        WorkShift: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            shift_id: 'shift-2025-10-27-1',
+            shift_date: '2025-10-27',
+            start_time: '08:00',
+            end_time: '12:00',
+            status: 'active',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2'
+        },
+        CreateWorkShift: {
+            shift_id: 'shift-2025-10-27-1',
+            shift_date: '2025-10-27',
+            start_time: '08:00',
+            end_time: '12:00',
+            status: 'active',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2'
+        },
+        UpdateWorkShift: {
+            start_time: '09:00',
+            end_time: '13:00',
+            status: 'completed'
+        },
         ServiceDetail: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
             record_id: '60f1b2b3c4e5f6g7h8i9j0k2',
