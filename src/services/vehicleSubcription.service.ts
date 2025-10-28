@@ -95,12 +95,14 @@ export class VehicleSubscriptionService {
             }
 
             const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + servicePackage.duration); const subscription = new VehicleSubscription({
+            endDate.setDate(endDate.getDate() + servicePackage.duration);
+            const subscription = new VehicleSubscription({
                 vehicleId: subscriptionData.vehicleId,
                 package_id: subscriptionData.package_id,
                 start_date: startDate,
                 end_date: endDate,
-                status: subscriptionData.status || 'ACTIVE'
+                // Always start as PENDING until payment is completed via webhook
+                status: 'PENDING'
             });
 
             const savedSubscription = await subscription.save();

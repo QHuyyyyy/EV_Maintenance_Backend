@@ -48,7 +48,7 @@ export class PaymentService {
                 }
                 finalAmount = paymentData.amount;
                 finalDescription = paymentData.description || 'Payment for service completion';
-            } 
+            }
             // For subscription payments, auto-calculate from package price if not provided
             else if (paymentData.payment_type === 'subscription') {
                 if (paymentData.amount && paymentData.amount > 0) {
@@ -222,9 +222,14 @@ export class PaymentService {
             payment.status = webhookData.status === 'PAID' ? 'paid' : 'cancelled';
             payment.transaction_id = webhookData.transaction_id;
             payment.payment_method = webhookData.payment_method;
-            
+
             if (webhookData.status === 'PAID') {
                 payment.paid_at = new Date();
+
+                // If it's a subscription payment and it's paid, activate the subscription
+                if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                    await VehicleSubscription.findByIdAndUpdate(payment.subscription_id, { status: 'ACTIVE' });
+                }
             }
 
             await payment.save();
@@ -245,7 +250,7 @@ export class PaymentService {
     async cancelPayment(orderCode: number): Promise<IPayment | null> {
         try {
             const cancelResponse = await payOS.paymentRequests.cancel(orderCode);
-            
+
             const payment = await Payment.findOneAndUpdate(
                 { order_code: orderCode },
                 { status: 'cancelled' },

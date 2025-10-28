@@ -384,6 +384,9 @@
               }
             }
           },
+          "404": {
+            "description": "Not Found"
+          },
           "409": {
             "description": "Conflict"
           },
@@ -5723,7 +5726,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "User ID"
+            "description": "Appointment ID"
           }
         ],
         "responses": {
@@ -5775,7 +5778,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "User ID"
+            "description": "Appointment ID"
           }
         ],
         "responses": {
@@ -9109,6 +9112,90 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/forecast/info/{centerID}": {
+      "get": {
+        "tags": [
+          "Forecast"
+        ],
+        "summary": "Get recent part analyses for a center.",
+        "description": "Get recent part analyses for a center.",
+        "parameters": [
+          {
+            "name": "centerID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of analysis records to return. Default is 100.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Optional date (YYYY-MM-DD) to filter analyses created on that date.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/forecast/center/{centerId}": {
+      "post": {
+        "tags": [
+          "Forecast"
+        ],
+        "summary": "Enqueue center forecast analysis job.",
+        "description": "Enqueue center forecast analysis job.",
+        "parameters": [
+          {
+            "name": "centerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
       }
     }
   },
