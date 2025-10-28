@@ -288,7 +288,7 @@ export class AppointmentController {
         //    #swagger.summary = 'Assign or remove staff for an appointment (admin only)'
         //    #swagger.description = 'Assign or remove staff for an appointment (admin only)'
         //    #swagger.security = [{ "bearerAuth": [] }]
-        // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
+        // #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'Appointment ID' }
         /* #swagger.requestBody = {
       required: true,
       content: {

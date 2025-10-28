@@ -20,8 +20,6 @@ async function analyzePart(part_id: string, center_id: string) {
             { role: 'system', content: 'You are an assistant that analyzes spare part inventory and recommends actions.' },
             { role: 'user', content: prompt }
         ],
-        temperature: 0.0,
-        max_tokens: 500
     });
 
     const text = resp.choices?.[0]?.message?.content;
@@ -81,6 +79,9 @@ async function analyzePart(part_id: string, center_id: string) {
     try {
         if (centerPart && centerPart._id) {
             await centerAutoPartService.updateCenterAutoPart(centerPart._id, { last_forecast_date: new Date() } as any);
+        }
+        if (parsed.suggestedOrderQty > 0 && centerPart && centerPart._id) {
+            await centerAutoPartService.updateCenterAutoPart(centerPart._id, { recommended_min_stock: parsed.suggestedOrderQty } as any);
         }
     } catch (err) {
         // don't block the main flow if updating last_forecast_date fails

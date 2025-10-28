@@ -16,7 +16,20 @@ async function processCenterAnalysis(job: any) {
     if (!items || items.length === 0) break;
     for (const cp of items) {
       try {
-        await llmAnalysis.analyzePart(cp.part_id.toString(), centerId);
+        // cp.part_id may be a populated object (AutoPart) or a plain id string/ObjectId.
+        // If it's an object, use its _id; otherwise use the value directly.
+        const partId = typeof cp.part_id === 'string'
+          ? cp.part_id
+          : (cp.part_id && (cp.part_id._id ?? cp.part_id.id))
+            ? (cp.part_id._id ?? cp.part_id.id).toString()
+            : undefined;
+
+        if (!partId) {
+          console.error('Skipping analysis: invalid part id for centerPart', cp);
+          continue;
+        }
+
+        await llmAnalysis.analyzePart(partId, centerId);
         totalResults++;
       } catch (err) {
         console.error('analyzePart failed for', cp.part_id, err);
