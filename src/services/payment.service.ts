@@ -225,6 +225,11 @@ export class PaymentService {
             
             if (webhookData.status === 'PAID') {
                 payment.paid_at = new Date();
+
+                // If it's a subscription payment and it's paid, activate the subscription
+                if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                    await VehicleSubscription.findByIdAndUpdate(payment.subscription_id, { status: 'ACTIVE' });
+                }
             }
 
             await payment.save();
