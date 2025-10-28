@@ -25,6 +25,8 @@ router.get('/staff/:staffId', validate, ConversationController.getStaffConversat
 
 // Get conversation with paginated history
 router.get('/:conversationId', validate, ConversationController.getConversationWithHistory);
+// Get latest conversation by customerId (use explicit path to avoid route collision)
+router.get('/customer/:customerId', validate, ConversationController.getConversationByCustomer);
 
 // Mark messages as read
 router.post('/:conversationId/mark-read', validate, ConversationController.markMessagesAsRead);
