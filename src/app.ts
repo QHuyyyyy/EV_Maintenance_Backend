@@ -27,7 +27,11 @@ import paymentRoutes from "./routes/payment.routes";
 import invoiceRoutes from "./routes/invoice.routes";
 import shiftAssignmentRoutes from "./routes/shift-assignment.routes";
 import shift from './routes/workshift.routes';
+import analysisRoutes from './routes/analysis.routes';
+import forecastRoutes from './routes/forecast.routes';
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
+import { startAnalysisWorker } from "./ai/services/analysisWorker.service";
+import { startAnalysisScheduler } from "./ai/services/analysisScheduler.service";
 import http from "http";
 import chatSocketService from "./socket/chat.socket";
 
@@ -44,6 +48,9 @@ connect();
 
 // Start maintenance scheduler
 maintenanceScheduler.startScheduler();
+// Start analysis scheduler and worker
+startAnalysisScheduler();
+startAnalysisWorker();
 
 const app = express();
 
@@ -92,6 +99,8 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/workshifts', shift);
 app.use('/api/shift-assignments', shiftAssignmentRoutes);
+app.use('/api/analysis', analysisRoutes);
+app.use('/api/forecast', forecastRoutes);
 
 // Root route redirect to API docs
 

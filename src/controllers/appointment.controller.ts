@@ -348,7 +348,7 @@ export class AppointmentController {
               #swagger.summary = 'Assign Technician to Appointment and Create Service Record (admin only)'
            #swagger.description = 'Assign a technician to an appointment and create a service record (admin only)'
            #swagger.security = [{ "bearerAuth": [] }]
-         #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'User ID' }
+         #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'Appointment ID' }
          #swagger.requestBody = {
       required: true,
       content: {
