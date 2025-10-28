@@ -48,7 +48,7 @@ export class PaymentService {
                 }
                 finalAmount = paymentData.amount;
                 finalDescription = paymentData.description || 'Payment for service completion';
-            } 
+            }
             // For subscription payments, auto-calculate from package price if not provided
             else if (paymentData.payment_type === 'subscription') {
                 if (paymentData.amount && paymentData.amount > 0) {
@@ -74,7 +74,7 @@ export class PaymentService {
                 throw new Error('Failed to determine payment amount');
             }
 
-            const baseUrl = process.env.BASE_URL;
+            const baseUrl = process.env.FRONTEND_URL || process.env.BASE_URL || 'http://localhost:3000';
             const paymentLinkData = {
                 orderCode: orderCode,
                 amount: finalAmount,
@@ -222,7 +222,7 @@ export class PaymentService {
             payment.status = webhookData.status === 'PAID' ? 'paid' : 'cancelled';
             payment.transaction_id = webhookData.transaction_id;
             payment.payment_method = webhookData.payment_method;
-            
+
             if (webhookData.status === 'PAID') {
                 payment.paid_at = new Date();
 
@@ -250,7 +250,7 @@ export class PaymentService {
     async cancelPayment(orderCode: number): Promise<IPayment | null> {
         try {
             const cancelResponse = await payOS.paymentRequests.cancel(orderCode);
-            
+
             const payment = await Payment.findOneAndUpdate(
                 { order_code: orderCode },
                 { status: 'cancelled' },
