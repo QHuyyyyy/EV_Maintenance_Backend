@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { createUser, getUserByEmailForAuth, getUserByPhone } from "./user.service";
 import { CustomerService } from "./customer.service";
 import { SystemUserService } from "./systemUser.service";
+import { CenterService } from "./center.service";
 import { auth } from "../firebase/firebase.config";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -35,6 +36,7 @@ const REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY || process.env.JWT
 
 const customerService = new CustomerService();
 const systemUserService = new SystemUserService();
+const centerService = new CenterService();
 
 export async function login(authLoginDto: AuthLoginDto) {
     const user = await getUserByEmailForAuth(authLoginDto.email);
@@ -96,6 +98,9 @@ export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthRe
 
 
     if (['TECHNICIAN', 'STAFF', 'ADMIN'].includes(user.role)) {
+        // If a centerId was provided, validate that the center exists before creating the system user
+
+
         try {
             await systemUserService.createEmptySystemUser(user._id.toString(), authRegisterDto.centerId);
         } catch (error) {

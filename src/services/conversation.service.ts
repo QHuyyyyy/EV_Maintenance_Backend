@@ -354,6 +354,22 @@ export class ConversationService {
         };
     }
 
+    /**
+     * Get latest conversation by customerId
+     * - Returns the most recent conversation document for the given customerId
+     */
+    async getConversationByCustomer(customerId: string) {
+        const customerObjectId = new Types.ObjectId(customerId);
+
+        const conversation = await Conversation.findOne({ customerId: customerObjectId })
+            .populate('customerId', 'customerName')
+            .populate('assignedStaffId', 'name')
+            .populate('assignmentHistory.staffId', 'name')
+            .sort({ createdAt: -1 });
+
+        return conversation;
+    }
+
 
 }
 export default new ConversationService();
