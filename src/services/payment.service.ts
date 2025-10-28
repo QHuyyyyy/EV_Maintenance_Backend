@@ -74,7 +74,7 @@ export class PaymentService {
                 throw new Error('Failed to determine payment amount');
             }
 
-            const baseUrl = process.env.FRONTEND_URL || process.env.BASE_URL || 'http://localhost:3000';
+            const baseUrl = process.env.BASE_URL;
             const paymentLinkData = {
                 orderCode: orderCode,
                 amount: finalAmount,
