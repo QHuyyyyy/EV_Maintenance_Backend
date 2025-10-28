@@ -270,7 +270,7 @@ export class ConversationController {
                 try {
                     const customerId = conversation.customerId.toString();
                     const isCustomerOnline = chatSocketService.isUserConnected(customerId);
-
+                    console.log(`🔍 Checking online status for customer ${customerId}:`, isCustomerOnline);
                     if (!isCustomerOnline) {
                         // Customer is offline - send push notification
                         const customer = await Customer.findById(customerId);
@@ -599,6 +599,47 @@ export class ConversationController {
             res.status(404).json({
                 success: false,
                 message: error.message || 'Conversation not found',
+            });
+        }
+    }
+
+    /**
+     * Get latest conversation by customerId
+     * GET /api/chat/customer/:customerId
+     */
+    static async getConversationByCustomer(req: Request, res: Response): Promise<void> {
+        // #swagger.tags = ['Chat']
+        // #swagger.summary = 'Get latest conversation by customerId'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
+        // #swagger.parameters['customerId'] = { in: 'path', required: true, type: 'string' }
+        try {
+            const { customerId } = req.params;
+
+            if (!customerId) {
+                res.status(400).json({
+                    success: false,
+                    message: 'customerId is required',
+                });
+                return;
+            }
+            const conversation = await conversationService.getConversationByCustomer(customerId);
+
+            if (!conversation) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Conversation not found',
+                });
+                return;
+            }
+
+            res.status(200).json({
+                success: true,
+                data: conversation,
+            });
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Error fetching conversation',
             });
         }
     }

@@ -3,10 +3,12 @@ import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, regi
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
 import { CustomerService } from "../services/customer.service";
 import { SystemUserService } from "../services/systemUser.service";
+import { CenterService } from "../services/center.service";
 
 
 const customerService = new CustomerService();
 const systemUserService = new SystemUserService();
+const centerService = new CenterService();
 export async function loginController(req: Request, res: Response) {
     // #swagger.tags = ['Auth']
     // #swagger.summary = 'Login with email and password'
@@ -130,8 +132,17 @@ export async function registerController(req: Request, res: Response) {
                 success: false,
                 message: 'centerId is required when registering STAFF or TECHNICIAN'
             });
-        }
 
+        }
+        if (centerId) {
+            const center = await centerService.getCenterById(centerId);
+            if (!center) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Center not found'
+                });
+            }
+        }
         const authRegisterDto: AuthRegisterDto = { email, password, role: roleToUse, centerId };
         const registerResponse = await register(authRegisterDto);
         return res.status(201).json({
