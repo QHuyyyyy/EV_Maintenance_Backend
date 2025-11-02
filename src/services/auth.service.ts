@@ -322,6 +322,126 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
     }
 }
 
+/**
+ * Register customer with email, phone and password
+ * - If phone exists and email/password not set -> update email and password
+ * - If phone exists and email/password already set -> throw account exists
+ * - Otherwise create new user + createEmptyCustomer
+ */
+export async function registerCustomer(email: string, phone: string, password: string) {
+    if (!email || !phone || !password) {
+        throw new Error('Email, phone and password are required');
+    }
+
+    const normalizedPhone = normalizePhoneNumber(phone);
+
+    // Check if email already used by other account
+    const existingEmailUser = await User.findOne({ email: email });
+    if (existingEmailUser) {
+        throw new Error('Email already in use');
+    }
+
+    // Find user by phone
+    let user = await getUserByPhone(normalizedPhone);
+
+    const hashedPassword = await hashPassword(password);
+
+    if (user) {
+        // If user already has email or password set -> account exists
+        if (user.email || user.password) {
+            throw new Error('Account exists');
+        }
+
+        // Update user with email and password
+        await User.findByIdAndUpdate(user._id, { email: email, password: hashedPassword });
+
+        // Ensure customer profile exists
+        const customer = await customerService.getCustomerByUserId(user._id.toString());
+        if (!customer) {
+            await customerService.createEmptyCustomer(user._id.toString());
+        }
+
+        return { message: 'User updated successfully' };
+    }
+
+    // Create new user and profile
+    const newUser = await createUser({
+        email,
+        phone: normalizedPhone,
+        password: hashedPassword,
+        role: 'CUSTOMER',
+        isDeleted: false
+    });
+
+    await customerService.createEmptyCustomer(newUser._id.toString());
+
+    return { message: 'User registered successfully' };
+}
+
+/**
+ * Login for customers by email or phone + password
+ */
+export async function loginCustomerByPassword(identifier: string, password: string) {
+    try {
+        if (!identifier || !password) {
+            throw new Error('Identifier and password are required');
+        }
+
+        let user: any = null;
+
+        // Determine if identifier is email or phone
+        if (identifier.includes('@')) {
+            user = await getUserByEmailForAuth(identifier);
+        } else {
+            const normalizedPhone = normalizePhoneNumber(identifier);
+            user = await getUserByPhone(normalizedPhone);
+            if (!user) {
+                throw new Error('The account does not exist');
+            }
+        }
+
+        if (user.isDeleted) {
+            throw new Error('The account does not exist');
+        }
+
+        if (user.role !== 'CUSTOMER') {
+            throw new Error('This login method is only for customers');
+        }
+
+        if (!user.password) {
+            throw new Error('Invalid account type');
+        }
+
+        const isMatched = await comparePassword(password, user.password);
+        if (!isMatched) {
+            throw new Error('Password not match!');
+        }
+
+        const payload: Payload = {
+            sub: user._id.toString(),
+            email: user.email || undefined,
+            phone: user.phone || undefined,
+            originalIssuedAt: Date.now()
+        };
+
+        const accessToken = signToken(payload);
+        const refreshToken = signRefreshToken(payload);
+
+        // Save refresh token to user
+        await User.findByIdAndUpdate(user._id, { refreshToken });
+
+        return {
+            accessToken,
+            refreshToken,
+            expiresIn: 3600,
+            role: user.role
+        };
+    } catch (error: any) {
+        // Re-throw so controller can map statuses
+        throw error;
+    }
+}
+
 // Assign vehicle to customer by phone
 export async function assignVehicleToCustomer(vehicleId: string, phone: string) {
     try {
