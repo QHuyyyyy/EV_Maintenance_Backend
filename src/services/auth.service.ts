@@ -7,6 +7,8 @@ import { CustomerService } from "./customer.service";
 import { SystemUserService } from "./systemUser.service";
 import { CenterService } from "./center.service";
 import { auth } from "../firebase/firebase.config";
+import { getRedis } from "../redis/redis.service";
+import mailer from "../utils/mailer";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
@@ -319,6 +321,173 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
 
         console.error("[OTP Login] Unhandled error type");
         throw new Error(error.message || "Invalid OTP or authentication failed");
+    }
+}
+
+/**
+ * Register customer with email, phone and password
+ * - If phone exists and email/password not set -> update email and password
+ * - If phone exists and email/password already set -> throw account exists
+ * - Otherwise create new user + createEmptyCustomer
+ */
+/**
+ * Initiate customer registration by sending OTP to email and saving pending data in Redis.
+ * Stored data includes hashed password and will expire (default 10 minutes).
+ */
+export async function registerCustomer(email: string, phone: string, password: string) {
+    if (!email || !phone || !password) {
+        throw new Error('Email, phone and password are required');
+    }
+
+    const normalizedPhone = normalizePhoneNumber(phone);
+    const emailLower = email.toLowerCase();
+
+    const existingEmailUser = await User.findOne({ email: emailLower });
+    if (existingEmailUser) {
+        throw new Error('Email already in use');
+    }
+    const existingPhoneUser = await getUserByPhone(normalizedPhone);
+    if (existingPhoneUser && (existingPhoneUser.email || existingPhoneUser.password)) {
+        throw new Error('Account exists');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedPassword = await hashPassword(password);
+
+    const redis = getRedis();
+    const key = `pending:register:email:${emailLower}`;
+    const payload = JSON.stringify({ email: emailLower, phone: normalizedPhone, passwordHash: hashedPassword, otp });
+
+    await redis.set(key, payload, 'EX', 60 * 10);
+
+    try {
+        await mailer.sendOtpEmail(emailLower, otp);
+    } catch (e) {
+        console.error('Failed to send OTP email:', e);
+    }
+    return { message: 'OTP sent to email' };
+}
+
+/**
+ * Verify OTP and finalize registration (create or update user and customer profile)
+ */
+export async function verifyRegisterCustomer(email: string, otp: string) {
+    if (!email || !otp) {
+        throw new Error('Email and otp are required');
+    }
+    const emailLower = email.toLowerCase();
+    const redis = getRedis();
+    const key = `pending:register:email:${emailLower}`;
+    const data = await redis.get(key);
+    if (!data) {
+        throw new Error('No pending registration found or OTP expired');
+    }
+
+    let parsed: any;
+    try {
+        parsed = JSON.parse(data);
+    } catch (e) {
+        await redis.del(key);
+        throw new Error('Invalid pending registration data');
+    }
+
+    if (parsed.otp !== otp) {
+        throw new Error('Invalid OTP');
+    }
+
+    const normalizedPhone = parsed.phone;
+
+    let user = await getUserByPhone(normalizedPhone);
+
+    if (user) {
+        await User.findByIdAndUpdate(user._id, { email: emailLower, password: parsed.passwordHash });
+
+        const customer = await customerService.getCustomerByUserId(user._id.toString());
+        if (!customer) {
+            await customerService.createEmptyCustomer(user._id.toString());
+        }
+
+        await redis.del(key);
+        return { message: 'User updated successfully' };
+    }
+
+    // create new user
+    const newUser = await createUser({
+        email: emailLower,
+        phone: normalizedPhone,
+        password: parsed.passwordHash,
+        role: 'CUSTOMER',
+        isDeleted: false
+    });
+
+    await customerService.createEmptyCustomer(newUser._id.toString());
+
+    await redis.del(key);
+
+    return { message: 'User registered successfully' };
+}
+
+/**
+ * Login for customers by email or phone + password
+ */
+export async function loginCustomerByPassword(identifier: string, password: string) {
+    try {
+        if (!identifier || !password) {
+            throw new Error('Identifier and password are required');
+        }
+
+        let user: any = null;
+
+        // Determine if identifier is email or phone
+        if (identifier.includes('@')) {
+            user = await getUserByEmailForAuth(identifier);
+        } else {
+            const normalizedPhone = normalizePhoneNumber(identifier);
+            user = await getUserByPhone(normalizedPhone);
+            if (!user) {
+                throw new Error('The account does not exist');
+            }
+        }
+
+        if (user.isDeleted) {
+            throw new Error('The account does not exist');
+        }
+
+        if (user.role !== 'CUSTOMER') {
+            throw new Error('This login method is only for customers');
+        }
+
+        if (!user.password) {
+            throw new Error('Invalid account type');
+        }
+
+        const isMatched = await comparePassword(password, user.password);
+        if (!isMatched) {
+            throw new Error('Password not match!');
+        }
+
+        const payload: Payload = {
+            sub: user._id.toString(),
+            email: user.email || undefined,
+            phone: user.phone || undefined,
+            originalIssuedAt: Date.now()
+        };
+
+        const accessToken = signToken(payload);
+        const refreshToken = signRefreshToken(payload);
+
+        // Save refresh token to user
+        await User.findByIdAndUpdate(user._id, { refreshToken });
+
+        return {
+            accessToken,
+            refreshToken,
+            expiresIn: 3600,
+            role: user.role
+        };
+    } catch (error: any) {
+        // Re-throw so controller can map statuses
+        throw error;
     }
 }
 

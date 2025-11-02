@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken } from "../services/auth.service";
+import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken, registerCustomer, loginCustomerByPassword, verifyRegisterCustomer } from "../services/auth.service";
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
 import { CustomerService } from "../services/customer.service";
 import { SystemUserService } from "../services/systemUser.service";
@@ -377,6 +377,163 @@ export async function firebaseOtpLoginController(req: Request, res: Response) {
             success: false,
             message: error.message || "Invalid OTP or authentication failed"
         });
+    }
+}
+
+export async function registerCustomerController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Register a new customer (email + phone + password)'
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        email: { type: "string", example: "customer@example.com" },
+                        phone: { type: "string", example: "+84901234567" },
+                        password: { type: "string", example: "secret123" }
+                    },
+                    required: ["email", "phone", "password"]
+                }
+            }
+        }
+    } */
+    /* #swagger.responses[201] = {
+        description: 'Customer created or updated successfully',
+        schema: { success: true, message: 'User registered successfully' }
+    } */
+    /* #swagger.responses[400] = {
+        description: 'Validation error (missing or invalid fields)',
+        schema: { success: false, message: 'Email, phone and password are required' }
+    } */
+    /* #swagger.responses[409] = {
+        description: 'Conflict (email already used or account exists for phone)',
+        schema: { success: false, message: 'Account already exists' }
+    } */
+    try {
+        const { email, phone, password } = req.body;
+
+        if (!email || !phone || !password) {
+            return res.status(400).json({ success: false, message: 'Email, phone and password are required' });
+        }
+
+        // Basic validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ success: false, message: 'Invalid email format' });
+        }
+        if (typeof password !== 'string' || password.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+        }
+
+        const result = await registerCustomer(email, phone, password);
+
+        // OTP sent -> return 202 Accepted
+        return res.status(202).json({ success: true, message: result.message });
+    } catch (error: any) {
+        if (error.message === 'Account exists') {
+            return res.status(409).json({ success: false, message: 'Account already exists' });
+        }
+        if (error.message === 'Email already in use') {
+            return res.status(409).json({ success: false, message: 'Email already in use' });
+        }
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+export async function registerCustomerVerifyController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Verify OTP for customer registration'
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        email: { type: "string", example: "customer@example.com" },
+                        otp: { type: "string", example: "123456" }
+                    },
+                    required: ["email", "otp"]
+                }
+            }
+        }
+    } */
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Email and otp are required' });
+        }
+
+        const result = await verifyRegisterCustomer(email, otp);
+
+        return res.status(200).json({ success: true, message: result.message });
+    } catch (error: any) {
+        if (error.message === 'No pending registration found or OTP expired') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        if (error.message === 'Invalid OTP') {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        }
+        if (error.message === 'Email already in use' || error.message === 'Account exists') {
+            return res.status(409).json({ success: false, message: error.message });
+        }
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+export async function loginByPasswordController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Customer login using email or phone and password'
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        identifier: { type: "string", description: "email or phone (preferred)", example: "customer@example.com/+84123456789" },
+                        password: { type: "string", example: "secret123" }
+                    },
+                }
+            }
+        }
+    } */
+    /* #swagger.responses[200] = {
+        description: 'Login successful',
+        schema: {
+            success: true,
+            message: 'Login successfully',
+            data: {
+                accessToken: 'string',
+                refreshToken: 'string',
+                expiresIn: 3600,
+                role: 'CUSTOMER'
+            }
+        }
+    } */
+    /* #swagger.responses[400] = { description: 'Missing identifier or password', schema: { success:false, message: 'Identifier (email or phone) and password are required' } } */
+    /* #swagger.responses[401] = { description: 'Invalid credentials', schema: { success:false, message: 'Invalid email or password' } } */
+    try {
+        const { identifier, password } = req.body;
+
+        const id = identifier;
+        if (!id || !password) {
+            return res.status(400).json({ success: false, message: 'Identifier (email or phone) and password are required' });
+        }
+
+        const tokenResponse = await loginCustomerByPassword(id, password);
+
+        return res.status(200).json({ success: true, message: 'Login successfully', data: tokenResponse });
+    } catch (error: any) {
+        if (error.message === 'The account does not exist' || error.message === 'Password not match!' || error.message.includes('Failed to get user by email')) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
+        if (error.message === 'This login method is only for customers') {
+            return res.status(401).json({ success: false, message: 'Invalid login method' });
+        }
+        return res.status(500).json({ success: false, message: 'Internal server error' });
     }
 }
 
