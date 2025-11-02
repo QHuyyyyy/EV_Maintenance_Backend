@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken, registerCustomer, loginCustomerByPassword } from "../services/auth.service";
+import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken, registerCustomer, loginCustomerByPassword, verifyRegisterCustomer } from "../services/auth.service";
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
 import { CustomerService } from "../services/customer.service";
 import { SystemUserService } from "../services/systemUser.service";
@@ -429,13 +429,55 @@ export async function registerCustomerController(req: Request, res: Response) {
 
         const result = await registerCustomer(email, phone, password);
 
-        return res.status(201).json({ success: true, message: result.message });
+        // OTP sent -> return 202 Accepted
+        return res.status(202).json({ success: true, message: result.message });
     } catch (error: any) {
         if (error.message === 'Account exists') {
             return res.status(409).json({ success: false, message: 'Account already exists' });
         }
         if (error.message === 'Email already in use') {
             return res.status(409).json({ success: false, message: 'Email already in use' });
+        }
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+export async function registerCustomerVerifyController(req: Request, res: Response) {
+    // #swagger.tags = ['Auth']
+    // #swagger.summary = 'Verify OTP for customer registration'
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        email: { type: "string", example: "customer@example.com" },
+                        otp: { type: "string", example: "123456" }
+                    },
+                    required: ["email", "otp"]
+                }
+            }
+        }
+    } */
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Email and otp are required' });
+        }
+
+        const result = await verifyRegisterCustomer(email, otp);
+
+        return res.status(200).json({ success: true, message: result.message });
+    } catch (error: any) {
+        if (error.message === 'No pending registration found or OTP expired') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        if (error.message === 'Invalid OTP') {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        }
+        if (error.message === 'Email already in use' || error.message === 'Account exists') {
+            return res.status(409).json({ success: false, message: error.message });
         }
         return res.status(500).json({ success: false, message: 'Internal server error' });
     }

@@ -1,5 +1,5 @@
 import express from "express";
-import { loginController, registerController, refreshTokenController, logoutController, getProfileController, firebaseOtpLoginController, registerDeviceTokenController, unregisterDeviceTokenController, registerCustomerController, loginByPasswordController } from "../controllers/auth.controller";
+import { loginController, registerController, refreshTokenController, logoutController, getProfileController, firebaseOtpLoginController, registerDeviceTokenController, unregisterDeviceTokenController, registerCustomerController, registerCustomerVerifyController, loginByPasswordController } from "../controllers/auth.controller";
 import { validate } from "../middlewares/auth";
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.post("/login-otp", firebaseOtpLoginController);
 router.post("/login-by-password", loginByPasswordController);
 router.post("/register", registerController);
 router.post("/register-customer", registerCustomerController);
+router.post("/register-customer/verify", registerCustomerVerifyController);
 router.post("/refresh-token", refreshTokenController);
 router.post("/logout", logoutController);
 router.get("/profile", validate, getProfileController);

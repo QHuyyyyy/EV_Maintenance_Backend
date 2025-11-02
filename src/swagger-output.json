@@ -655,6 +655,9 @@
               }
             }
           },
+          "202": {
+            "description": "Accepted"
+          },
           "400": {
             "description": "Validation error (missing or invalid fields)",
             "content": {
@@ -765,6 +768,53 @@
                   "email",
                   "phone",
                   "password"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register-customer/verify": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Verify OTP for customer registration",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "customer@example.com"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "email",
+                  "otp"
                 ]
               }
             }
