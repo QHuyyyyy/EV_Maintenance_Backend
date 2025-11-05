@@ -11,7 +11,7 @@ const systemUserService = new SystemUserService();
 const centerService = new CenterService();
 export async function loginController(req: Request, res: Response) {
     // #swagger.tags = ['Auth']
-    // #swagger.summary = 'Login with email and password'
+    // #swagger.summary = 'Login with email and password for staff'
     /* #swagger.requestBody = {
         required: true,
         content: {
@@ -73,7 +73,7 @@ export async function loginController(req: Request, res: Response) {
 export async function registerController(req: Request, res: Response) {
     try {
         // #swagger.tags = ['Auth']
-        // #swagger.summary = 'Register a new user'
+        // #swagger.summary = 'Register a new staff'
         /* #swagger.requestBody = {
        required: true,
        content: {
@@ -293,7 +293,7 @@ export async function logoutController(req: Request, res: Response) {
 
 export async function firebaseOtpLoginController(req: Request, res: Response) {
     // #swagger.tags = ['Auth']
-    // #swagger.summary = 'Login with Firebase OTP token'
+    // #swagger.summary = 'Login with Firebase OTP for customers'
     /* #swagger.requestBody = {
         required: true,
         content: {
