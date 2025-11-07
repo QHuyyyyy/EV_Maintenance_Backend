@@ -84,6 +84,10 @@ export class ServiceRecordService {
                             { path: 'center_id', select: 'name address phone' }
                         ]
                     })
+                    .populate({
+                        path: 'technician_id',
+                        select: 'name dateOfBirth'
+                    })
                     .sort({ start_time: -1 })
                     .skip(skip)
                     .limit(limit)
