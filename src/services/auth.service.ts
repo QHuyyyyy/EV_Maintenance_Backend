@@ -40,45 +40,6 @@ const customerService = new CustomerService();
 const systemUserService = new SystemUserService();
 const centerService = new CenterService();
 
-export async function login(authLoginDto: AuthLoginDto) {
-    const user = await getUserByEmailForAuth(authLoginDto.email);
-    if (user.isDeleted) {
-        throw new Error("The account does not exist");
-    }
-    if (!user.password) {
-        throw new Error("Invalid account type");
-    }
-    const isMatched = await comparePassword(authLoginDto.password, user.password);
-
-    if (!isMatched) {
-        throw new Error("Password not match!");
-    }
-
-    const payload: Payload = {
-        sub: user._id.toString(),
-        email: user.email || undefined,
-        originalIssuedAt: Date.now()
-    };
-
-    const accessToken = signToken(payload);
-    const refreshToken = signRefreshToken(payload);
-
-    // Save refresh token to user
-    await User.findByIdAndUpdate(user._id, { refreshToken });
-
-    // Set isOnline = true if user is staff (ADMIN, STAFF, TECHNICIAN)
-    if (['ADMIN', 'STAFF', 'TECHNICIAN'].includes(user.role)) {
-        await systemUserService.setOnlineStatus(user._id.toString(), true);
-    }
-
-    return {
-        accessToken,
-        refreshToken,
-        expiresIn: 3600,
-        role: user.role
-    };
-}
-
 export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthRegisterResponse> {
 
     const roleToCreate = authRegisterDto.role || "STAFF";
@@ -91,8 +52,19 @@ export async function register(authRegisterDto: AuthRegisterDto): Promise<AuthRe
 
     const hashedPassword = await hashPassword(authRegisterDto.password);
 
+    // If phone provided, normalize and ensure it's not already used
+    let normalizedPhone: string | undefined = undefined;
+    if (authRegisterDto.phone) {
+        normalizedPhone = normalizePhoneNumber(authRegisterDto.phone);
+        const existingPhoneUser = await getUserByPhone(normalizedPhone);
+        if (existingPhoneUser) {
+            throw new Error('Phone already in use');
+        }
+    }
+
     const user = await createUser({
         email: authRegisterDto.email,
+        phone: normalizedPhone,
         password: hashedPassword,
         role: roleToCreate,
         isDeleted: false
@@ -324,16 +296,6 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
     }
 }
 
-/**
- * Register customer with email, phone and password
- * - If phone exists and email/password not set -> update email and password
- * - If phone exists and email/password already set -> throw account exists
- * - Otherwise create new user + createEmptyCustomer
- */
-/**
- * Initiate customer registration by sending OTP to email and saving pending data in Redis.
- * Stored data includes hashed password and will expire (default 10 minutes).
- */
 export async function registerCustomer(email: string, phone: string, password: string) {
     if (!email || !phone || !password) {
         throw new Error('Email, phone and password are required');
@@ -368,9 +330,7 @@ export async function registerCustomer(email: string, phone: string, password: s
     return { message: 'OTP sent to email' };
 }
 
-/**
- * Verify OTP and finalize registration (create or update user and customer profile)
- */
+
 export async function verifyRegisterCustomer(email: string, otp: string) {
     if (!email || !otp) {
         throw new Error('Email and otp are required');
@@ -427,10 +387,8 @@ export async function verifyRegisterCustomer(email: string, otp: string) {
     return { message: 'User registered successfully' };
 }
 
-/**
- * Login for customers by email or phone + password
- */
-export async function loginCustomerByPassword(identifier: string, password: string) {
+
+export async function loginByPassword(identifier: string, password: string) {
     try {
         if (!identifier || !password) {
             throw new Error('Identifier and password are required');
@@ -451,10 +409,6 @@ export async function loginCustomerByPassword(identifier: string, password: stri
 
         if (user.isDeleted) {
             throw new Error('The account does not exist');
-        }
-
-        if (user.role !== 'CUSTOMER') {
-            throw new Error('This login method is only for customers');
         }
 
         if (!user.password) {

@@ -1,10 +1,11 @@
 export interface AuthLoginDto {
-    email: string;
+    identifier: string;
     password: string;
 }
 
 export interface AuthRegisterDto {
     email: string;
+    phone?: string;
     password: string;
     role?: "CUSTOMER" | "ADMIN" | "TECHNICIAN" | "STAFF";
     centerId?: string;

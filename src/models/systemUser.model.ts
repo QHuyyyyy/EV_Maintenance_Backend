@@ -31,6 +31,7 @@ const systemUserSchema = new Schema({
     centerId: {
         type: Schema.Types.ObjectId,
         ref: 'Center',
+        default: null
     }
 }, {
     timestamps: true

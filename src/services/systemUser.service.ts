@@ -86,6 +86,8 @@ export class SystemUserService {
      */
     async getAllSystemUsers(filters?: {
         name?: string;
+        centerId?: string;
+        role?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -105,11 +107,21 @@ export class SystemUserService {
             if (filters?.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
             }
+            if (filters?.centerId) {
+                query.centerId = filters.centerId;
+            }
+
+            // Build populate match for userId. If role filter is provided, include it here so
+            // that populated userId will be null for non-matching roles and later filtered out.
+            const populateMatch: any = { isDeleted: false };
+            if (filters?.role) {
+                populateMatch.role = filters.role;
+            }
 
             const systemUsersRaw = await SystemUser.find(query)
                 .populate({
                     path: 'userId',
-                    match: { isDeleted: false },
+                    match: populateMatch,
                     select: 'phone email role'
                 })
                 .sort({ createdAt: -1 })
