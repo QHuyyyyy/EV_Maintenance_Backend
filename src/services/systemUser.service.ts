@@ -45,6 +45,7 @@ export class SystemUserService {
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
+                centerId: systemUser.centerId ? systemUser.centerId.toString() : null,
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -72,6 +73,7 @@ export class SystemUserService {
             return {
                 ...systemUser,
                 _id: systemUser._id.toString(),
+                centerId: systemUser.centerId ? systemUser.centerId.toString() : null,
             } as ISystemUser;
         } catch (error) {
             if (error instanceof Error) {
@@ -132,6 +134,7 @@ export class SystemUserService {
             const mappedSystemUsers = filteredSystemUsers.map(systemUser => ({
                 ...systemUser,
                 _id: systemUser._id.toString(),
+                centerId: systemUser.centerId ? systemUser.centerId.toString() : null,
             })) as ISystemUser[];
             return {
                 systemUsers: mappedSystemUsers,
