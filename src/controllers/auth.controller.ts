@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { login, register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken, registerCustomer, loginCustomerByPassword, verifyRegisterCustomer } from "../services/auth.service";
+import { register, refreshAccessToken, logout, loginWithFirebaseOTP, registerDeviceToken, unregisterDeviceToken, registerCustomer, loginByPassword, verifyRegisterCustomer } from "../services/auth.service";
 import { AuthLoginDto, AuthRegisterDto, RefreshTokenDto } from "../types/auth.type";
 import { CustomerService } from "../services/customer.service";
 import { SystemUserService } from "../services/systemUser.service";
@@ -9,71 +9,14 @@ import { CenterService } from "../services/center.service";
 const customerService = new CustomerService();
 const systemUserService = new SystemUserService();
 const centerService = new CenterService();
-export async function loginController(req: Request, res: Response) {
-    // #swagger.tags = ['Auth']
-    // #swagger.summary = 'Login with email and password for staff'
-    /* #swagger.requestBody = {
-        required: true,
-        content: {
-            "application/json": {
-                schema: {
-                    $ref: '#/definitions/Login'
-                }
-            }
-        }
-    } */
-    /* #swagger.responses[200] = {
-        description: 'User logged in successfully',
-        schema: {
-            success: true,
-            message: 'Login successfully',
-            token:  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        }
-    } */
-    /* #swagger.responses[401] = {
-        description: 'Invalid email or password',
-        schema: { $ref: '#/definitions/ErrorResponse' }
-    } */
-    try {
-        const { email, password } = req.body;
-
-        // Input validation
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Email and password are required"
-            });
-        }
-
-        const authLoginDto: AuthLoginDto = { email, password };
-        const tokenResponse = await login(authLoginDto);
-
-        return res.status(200).json({
-            success: true,
-            message: "Login successfully",
-            data: tokenResponse,
-        });
-    } catch (error: any) {
-        if (error.message === "The account does not exist" ||
-            error.message === "Password not match!" ||
-            error.message.includes("Failed to get user by email")) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email or password"
-            });
-        }
-        console.error("Login error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
-    }
-}
 
 export async function registerController(req: Request, res: Response) {
     try {
         // #swagger.tags = ['Auth']
         // #swagger.summary = 'Register a new staff'
+        /* #swagger.security = [{
+              "bearerAuth": []
+      }] */
         /* #swagger.requestBody = {
        required: true,
        content: {
@@ -96,7 +39,7 @@ export async function registerController(req: Request, res: Response) {
             description: 'Invalid email or password',
             schema: { $ref: '#/definitions/ErrorResponse' }
         } */
-        const { email, password, role, centerId } = req.body;
+        const { email, password, role, centerId, phone } = req.body;
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
@@ -115,6 +58,14 @@ export async function registerController(req: Request, res: Response) {
                 success: false,
                 message: "Password must be at least 6 characters long"
             });
+        }
+
+        // If phone is provided, validate format similar to assignVehicle/login flow
+        if (phone) {
+            const phoneRegex = /^(\+84|0|84)[1-9][0-9]{8}$/;
+            if (!phoneRegex.test((phone as string).replace(/\s/g, ''))) {
+                return res.status(400).json({ success: false, message: 'Invalid phone number format. Expected format: +84xxxxxxxxx, 0xxxxxxxxx, or 84xxxxxxxxx' });
+            }
         }
         const validRoles = ["ADMIN", "TECHNICIAN", "STAFF"];
         // If role provided must be one of staff roles. Default role is STAFF.
@@ -143,7 +94,7 @@ export async function registerController(req: Request, res: Response) {
                 });
             }
         }
-        const authRegisterDto: AuthRegisterDto = { email, password, role: roleToUse, centerId };
+        const authRegisterDto: AuthRegisterDto = { email, password, role: roleToUse, centerId, phone };
         const registerResponse = await register(authRegisterDto);
         return res.status(201).json({
             success: true,
@@ -154,6 +105,12 @@ export async function registerController(req: Request, res: Response) {
             return res.status(409).json({
                 success: false,
                 message: "Email already exists"
+            });
+        }
+        if (error.message === 'Phone already in use') {
+            return res.status(409).json({
+                success: false,
+                message: 'Phone already in use'
             });
         }
         return res.status(500).json({
@@ -427,6 +384,12 @@ export async function registerCustomerController(req: Request, res: Response) {
             return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
         }
 
+        // Validate phone format to match assignVehicle/login flow
+        const phoneRegex = /^(\+84|0|84)[1-9][0-9]{8}$/;
+        if (!phoneRegex.test((phone as string).replace(/\s/g, ''))) {
+            return res.status(400).json({ success: false, message: 'Invalid phone number format. Expected format: +84xxxxxxxxx, 0xxxxxxxxx, or 84xxxxxxxxx' });
+        }
+
         const result = await registerCustomer(email, phone, password);
 
         // OTP sent -> return 202 Accepted
@@ -485,7 +448,7 @@ export async function registerCustomerVerifyController(req: Request, res: Respon
 
 export async function loginByPasswordController(req: Request, res: Response) {
     // #swagger.tags = ['Auth']
-    // #swagger.summary = 'Customer login using email or phone and password'
+    // #swagger.summary = 'Login using email or phone and password'
     /* #swagger.requestBody = {
         required: true,
         content: {
@@ -523,7 +486,7 @@ export async function loginByPasswordController(req: Request, res: Response) {
             return res.status(400).json({ success: false, message: 'Identifier (email or phone) and password are required' });
         }
 
-        const tokenResponse = await loginCustomerByPassword(id, password);
+        const tokenResponse = await loginByPassword(id, password);
 
         return res.status(200).json({ success: true, message: 'Login successfully', data: tokenResponse });
     } catch (error: any) {

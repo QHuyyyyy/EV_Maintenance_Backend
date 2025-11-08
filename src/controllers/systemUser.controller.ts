@@ -110,6 +110,8 @@ export class SystemUserController {
    }] */
         // #swagger.description = 'Retrieve all system users with optional filtering and pagination'
         // #swagger.parameters['name'] = { in: 'query', type: 'string', description: 'Filter by name' }
+        // #swagger.parameters['centerId'] = { in: 'query', type: 'string', description: 'Filter by center ID' }
+        // #swagger.parameters['role'] = { in: 'query', type: 'string', description: 'Filter by user role' }
         // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number (default: 1)' }
         // #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page (default: 10)' }
         /* #swagger.responses[200] = {
@@ -120,11 +122,12 @@ export class SystemUserController {
             }
         } */
         try {
-            const { name, page, limit } = req.query;
+            const { name, page, limit, centerId, role } = req.query;
 
             const filters = {
                 name: name as string,
-
+                centerId: centerId as string,
+                role: role as string,
                 page: page ? parseInt(page as string) : undefined,
                 limit: limit ? parseInt(limit as string) : undefined
             };
