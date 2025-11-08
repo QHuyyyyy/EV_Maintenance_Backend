@@ -16,7 +16,7 @@ export interface ISystemUser {
     };
     name?: string;
     dateOfBirth?: Date;
-    centerId?: string;
+    centerId?: string | null;
     certificates?: Certificate[];
     createdAt?: Date;
     updatedAt?: Date;
