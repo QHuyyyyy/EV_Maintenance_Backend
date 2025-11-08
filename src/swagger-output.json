@@ -81,103 +81,12 @@
     }
   ],
   "paths": {
-    "/api/auth/login": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Login with email and password",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "User logged in successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Login successfully"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    }
-                  },
-                  "xml": {
-                    "name": "main"
-                  }
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Login successfully"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    }
-                  },
-                  "xml": {
-                    "name": "main"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Invalid email or password",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Login"
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/login-otp": {
       "post": {
         "tags": [
           "Auth"
         ],
-        "summary": "Login with Firebase OTP token",
+        "summary": "Login with Firebase OTP for customers",
         "description": "",
         "responses": {
           "200": {
@@ -325,7 +234,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Customer login using email or phone and password",
+        "summary": "Login using email or phone and password",
         "description": "",
         "responses": {
           "200": {
@@ -520,12 +429,12 @@
         }
       }
     },
-    "/api/auth/register": {
+    "/api/auth/register-staff": {
       "post": {
         "tags": [
           "Auth"
         ],
-        "summary": "Register a new user",
+        "summary": "Register a new staff",
         "description": "",
         "responses": {
           "201": {
@@ -584,6 +493,9 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -594,6 +506,11 @@
             "description": "Internal Server Error"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2256,6 +2173,22 @@
             "name": "name",
             "in": "query",
             "description": "Filter by name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "centerId",
+            "in": "query",
+            "description": "Filter by center ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Filter by user role",
             "schema": {
               "type": "string"
             }
@@ -10162,10 +10095,6 @@
           "endTime": {
             "type": "string",
             "example": "2025-10-16T11:00:00.000Z"
-          },
-          "status": {
-            "type": "string",
-            "example": "scheduled"
           }
         },
         "xml": {

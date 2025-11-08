@@ -229,7 +229,6 @@ const doc = {
             center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
             startTime: '2025-10-16T09:00:00.000Z',
             endTime: '2025-10-16T11:00:00.000Z',
-            status: 'scheduled'
         },
         UpdateAppointment: {
             startTime: '2025-10-16T10:00:00.000Z',
