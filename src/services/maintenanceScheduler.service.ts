@@ -6,6 +6,7 @@ import { Alert } from '../models/alert.model';
 import Customer from '../models/customer.model';
 import { differenceInDays } from 'date-fns';
 import { firebaseNotificationService } from '../firebase/fcm.service';
+import { nowVN } from '../utils/time';
 
 interface AlertPayload {
     vehicleId: string;
@@ -22,7 +23,7 @@ export class MaintenanceSchedulerService {
         console.log('🚀 Starting Maintenance Scheduler...');
 
         this.cronJob = cron.schedule('0 */6 * * *', async () => {
-            console.log(`[${new Date().toISOString()}] Timer Running maintenance check...`);
+            console.log(`[${nowVN()}] Timer Running maintenance check...`);
             try {
                 await this.checkMaintenanceAlerts();
                 console.log('✅ Maintenance check completed');
@@ -311,12 +312,13 @@ export class MaintenanceSchedulerService {
     private async createAlertIfNotExists(alertData: AlertPayload, vehicleId?: any) {
         try {
             // Kiểm tra có alert SERVICE_DUE hoặc SUBSCRIPTION_EXPIRY chưa đọc không
+            // Use Vietnam 'now' for the 24-hour window to keep comparisons consistent
             const existingAlert = await Alert.findOne({
                 vehicleId: alertData.vehicleId,
                 type: alertData.type,
                 isRead: false,
                 createdAt: {
-                    $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Trong 24h
+                    $gte: new Date(nowVN().getTime() - 24 * 60 * 60 * 1000)
                 }
             });
 
@@ -387,7 +389,7 @@ export class MaintenanceSchedulerService {
                     vehicleId: alertData.vehicleId,   // ← Keep for context but id is primary
                     alertType: alertData.type,        // ← ADD: Keep specific type (SERVICE_DUE, SUBSCRIPTION_EXPIRY)
                     priority: alertData.priority,
-                    timestamp: new Date().toISOString(),
+                    timestamp: nowVN().toISOString(),
                     // Dữ liệu chi tiết để app xử lý
                     fullContent: alertData.content,
                 }

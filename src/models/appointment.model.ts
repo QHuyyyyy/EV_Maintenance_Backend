@@ -1,12 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IAppointment extends Document {
-    staffId: mongoose.Types.ObjectId;
+    staffId: mongoose.Types.ObjectId | null;
     customer_id: mongoose.Types.ObjectId;
     vehicle_id: mongoose.Types.ObjectId;
     center_id: mongoose.Types.ObjectId;
-    startTime: Date;
-    endTime: Date;
+    slot_id: mongoose.Types.ObjectId; // reference to Slot instead of raw start/end time
     status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
     createdAt: Date;
     updatedAt: Date;
@@ -35,12 +34,9 @@ const AppointmentSchema: Schema = new Schema(
             ref: 'Center',
             required: true
         },
-        startTime: {
-            type: Date,
-            required: true
-        },
-        endTime: {
-            type: Date,
+        slot_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Slot',
             required: true
         },
         status: {

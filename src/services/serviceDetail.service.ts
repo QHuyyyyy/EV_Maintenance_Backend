@@ -1,5 +1,7 @@
 import ServiceDetail from '../models/serviceDetail.model';
 import { CreateServiceDetailRequest, UpdateServiceDetailRequest, IServiceDetail } from '../types/serviceDetail.type';
+import moment from 'moment-timezone';
+import { VIETNAM_TIMEZONE } from '../utils/time';
 
 export class ServiceDetailService {
     async createServiceDetail(detailData: CreateServiceDetailRequest): Promise<IServiceDetail> {
@@ -104,8 +106,8 @@ export class ServiceDetailService {
      */
     async getPartHistory(centerpart_id: string, days = 180): Promise<{ date: string; qty: number }[]> {
         try {
-            const from = new Date();
-            from.setDate(from.getDate() - days + 1);
+            // lấy mốc bắt đầu theo múi giờ VN, bao phủ đủ `days` ngày gần nhất
+            const from = moment().tz(VIETNAM_TIMEZONE).subtract(days - 1, 'days').startOf('day').toDate();
 
             // Find service details linked to the centerpart within date range
             const details = await ServiceDetail.find({
@@ -117,18 +119,14 @@ export class ServiceDetailService {
 
             const map: Record<string, number> = {};
             for (const d of details) {
-                const dt = new Date(d.createdAt);
-                const day = dt.toISOString().slice(0, 10);
+                const day = moment(d.createdAt).tz(VIETNAM_TIMEZONE).format('YYYY-MM-DD');
                 map[day] = (map[day] || 0) + (d.quantity || 0);
             }
 
             // build array for each day in range
             const result: { date: string; qty: number }[] = [];
-            const now = new Date();
             for (let i = days - 1; i >= 0; i--) {
-                const d = new Date(now);
-                d.setDate(now.getDate() - i);
-                const day = d.toISOString().slice(0, 10);
+                const day = moment().tz(VIETNAM_TIMEZONE).subtract(i, 'days').format('YYYY-MM-DD');
                 result.push({ date: day, qty: map[day] || 0 });
             }
 

@@ -20,11 +20,12 @@ export class ShiftAssignmentController {
         } */
         try {
             const body = req.body as AssignShiftsRequest;
-            if (!body || !body.system_user_id || !Array.isArray(body.shift_ids) || body.shift_ids.length === 0) {
-                res.status(400).json({ success: false, message: 'system_user_id and shift_ids[] are required' });
+            const ids = (body.workshift_ids && Array.isArray(body.workshift_ids) ? body.workshift_ids : (body as any).shift_ids) as string[];
+            if (!body || !body.system_user_id || !Array.isArray(ids) || ids.length === 0) {
+                res.status(400).json({ success: false, message: 'system_user_id and workshift_ids[] are required' });
                 return;
             }
-            const created = await service.assignShifts(body.system_user_id, body.shift_ids);
+            const created = await service.assignShifts(body.system_user_id, ids);
             res.status(201).json({ success: true, data: created });
         } catch (error: any) {
             res.status(500).json({ success: false, message: error.message });
@@ -51,10 +52,10 @@ export class ShiftAssignmentController {
         // #swagger.tags = ['Shift Assignments']
         // #swagger.summary = 'Get all system users assigned to a shift'
         /* #swagger.security = [{ "bearerAuth": [] }] */
-        // #swagger.parameters['shift_id'] = { in: 'path', required: true, type: 'string' }
+        // #swagger.parameters['workshift_id'] = { in: 'path', required: true, type: 'string' }
         try {
-            const { shift_id } = req.params;
-            const users = await service.getUsersOfShift(shift_id);
+            const { workshift_id } = req.params as any;
+            const users = await service.getUsersOfShift(workshift_id);
             res.status(200).json({ success: true, data: users });
         } catch (error: any) {
             res.status(500).json({ success: false, message: error.message });

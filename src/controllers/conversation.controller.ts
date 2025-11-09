@@ -7,7 +7,10 @@ import chatSocketService from '../socket/chat.socket';
 import Customer from '../models/customer.model';
 import SystemUser from '../models/systemUser.model';
 import { firebaseNotificationService } from '../firebase/fcm.service';
+import moment from 'moment-timezone';
+const VIETNAM_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
+const nowVN = () => moment().tz(VIETNAM_TIMEZONE).toDate();
 const conversationService = new ConversationService();
 const messageService = new MessageService();
 
@@ -104,7 +107,7 @@ export class ConversationController {
                 // Emit message to conversation room
                 chatSocketService.emitNewMessage((conversation._id as any).toString(), {
                     ...message.toObject?.() || message,
-                    timestamp: new Date(),
+                    timestamp: nowVN(),
                 });
             }
         } catch (error: any) {
@@ -262,7 +265,7 @@ export class ConversationController {
             // Emit socket event to conversation room
             chatSocketService.emitNewMessage(conversationId, {
                 ...message.toObject?.() || message,
-                timestamp: new Date(),
+                timestamp: nowVN(),
             });
 
             // 🔴 Check if customer is online/offline and send push notification if offline
