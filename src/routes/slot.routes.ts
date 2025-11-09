@@ -10,4 +10,7 @@ router.post('/generate', validate, (req, res) => slotController.generateSlots(re
 // List slots
 router.get('/', validate, (req, res) => slotController.listSlots(req, res));
 
+// Get staff and technician for slot assignment
+router.get('/:slotId/staff-and-technician', validate, (req, res) => slotController.getStaffAndTechnicianForSlot(req, res));
+
 export default router;

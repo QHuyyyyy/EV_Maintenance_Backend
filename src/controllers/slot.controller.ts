@@ -71,6 +71,35 @@ class SlotController {
             res.status(400).json({ success: false, message: error instanceof Error ? error.message : 'Failed to list slots' });
         }
     }
+
+    /**
+     * GET /slots/:slotId/staff-and-technician
+     * Get all staff and technician available for a specific slot with assignment status
+     */
+    async getStaffAndTechnicianForSlot(req: Request, res: Response) {
+        /* #swagger.tags = ['Slots']
+            #swagger.summary = 'Get staff and technician for slot assignment'
+            #swagger.description = 'Get all staff and technician available during a slot with their assignment count for appointments in that slot'
+            #swagger.security = [{ "bearerAuth": [] }]
+            #swagger.parameters['slotId'] = { in: 'path', required: true, description: 'Slot ID', type: 'string' }
+            #swagger.responses[200] = {
+                description: 'Successfully retrieved staff and technician list',
+            }
+        */
+        try {
+            const { slotId } = req.params;
+            const result = await slotService.getStaffAndTechnicianForSlot(slotId);
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                message: error instanceof Error ? error.message : 'Failed to get staff and technician list'
+            });
+        }
+    }
 }
 
 export default new SlotController();

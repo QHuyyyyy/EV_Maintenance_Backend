@@ -18,7 +18,8 @@ export class RecordChecklistService {
                         checklist_id: id,
                         record_id: data.record_id,
                         status: data.status ?? 'pending',
-                        note: data.note ?? ''
+                        note: data.note ?? '',
+                        suggest: Array.isArray(data.suggest) ? data.suggest : []
                     }));
 
                     if (toCreate.length > 0) {
@@ -26,6 +27,7 @@ export class RecordChecklistService {
                     }
                     return await RecordChecklist.find({ record_id: data.record_id })
                         .populate({ path: 'checklist_id' })
+                        .populate({ path: 'suggest', populate: { path: 'part_id' } })
                         .sort({ createdAt: 1 })
                         .lean() as any;
                 }
@@ -35,11 +37,13 @@ export class RecordChecklistService {
                 checklist_id: data.checklist_id,
                 record_id: data.record_id,
                 status: data.status ?? 'pending',
-                note: data.note ?? ''
+                note: data.note ?? '',
+                suggest: Array.isArray(data.suggest) ? data.suggest : []
             });
             await rc.save();
             return await RecordChecklist.findById(rc._id)
                 .populate({ path: 'checklist_id' })
+                .populate({ path: 'suggest', populate: { path: 'part_id' } })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {
@@ -53,6 +57,7 @@ export class RecordChecklistService {
         try {
             return await RecordChecklist.find({ record_id: recordId })
                 .populate({ path: 'checklist_id' })
+                .populate({ path: 'suggest', populate: { path: 'part_id' } })
                 .sort({ createdAt: 1 })
                 .lean() as any;
         } catch (error) {
@@ -65,14 +70,49 @@ export class RecordChecklistService {
 
     async updateRecordChecklist(id: string, updateData: UpdateRecordChecklistRequest): Promise<IRecordChecklist | null> {
         try {
-            return await RecordChecklist.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+            // Build update object to support suggest add/remove semantics
+            const updateOps: any = {};
+            const setOps: any = {};
+
+            if (typeof updateData.status !== 'undefined') setOps.status = updateData.status;
+            if (typeof updateData.note !== 'undefined') setOps.note = updateData.note;
+            if (Array.isArray(updateData.suggest)) setOps.suggest = updateData.suggest;
+
+            if (Object.keys(setOps).length) updateOps.$set = setOps;
+
+            if (Array.isArray(updateData.suggest_add) && updateData.suggest_add.length) {
+                updateOps.$addToSet = { ...(updateOps.$addToSet || {}), suggest: { $each: updateData.suggest_add } };
+            }
+            if (Array.isArray(updateData.suggest_remove) && updateData.suggest_remove.length) {
+                updateOps.$pull = { ...(updateOps.$pull || {}), suggest: { $in: updateData.suggest_remove } };
+            }
+
+            return await RecordChecklist.findByIdAndUpdate(id, updateOps, { new: true, runValidators: true })
                 .populate({ path: 'checklist_id' })
+                .populate({ path: 'suggest', populate: { path: 'part_id' } })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to update record checklist: ${error.message}`);
             }
             throw new Error('Failed to update record checklist: Unknown error');
+        }
+    }
+
+    async addSuggestions(id: string, suggest: string[]): Promise<IRecordChecklist | null> {
+        try {
+            return await RecordChecklist.findByIdAndUpdate(
+                id,
+                { $addToSet: { suggest: { $each: suggest } } },
+                { new: true, runValidators: true }
+            ).populate({ path: 'checklist_id' })
+                .populate({ path: 'suggest', populate: { path: 'part_id' } })
+                .lean() as any;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to add suggestions: ${error.message}`);
+            }
+            throw new Error('Failed to add suggestions: Unknown error');
         }
     }
 

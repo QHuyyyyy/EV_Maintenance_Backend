@@ -5,7 +5,11 @@ const WorkShiftSchema = new Schema({
     start_time: { type: String, required: true },
     end_time: { type: String, required: true },
     status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' },
-    center_id: { type: String, required: true },
+    center_id: { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Center',
+        required: true 
+    },
 });
 
 // Helpful indexes for lookups

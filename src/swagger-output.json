@@ -6102,7 +6102,7 @@
           "Appointments"
         ],
         "summary": "Assign Technician to Appointment and Create Service Record (admin only)",
-        "description": "Assign a technician to an appointment and create a service record (admin only)",
+        "description": "Assign a technician to an appointment and create a service record",
         "parameters": [
           {
             "name": "id",
@@ -6404,6 +6404,42 @@
         ]
       }
     },
+    "/api/service-records/{id}/all-suggested-parts": {
+      "get": {
+        "tags": [
+          "Service Records"
+        ],
+        "summary": "Get all suggested parts for a service record",
+        "description": "Aggregate CenterAutoPart suggestions from all checklist items for the given service record, grouped with counts.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/service-checklists": {
       "post": {
         "tags": [
@@ -6619,7 +6655,7 @@
     "/api/record-checklists": {
       "post": {
         "tags": [
-          "Service Checklists"
+          "Record Checklists"
         ],
         "summary": "Create Record Checklist Items",
         "description": "Create record checklist items. You can pass `checklist_id` for a single link or `checklist_ids` (array) to link multiple checklist templates to the same service record.",
@@ -6654,7 +6690,7 @@
     "/api/record-checklists/by-record/{recordId}": {
       "get": {
         "tags": [
-          "Service Checklists"
+          "Record Checklists"
         ],
         "summary": "Get Record Checklists by Service Record ID",
         "description": "Get checklist items for a given service record",
@@ -6690,7 +6726,7 @@
     "/api/record-checklists/{id}": {
       "put": {
         "tags": [
-          "Service Checklists"
+          "Record Checklists"
         ],
         "summary": "Update Record Checklist Item",
         "description": "Update a record checklist item (status or note)",
@@ -6737,7 +6773,7 @@
       },
       "delete": {
         "tags": [
-          "Service Checklists"
+          "Record Checklists"
         ],
         "summary": "Delete Record Checklist Item",
         "description": "Delete a record checklist item",
@@ -9696,6 +9732,42 @@
           }
         ]
       }
+    },
+    "/api/slots/{slotId}/staff-and-technician": {
+      "get": {
+        "tags": [
+          "Slots"
+        ],
+        "summary": "Get staff and technician for slot assignment",
+        "description": "Get all staff and technician available during a slot with their assignment count for appointments in that slot",
+        "parameters": [
+          {
+            "name": "slotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Slot ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved staff and technician list"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -10442,6 +10514,10 @@
             "type": "number",
             "example": 55
           },
+          "warranty_time": {
+            "type": "number",
+            "example": 120
+          },
           "createdAt": {
             "type": "string",
             "example": "2025-09-21T10:00:00.000Z"
@@ -10469,6 +10545,10 @@
           "selling_price": {
             "type": "number",
             "example": 55
+          },
+          "warranty_time": {
+            "type": "number",
+            "example": 120
           }
         },
         "xml": {
@@ -10489,6 +10569,10 @@
           "selling_price": {
             "type": "number",
             "example": 58
+          },
+          "warranty_time": {
+            "type": "number",
+            "example": 240
           }
         },
         "xml": {
@@ -11170,6 +11254,16 @@
             "type": "string",
             "example": "Optional note for this checklist item on the record"
           },
+          "suggest": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0p1",
+              "60f1b2b3c4e5f6g7h8i9j0p2"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
           "createdAt": {
             "type": "string",
             "example": "2025-09-21T10:00:00.000Z"
@@ -11207,6 +11301,15 @@
           "note": {
             "type": "string",
             "example": "Optional note for this checklist item on the record"
+          },
+          "suggest": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0p1"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         },
         "xml": {
@@ -11223,6 +11326,24 @@
           "note": {
             "type": "string",
             "example": "Inspected and completed"
+          },
+          "suggest_add": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0p3"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggest_remove": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0p2"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         },
         "xml": {
