@@ -4,6 +4,7 @@ export interface IAutoPartDocument extends Document {
     name: string;
     cost_price: number;
     selling_price: number;
+    warranty_time?: number; // in months
     createdAt: Date;
     updatedAt: Date;
 }
@@ -21,6 +22,11 @@ const AutoPartSchema: Schema = new Schema(
         selling_price: {
             type: Number,
             required: [true, 'Selling price is required']
+        },
+        warranty_time: {
+            type: Number,
+            default: 0, //date
+            min: [0, 'Warranty time cannot be negative']
         },
         // Inventory-specific fields have been moved to CenterAutoPart
     },

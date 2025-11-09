@@ -5,6 +5,7 @@ import { VIETNAM_TIMEZONE } from '../utils/time';
 import { CreateAppointmentRequest, UpdateAppointmentRequest, IAppointment } from '../types/appointment.type';
 import { Vehicle } from '../models/vehicle.model';
 import mongoose from 'mongoose';
+import systemUserModel from '../models/systemUser.model';
 
 export class AppointmentService {
     async createAppointment(appointmentData: CreateAppointmentRequest): Promise<IAppointment> {
@@ -25,7 +26,13 @@ export class AppointmentService {
             if (String(slot.center_id) !== String(appointmentData.center_id)) {
                 throw new Error('Slot does not belong to the specified center');
             }
-
+            if (appointmentData.staffId) {
+                const staff = await systemUserModel.findById(appointmentData.staffId).select('centerId').lean();
+                if (!staff) throw new Error('Staff not found');
+                if (String(staff.centerId) !== String(appointmentData.center_id)) {
+                    throw new Error('Staff does not belong to the specified center');
+                }
+            }
             // Expiry check
             const [endH, endM] = String((slot as any).end_time).split(':').map((n: string) => parseInt(n, 10));
             const slotEnd = moment(slot.slot_date).tz(VIETNAM_TIMEZONE).set({ hour: endH || 0, minute: endM || 0, second: 0, millisecond: 0 }).toDate();

@@ -283,6 +283,7 @@ const doc = {
             name: 'Brake Pad',
             cost_price: 35,
             selling_price: 55,
+            warranty_time: 120,
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
@@ -290,11 +291,13 @@ const doc = {
             name: 'Brake Pad',
             cost_price: 35,
             selling_price: 55,
+            warranty_time: 120,
         },
         UpdateAutoPart: {
             name: 'Brake Pad',
             cost_price: 36,
             selling_price: 58,
+            warranty_time: 240,
         },
         CenterAutoPart: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k9',
@@ -462,18 +465,22 @@ const doc = {
             record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             status: 'pending',
             note: 'Optional note for this checklist item on the record',
+            suggest: ['60f1b2b3c4e5f6g7h8i9j0p1', '60f1b2b3c4e5f6g7h8i9j0p2'], // CenterAutoPart IDs
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
         CreateRecordChecklist: {
-            checklist_ids: ['60f1b2b3c4e5f6g7h8i9j0k2', "60f1b2b3c4e5f6g7h8i9j0k4"],
+            checklist_ids: ['60f1b2b3c4e5f6g7h8i9j0k2', '60f1b2b3c4e5f6g7h8i9j0k4'],
             record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             status: 'pending',
-            note: 'Optional note for this checklist item on the record'
+            note: 'Optional note for this checklist item on the record',
+            suggest: ['60f1b2b3c4e5f6g7h8i9j0p1']
         },
         UpdateRecordChecklist: {
             status: 'completed',
-            note: 'Inspected and completed'
+            note: 'Inspected and completed',
+            suggest_add: ['60f1b2b3c4e5f6g7h8i9j0p3'],
+            suggest_remove: ['60f1b2b3c4e5f6g7h8i9j0p2']
         }
     },
     securityDefinitions: {

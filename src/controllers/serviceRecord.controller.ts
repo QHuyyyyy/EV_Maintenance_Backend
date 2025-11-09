@@ -77,6 +77,30 @@ export class ServiceRecordController {
         }
     }
 
+    async getAllSuggestedParts(req: Request, res: Response) {
+        /* #swagger.tags = ['Service Records']
+           #swagger.summary = 'Get all suggested parts for a service record'
+           #swagger.description = 'Aggregate CenterAutoPart suggestions from all checklist items for the given service record, grouped with counts.'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['id'] = {
+               in: 'path',
+               description: 'Service Record ID',
+               required: true,
+               type: 'string'
+           }
+        */
+        try {
+            const data = await serviceRecordService.getAllSuggestedParts(req.params.id);
+            res.status(200).json({ success: true, data });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to get suggested parts' });
+            }
+        }
+    }
+
     async getAllServiceRecords(req: Request, res: Response) {
         /* #swagger.tags = ['Service Records']
            #swagger.summary = 'Get All Service Records'
@@ -246,6 +270,8 @@ export class ServiceRecordController {
             }
         }
     }
+
+
 }
 
 export default new ServiceRecordController();

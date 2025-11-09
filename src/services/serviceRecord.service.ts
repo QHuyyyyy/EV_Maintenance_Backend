@@ -1,5 +1,9 @@
 import ServiceRecord from '../models/serviceRecord.model';
+import RecordChecklist from '../models/recordChecklist.model';
+import mongoose from 'mongoose';
 import { CreateServiceRecordRequest, UpdateServiceRecordRequest, IServiceRecord } from '../types/serviceRecord.type';
+import ServiceDetail from '../models/serviceDetail.model';
+import CenterAutoPart from '../models/centerAutoPart.model';
 
 export class ServiceRecordService {
     async createServiceRecord(recordData: CreateServiceRecordRequest): Promise<IServiceRecord> {
@@ -142,6 +146,36 @@ export class ServiceRecordService {
                 throw new Error(`Failed to delete service record: ${error.message}`);
             }
             throw new Error('Failed to delete service record: Unknown error');
+        }
+    }
+
+
+    async getAllSuggestedParts(recordId: string) {
+        try {
+            // Fetch checklist suggestions
+            const checklists = await RecordChecklist.find({ record_id: recordId })
+                .select('suggest')
+                .lean();
+            const suggestedIdsFromChecklists = new Set<string>();
+            checklists.forEach(rc => {
+                if (Array.isArray(rc.suggest)) {
+                    rc.suggest.forEach((id: any) => suggestedIdsFromChecklists.add(String(id)));
+                }
+            });
+
+            const allIds = Array.from(suggestedIdsFromChecklists);
+            if (allIds.length === 0) return [];
+
+            const parts = await CenterAutoPart.find({ _id: { $in: allIds } })
+                .populate('center_id')
+                .populate('part_id')
+                .lean() as any;
+            return parts;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get suggested parts: ${error.message}`);
+            }
+            throw new Error('Failed to get suggested parts: Unknown error');
         }
     }
 }

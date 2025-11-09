@@ -3,7 +3,7 @@ import serviceChecklistService from '../services/serviceChecklist.service';
 
 export class ServiceChecklistController {
     async createServiceChecklist(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Checklists']
+        /* #swagger.tags = ['Checklists']
           #swagger.summary = 'Create Service Checklist'
            #swagger.description = 'Create a new service checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
@@ -39,7 +39,7 @@ export class ServiceChecklistController {
     }
 
     async getServiceChecklistById(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Checklists']
+        /* #swagger.tags = ['Checklists']
             #swagger.summary = 'Get Service Checklist by ID'
            #swagger.description = 'Get service checklist by ID'
            #swagger.security = [{ "bearerAuth": [] }]
@@ -78,7 +78,7 @@ export class ServiceChecklistController {
     }
 
     async getAllServiceChecklists(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Checklists']
+        /* #swagger.tags = ['Checklists']
            #swagger.summary = 'Get All Service Checklists'
            #swagger.description = 'Get all service checklists with optional filters'
            #swagger.security = [{ "bearerAuth": [] }]
@@ -129,7 +129,7 @@ export class ServiceChecklistController {
     }
 
     async updateServiceChecklist(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Checklists']
+        /* #swagger.tags = ['Checklists']
            #swagger.summary = 'Update Service Checklist Item'
            #swagger.description = 'Update a service checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
@@ -177,7 +177,7 @@ export class ServiceChecklistController {
     }
 
     async deleteServiceChecklist(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Checklists']
+        /* #swagger.tags = ['Checklists']
               #swagger.summary = 'Delete Service Checklist Item'
            #swagger.description = 'Delete a service checklist item'
            #swagger.security = [{ "bearerAuth": [] }]
