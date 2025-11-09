@@ -25,6 +25,7 @@
     "include": [
         "src/**/*.ts",
         "swagger.ts",
+        "src/test.mjs",
     ],
     "exclude": [
         "src/public/*"

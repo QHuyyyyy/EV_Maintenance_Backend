@@ -89,6 +89,11 @@ const doc = {
             name: 'Invoices',
             description: 'Invoice management endpoints'
         }
+        ,
+        {
+            name: 'Slots',
+            description: 'Time slot management endpoints'
+        }
     ],
     definitions: {
         User: {
@@ -227,8 +232,7 @@ const doc = {
             customer_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             vehicle_id: '60f1b2b3c4e5f6g7h8i9j0k4',
             center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
-            startTime: '2025-10-16T09:00:00.000Z',
-            endTime: '2025-10-16T11:00:00.000Z',
+            slot_id: "60f1b2b3c4e5f12338i9j0k5"
         },
         UpdateAppointment: {
             startTime: '2025-10-16T10:00:00.000Z',
@@ -321,16 +325,15 @@ const doc = {
         },
         AssignShiftsRequest: {
             system_user_id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            shift_ids: ['string', 'string']
+            workshift_ids: ['60f1b2b3c4e5f6g7h8i9j0a1', '60f1b2b3c4e5f6g7h8i9j0a2']
         },
         ShiftAssignment: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k9',
             system_user_id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            shift_id: 'shift-2025-10-27-1'
+            workshift_id: '60f1b2b3c4e5f6g7h8i9j0a1'
         },
         WorkShift: {
-            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
-            shift_id: 'shift-2025-10-27-1',
+            _id: '60f1b2b3c4e5f6g7h8i9j0a1',
             shift_date: '2025-10-27',
             start_time: '08:00',
             end_time: '12:00',
@@ -338,8 +341,9 @@ const doc = {
             center_id: '60f1b2b3c4e5f6g7h8i9j0k2'
         },
         CreateWorkShift: {
-            shift_id: 'shift-2025-10-27-1',
-            shift_date: '2025-10-27',
+            // Either provide a single date or an array of dates
+            shift_dates: ['2025-10-27', '2025-10-28'],
+            // shift_date: '2025-10-27',
             start_time: '08:00',
             end_time: '12:00',
             status: 'active',
@@ -349,6 +353,25 @@ const doc = {
             start_time: '09:00',
             end_time: '13:00',
             status: 'completed'
+        },
+        GenerateSlotsRequest: {
+            center_ids: ['60f1b2b3c4e5f6g7h8i9j0k5', '60f1b2b3c4e5f6g7h8i9j0k6'],
+            dates: ['2025-11-10', '2025-11-11'],
+            start_time: '08:00',
+            end_time: '17:00',
+            duration: 60
+        },
+        Slot: {
+            _id: '675abc901234567890abcdef',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k5',
+            slot_date: '2025-11-10T00:00:00.000Z',
+            start_time: '09:00',
+            end_time: '10:00',
+            capacity: 3,
+            booked_count: 0,
+            status: 'active',
+            createdAt: '2025-11-01T10:00:00.000Z',
+            updatedAt: '2025-11-01T10:00:00.000Z'
         },
         ServiceDetail: {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',

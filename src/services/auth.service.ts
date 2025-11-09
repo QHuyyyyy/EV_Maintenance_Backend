@@ -9,6 +9,7 @@ import { CenterService } from "./center.service";
 import { auth } from "../firebase/firebase.config";
 import { getRedis } from "../redis/redis.service";
 import mailer from "../utils/mailer";
+import { nowVN } from '../utils/time';
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
@@ -476,8 +477,7 @@ export async function assignVehicleToCustomer(vehicleId: string, phone: string) 
 
         // Update vehicle with customer ID
         const { Vehicle } = await import("../models/vehicle.model");
-        await Vehicle.findByIdAndUpdate(vehicleId, { customerId: customer._id });
-
+        await Vehicle.findByIdAndUpdate(vehicleId, { customerId: customer._id, last_service_date: nowVN() });
         return {
             message: "Vehicle assigned to customer successfully",
             customerId: customer._id,
