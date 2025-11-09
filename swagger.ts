@@ -66,10 +66,6 @@ const doc = {
             description: 'Service record management endpoints'
         },
         {
-            name: 'Service Checklists',
-            description: 'Service checklist management endpoints'
-        },
-        {
             name: 'Auto Parts',
             description: 'Auto part inventory management endpoints'
         },

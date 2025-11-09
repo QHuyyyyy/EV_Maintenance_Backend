@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import serviceDetailService from '../services/serviceDetail.service';
+import { checkAndApplyWarranty } from '../services/warrantyCheck.service';
 
 export class ServiceDetailController {
     async createServiceDetail(req: Request, res: Response) {
         /* #swagger.tags = ['Service Details']
            #swagger.summary = 'Create a new service detail entry'
-           #swagger.description = 'Create a new service detail entry'
+           #swagger.description = 'Create a new service detail entry with automatic warranty check'
            #swagger.security = [{ "bearerAuth": [] }]
            #swagger.requestBody = {
                required: true,
@@ -17,13 +18,46 @@ export class ServiceDetailController {
            }
         */
         try {
-            const detail = await serviceDetailService.createServiceDetail(req.body);
+            const { record_id, centerpart_id, quantity, description } = req.body;
+
+            const warrantyResult = await checkAndApplyWarranty(
+                record_id,
+                centerpart_id,
+                quantity
+            );
+
+            // Tính tổng giá
+            const totalPrice = warrantyResult.paidQty * warrantyResult.unitPrice;
+
+            console.log(`   - Bảo hành: ${warrantyResult.warrantyQty} cái`);
+            console.log(`   - Bán mới: ${warrantyResult.paidQty} cái`);
+            console.log(`   - Giá/cái: ${warrantyResult.unitPrice} đ`);
+            console.log(`   - Tổng tiền linh kiện: ${totalPrice} đ`);
+
+            // Tạo ServiceDetail với thông tin đã tính toán
+            const detail = await serviceDetailService.createServiceDetail({
+                record_id,
+                centerpart_id,
+                quantity,
+                description: warrantyResult.description,
+                unit_price: warrantyResult.unitPrice
+            });
+
+
             res.status(201).json({
                 success: true,
                 message: 'Service detail created successfully',
-                data: detail
+                data: detail,
+                warranty: {
+                    warrantyQty: warrantyResult.warrantyQty,
+                    paidQty: warrantyResult.paidQty,
+                    unitPrice: warrantyResult.unitPrice,
+                    totalPrice: totalPrice,
+                    description: warrantyResult.description
+                }
             });
         } catch (error) {
+            console.error(`❌ [CREATE SERVICE DETAIL] Lỗi:`, error);
             if (error instanceof Error) {
                 res.status(400).json({
                     success: false,
