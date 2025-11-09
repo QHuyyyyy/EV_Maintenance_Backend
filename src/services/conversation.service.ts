@@ -4,7 +4,7 @@ import Customer from '../models/customer.model';
 import SystemUser from '../models/systemUser.model';
 import { Types } from 'mongoose';
 import chatSocketService from '../socket/chat.socket';
-
+import { nowVN } from '../utils/time';
 export class ConversationService {
 
     async getOrCreateConversation(customerId: string) {
@@ -45,7 +45,7 @@ export class ConversationService {
 
                     conversation.assignmentHistory.push({
                         staffId: conversation.lastAssignedStaff,
-                        assignedAt: new Date(),
+                        assignedAt: nowVN(),
                         unassignedAt: undefined,
                     });
                 }
@@ -96,7 +96,7 @@ export class ConversationService {
         // Append to assignment history
         conversation.assignmentHistory.push({
             staffId: stfId,
-            assignedAt: new Date(),
+            assignedAt: nowVN(),
             unassignedAt: undefined,
         });
 
@@ -145,14 +145,14 @@ export class ConversationService {
         // Mark old staff as unassigned
         const lastAssignment = conversation.assignmentHistory[conversation.assignmentHistory.length - 1];
         if (lastAssignment && lastAssignment.staffId.equals(oldStfId)) {
-            lastAssignment.unassignedAt = new Date();
+            lastAssignment.unassignedAt = nowVN();
             lastAssignment.unassignReason = 'manual_transfer';
         }
 
         // Add new staff
         conversation.assignmentHistory.push({
             staffId: newStfId,
-            assignedAt: new Date(),
+            assignedAt: nowVN(),
             unassignedAt: undefined,
         });
 
@@ -198,7 +198,7 @@ export class ConversationService {
             // Mark as unassigned in assignment history
             const lastAssignment = conversation.assignmentHistory[conversation.assignmentHistory.length - 1];
             if (lastAssignment && lastAssignment.staffId.equals(stfId)) {
-                lastAssignment.unassignedAt = new Date();
+                lastAssignment.unassignedAt = nowVN();
                 lastAssignment.unassignReason = reason === 'logout' ? 'staff_logout' : 'staff_offline';
             }
 
@@ -236,7 +236,7 @@ export class ConversationService {
         if (conversation.assignmentHistory.length > 0) {
             const lastAssignment = conversation.assignmentHistory[conversation.assignmentHistory.length - 1];
             if (!lastAssignment.unassignedAt) {
-                lastAssignment.unassignedAt = new Date();
+                lastAssignment.unassignedAt = nowVN();
             }
         }
 

@@ -28,6 +28,7 @@ import invoiceRoutes from "./routes/invoice.routes";
 import shiftAssignmentRoutes from "./routes/shift-assignment.routes";
 import shift from './routes/workshift.routes';
 import forecastRoutes from './routes/forecast.routes';
+import slotRoutes from './routes/slot.routes';
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
 import { startAnalysisWorker } from "./ai/services/analysisWorker.service";
 import { startAnalysisScheduler } from "./ai/services/analysisScheduler.service";
@@ -99,6 +100,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/workshifts', shift);
 app.use('/api/shift-assignments', shiftAssignmentRoutes);
 app.use('/api/forecast', forecastRoutes);
+app.use('/api/slots', slotRoutes);
 
 // Root route redirect to API docs
 

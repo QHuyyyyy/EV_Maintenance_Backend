@@ -78,6 +78,10 @@
     {
       "name": "Invoices",
       "description": "Invoice management endpoints"
+    },
+    {
+      "name": "Slots",
+      "description": "Time slot management endpoints"
     }
   ],
   "paths": {
@@ -5879,26 +5883,6 @@
             }
           },
           {
-            "name": "startDate",
-            "in": "query",
-            "description": "Filter by start date (from)",
-            "required": false,
-            "format": "date-time",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "description": "Filter by end date (to)",
-            "required": false,
-            "format": "date-time",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "page",
             "in": "query",
             "description": "Page number",
@@ -9031,6 +9015,9 @@
         "summary": "Create a new work shift",
         "description": "",
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "201": {
             "description": "Work shift created",
             "content": {
@@ -9070,6 +9057,9 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request"
+          },
           "401": {
             "description": "Unauthorized"
           },
@@ -9099,6 +9089,43 @@
         ],
         "summary": "Get all work shifts",
         "description": "",
+        "parameters": [
+          {
+            "name": "center_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "YYYY-MM-DD",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of work shifts",
@@ -9116,6 +9143,9 @@
                       "items": {
                         "$ref": "#/components/schemas/WorkShift"
                       }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/PaginationInfo"
                     }
                   },
                   "xml": {
@@ -9136,6 +9166,9 @@
                       "items": {
                         "$ref": "#/components/schemas/WorkShift"
                       }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/PaginationInfo"
                     }
                   },
                   "xml": {
@@ -9390,7 +9423,7 @@
         ]
       }
     },
-    "/api/shift-assignments/shift/{shift_id}": {
+    "/api/shift-assignments/shift/{workshift_id}": {
       "get": {
         "tags": [
           "Shift Assignments"
@@ -9399,7 +9432,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "shift_id",
+            "name": "workshift_id",
             "in": "path",
             "required": true,
             "schema": {
@@ -9545,6 +9578,123 @@
             "description": "Internal Server Error"
           }
         }
+      }
+    },
+    "/api/slots/generate": {
+      "post": {
+        "tags": [
+          "Slots"
+        ],
+        "summary": "Generate slots",
+        "description": "Generate slots for multiple centers and multiple dates. Capacity is automatically calculated based on the number of technicians assigned to shifts (WorkShift).",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSlotsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/slots": {
+      "get": {
+        "tags": [
+          "Slots"
+        ],
+        "summary": "List slots",
+        "description": "",
+        "parameters": [
+          {
+            "name": "center_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by center ID",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Filter by date (YYYY-MM-DD)",
+            "example": "2025-11-10",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "From datetime (ISO)",
+            "example": "2025-11-10T00:00:00.000Z",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "To datetime (ISO)",
+            "example": "2025-11-10T23:59:59.999Z",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Slot status",
+            "enum": [
+              "active",
+              "inactive",
+              "full",
+              "expired"
+            ],
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -10088,13 +10238,9 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k5"
           },
-          "startTime": {
+          "slot_id": {
             "type": "string",
-            "example": "2025-10-16T09:00:00.000Z"
-          },
-          "endTime": {
-            "type": "string",
-            "example": "2025-10-16T11:00:00.000Z"
+            "example": "60f1b2b3c4e5f12338i9j0k5"
           }
         },
         "xml": {
@@ -10464,11 +10610,11 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "shift_ids": {
+          "workshift_ids": {
             "type": "array",
             "example": [
-              "string",
-              "string"
+              "60f1b2b3c4e5f6g7h8i9j0a1",
+              "60f1b2b3c4e5f6g7h8i9j0a2"
             ],
             "items": {
               "type": "string"
@@ -10490,9 +10636,9 @@
             "type": "string",
             "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "shift_id": {
+          "workshift_id": {
             "type": "string",
-            "example": "shift-2025-10-27-1"
+            "example": "60f1b2b3c4e5f6g7h8i9j0a1"
           }
         },
         "xml": {
@@ -10504,11 +10650,7 @@
         "properties": {
           "_id": {
             "type": "string",
-            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
-          },
-          "shift_id": {
-            "type": "string",
-            "example": "shift-2025-10-27-1"
+            "example": "60f1b2b3c4e5f6g7h8i9j0a1"
           },
           "shift_date": {
             "type": "string",
@@ -10538,13 +10680,15 @@
       "CreateWorkShift": {
         "type": "object",
         "properties": {
-          "shift_id": {
-            "type": "string",
-            "example": "shift-2025-10-27-1"
-          },
-          "shift_date": {
-            "type": "string",
-            "example": "2025-10-27"
+          "shift_dates": {
+            "type": "array",
+            "example": [
+              "2025-10-27",
+              "2025-10-28"
+            ],
+            "items": {
+              "type": "string"
+            }
           },
           "start_time": {
             "type": "string",
@@ -10585,6 +10729,94 @@
         },
         "xml": {
           "name": "UpdateWorkShift"
+        }
+      },
+      "GenerateSlotsRequest": {
+        "type": "object",
+        "properties": {
+          "center_ids": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0k5",
+              "60f1b2b3c4e5f6g7h8i9j0k6"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "dates": {
+            "type": "array",
+            "example": [
+              "2025-11-10",
+              "2025-11-11"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "start_time": {
+            "type": "string",
+            "example": "08:00"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "17:00"
+          },
+          "duration": {
+            "type": "number",
+            "example": 60
+          }
+        },
+        "xml": {
+          "name": "GenerateSlotsRequest"
+        }
+      },
+      "Slot": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "675abc901234567890abcdef"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k5"
+          },
+          "slot_date": {
+            "type": "string",
+            "example": "2025-11-10T00:00:00.000Z"
+          },
+          "start_time": {
+            "type": "string",
+            "example": "09:00"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "10:00"
+          },
+          "capacity": {
+            "type": "number",
+            "example": 3
+          },
+          "booked_count": {
+            "type": "number",
+            "example": 0
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-11-01T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-11-01T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "Slot"
         }
       },
       "ServiceDetail": {

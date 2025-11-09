@@ -3,6 +3,10 @@ import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import ConversationService from '../services/conversation.service';
+import moment from 'moment-timezone';
+const VIETNAM_TIMEZONE = 'Asia/Ho_Chi_Minh';
+
+const nowVN = () => moment().tz(VIETNAM_TIMEZONE).toDate();
 
 interface SocketUser {
     userId: string;
@@ -115,7 +119,7 @@ class ChatSocketService {
             content,
             attachment,
             isRead: false,
-            createdAt: new Date(),
+            createdAt: nowVN(),
         };
 
         // Broadcast to conversation room
@@ -164,7 +168,7 @@ class ChatSocketService {
         this.io?.to(`conversation:${conversationId}`).emit('user:joined', {
             conversationId,
             userId,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
 
         console.log(`User ${userId} joined conversation ${conversationId}`);
@@ -184,7 +188,7 @@ class ChatSocketService {
         this.io?.to(`conversation:${conversationId}`).emit('user:left', {
             conversationId,
             userId,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
 
         console.log(`User ${userId} left conversation ${conversationId}`);
@@ -214,7 +218,7 @@ class ChatSocketService {
             this.io?.to(`conversation:${conversationId}`).emit('user:left', {
                 conversationId,
                 userId,
-                timestamp: new Date(),
+                timestamp: nowVN(),
             });
             this.userToConversation.delete(userId);
         }
@@ -250,7 +254,7 @@ class ChatSocketService {
         this.io?.emit('chat:waiting', {
             conversationId,
             ...conversationData,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -260,7 +264,7 @@ class ChatSocketService {
     emitChatAssigned(conversationId: string, staffId: string) {
         this.io?.to(`staff:${staffId}`).emit('chat:assigned', {
             conversationId,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -272,7 +276,7 @@ class ChatSocketService {
             conversationId,
             staffId,
             staffName,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -284,7 +288,7 @@ class ChatSocketService {
             conversationId,
             oldStaffId,
             newStaffId,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -294,7 +298,7 @@ class ChatSocketService {
     emitConversationClosed(conversationId: string) {
         this.io?.to(`conversation:${conversationId}`).emit('conversation:closed', {
             conversationId,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -332,7 +336,7 @@ class ChatSocketService {
 
         this.io?.emit('staff:statusAll', {
             staffStatus,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -351,7 +355,7 @@ class ChatSocketService {
             conversationId,
             customerId,
             customerName,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -362,7 +366,7 @@ class ChatSocketService {
         this.io?.emit('chat:taken', {
             conversationId,
             staffId,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
     }
 
@@ -373,7 +377,7 @@ class ChatSocketService {
         this.io?.emit('staff:offline', {
             staffId,
             isOnline: false,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
         this.staffOnlineStatus.set(staffId, false);
         this.emitAllStaffStatus();
@@ -386,7 +390,7 @@ class ChatSocketService {
         this.io?.emit('staff:online', {
             staffId,
             isOnline: true,
-            timestamp: new Date(),
+            timestamp: nowVN(),
         });
         this.staffOnlineStatus.set(staffId, true);
         this.emitAllStaffStatus();

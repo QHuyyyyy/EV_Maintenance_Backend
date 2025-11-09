@@ -136,20 +136,6 @@ export class AppointmentController {
                required: false,
                type: 'string'
            }
-           #swagger.parameters['startDate'] = {
-               in: 'query',
-               description: 'Filter by start date (from)',
-               required: false,
-               type: 'string',
-               format: 'date-time'
-           }
-           #swagger.parameters['endDate'] = {
-               in: 'query',
-               description: 'Filter by end date (to)',
-               required: false,
-               type: 'string',
-               format: 'date-time'
-           }
            #swagger.parameters['page'] = {
                in: 'query',
                description: 'Page number',
@@ -170,8 +156,6 @@ export class AppointmentController {
                 status: req.query.status as string,
                 customer_id: req.query.customer_id as string,
                 center_id: req.query.center_id as string,
-                startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
-                endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
                 page: req.query.page ? parseInt(req.query.page as string) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string) : undefined
             };
@@ -324,7 +308,9 @@ export class AppointmentController {
             }
 
             const shifts = await shiftAssignmentService.getShiftsOfUser(staffId);
-            const inShift = isDateTimeWithinShifts(appointmentObj.startTime, shifts);
+            // slot-based start time (legacy fallback removed)
+            const apptStart = (appointmentObj as any)?.slot_id?.start_time ? new Date((appointmentObj as any).slot_id.start_time) : null;
+            const inShift = apptStart ? isDateTimeWithinShifts(apptStart, shifts) : false;
             if (!inShift) {
                 return res.status(400).json({ success: false, message: 'Staff is not scheduled for a shift covering the appointment time' });
             }
@@ -361,8 +347,9 @@ export class AppointmentController {
   } */
         try {
             const user = req.user as any;
-            if (!user || user.role !== 'ADMIN') {
-                return res.status(403).json({ success: false, message: 'Forbidden: Admins only' });
+
+            if (!user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
+                return res.status(403).json({ success: false, message: 'Forbidden: Admins and Staff only' });
             }
 
             const appointmentId = req.params.id;
@@ -391,7 +378,8 @@ export class AppointmentController {
 
             // Ensure technician has a shift covering the appointment time
             const techShifts = await shiftAssignmentService.getShiftsOfUser(technician_id);
-            const techInShift = isDateTimeWithinShifts(appointment.startTime, techShifts);
+            const apptStart = (appointment as any)?.slot_id?.start_time ? new Date((appointment as any).slot_id.start_time) : null;
+            const techInShift = apptStart ? isDateTimeWithinShifts(apptStart, techShifts) : false;
             if (!techInShift) {
                 return res.status(400).json({ success: false, message: 'Technician is not scheduled for a shift covering the appointment time' });
             }

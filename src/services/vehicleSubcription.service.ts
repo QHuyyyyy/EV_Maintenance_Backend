@@ -1,6 +1,7 @@
 import { VehicleSubscription } from '../models/vehicleSubcription.model';
 import { Vehicle } from '../models/vehicle.model';
 import { ServicePackage } from '../models/servicePackage';
+import { nowVN } from '../utils/time';
 
 export class VehicleSubscriptionService {
     async getAllSubscriptions() {
@@ -201,13 +202,13 @@ export class VehicleSubscriptionService {
     // Lấy đăng ký sắp hết hạn
     async getExpiringSubscriptions(days: number = 30) {
         try {
-            const expiryDate = new Date();
+            const expiryDate = nowVN();
             expiryDate.setDate(expiryDate.getDate() + days);
 
             const expiringSubscriptions = await VehicleSubscription.find({
                 status: 'ACTIVE',
                 end_date: {
-                    $gte: new Date(),
+                    $gte: nowVN(),
                     $lte: expiryDate
                 }
             })

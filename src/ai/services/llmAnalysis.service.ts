@@ -3,7 +3,7 @@ import { z } from 'zod';
 import partDataAggregator from './partDataAggregator.service';
 import PartAnalysisModel from '../../models/partAnalysis.model';
 import centerAutoPartService from '../../services/centerAutoPart.service';
-
+import moment from 'moment-timezone';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
@@ -78,7 +78,9 @@ async function analyzePart(part_id: string, center_id: string) {
     // Update centerAutoPart.last_forecast_date to indicate AI ran for this part at this center
     try {
         if (centerPart && centerPart._id) {
-            await centerAutoPartService.updateCenterAutoPart(centerPart._id, { last_forecast_date: new Date() } as any);
+            await centerAutoPartService.updateCenterAutoPart(centerPart._id, {
+                last_forecast_date: moment().tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+            } as any);
         }
         if (parsed.suggestedOrderQty > 0 && centerPart && centerPart._id) {
             await centerAutoPartService.updateCenterAutoPart(centerPart._id, { recommended_min_stock: parsed.suggestedOrderQty } as any);

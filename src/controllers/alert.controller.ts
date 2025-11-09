@@ -4,7 +4,7 @@ import { CreateAlertRequest, UpdateAlertRequest, AlertQueryParams } from "../typ
 import { Vehicle } from "../models/vehicle.model";
 import Customer from "../models/customer.model";
 import { firebaseNotificationService } from "../firebase/fcm.service";
-
+import moment from 'moment-timezone';
 const alertService = new AlertService();
 
 export class AlertController {
@@ -180,7 +180,7 @@ export class AlertController {
                                 vehicleId: alertData.vehicleId,
                                 alertType: alertData.type || 'SYSTEM',
                                 priority: alertData.priority || 'MEDIUM',
-                                timestamp: new Date().toISOString(),
+                                timestamp: moment().tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
                                 fullContent: alertData.content,
                             }
                         };

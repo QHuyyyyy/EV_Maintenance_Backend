@@ -9,6 +9,7 @@ import { CenterService } from "./center.service";
 import { auth } from "../firebase/firebase.config";
 import { getRedis } from "../redis/redis.service";
 import mailer from "../utils/mailer";
+import { nowVN } from '../utils/time';
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
@@ -448,44 +449,66 @@ export async function loginByPassword(identifier: string, password: string) {
 // Assign vehicle to customer by phone
 export async function assignVehicleToCustomer(vehicleId: string, phone: string) {
     try {
-        // Normalize phone number to +84 format
+        if (!vehicleId || !phone) {
+            throw new Error('Vehicle ID and phone are required');
+        }
+
         const normalizedPhone = normalizePhoneNumber(phone);
 
-        // Check if user exists with this phone
+        const { Vehicle } = await import('../models/vehicle.model');
+
+        const vehicle = await Vehicle.findById(vehicleId);
+        if (!vehicle) {
+            throw new Error('Vehicle not found');
+        }
+
+        if (vehicle.customerId) {
+            throw new Error('Vehicle already assigned to a customer');
+        }
+
         let user = await getUserByPhone(normalizedPhone);
         let customer;
 
         if (!user) {
-            // Create new user account
             user = await createUser({
                 phone: normalizedPhone,
-                role: "CUSTOMER",
+                role: 'CUSTOMER',
                 isDeleted: false
             });
-
-            // Create customer profile
             customer = await customerService.createEmptyCustomer(user._id.toString());
         } else {
-            // Get existing customer profile
+            if (user.isDeleted) {
+                throw new Error('The account does not exist');
+            }
+            if (user.role !== 'CUSTOMER') {
+                throw new Error('Existing account is not a customer');
+            }
             customer = await customerService.getCustomerByUserId(user._id.toString());
+            if (!customer) {
+                customer = await customerService.createEmptyCustomer(user._id.toString());
+            }
         }
 
         if (!customer) {
-            throw new Error("Failed to create or find customer profile");
+            throw new Error('Failed to create or find customer profile');
         }
 
-        // Update vehicle with customer ID
-        const { Vehicle } = await import("../models/vehicle.model");
-        await Vehicle.findByIdAndUpdate(vehicleId, { customerId: customer._id });
+
+        const updated = await Vehicle.findOneAndUpdate(
+            { _id: vehicleId, customerId: null },
+            { customerId: customer._id, last_service_date: nowVN() },
+            { new: true }
+        ).populate('customerId', 'customerName address');
 
         return {
-            message: "Vehicle assigned to customer successfully",
+            message: 'Vehicle assigned to customer successfully',
             customerId: customer._id,
-            userId: user._id
+            userId: user._id,
+            vehicle: updated
         };
-    } catch (error) {
-        console.error("Assign vehicle error:", error);
-        throw new Error("Failed to assign vehicle to customer");
+    } catch (error: any) {
+        console.error('Assign vehicle error:', error);
+        throw new Error(error.message || 'Failed to assign vehicle to customer');
     }
 }
 
