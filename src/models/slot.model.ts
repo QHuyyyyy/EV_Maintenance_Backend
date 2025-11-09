@@ -8,6 +8,7 @@ export interface ISlot extends Document {
     capacity: number; // how many appointments can be booked into this slot
     booked_count: number; // current number of booked appointments
     status: 'active' | 'inactive' | 'full' | 'expired';
+    workshift_id: mongoose.Types.ObjectId; // reference to the WorkShift that created this slot
     createdAt: Date;
     updatedAt: Date;
 }
@@ -61,6 +62,12 @@ const SlotSchema: Schema = new Schema({
         type: String,
         enum: ['active', 'inactive', 'full', 'expired'],
         default: 'active'
+    },
+    workshift_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'WorkShift',
+        required: true,
+        index: true
     }
 }, { timestamps: true });
 
@@ -75,11 +82,9 @@ SlotSchema.pre('save', function (next) {
     next();
 });
 
-// No-op hook for updates: slot_date should be provided explicitly and is not derived from start_time
-// (start_time and end_time are time-only strings)
 
-// Index for center + date quick lookups
 SlotSchema.index({ center_id: 1, slot_date: 1 });
+
 
 export const Slot = mongoose.model<ISlot>('Slot', SlotSchema);
 export default Slot;

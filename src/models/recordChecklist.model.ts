@@ -5,6 +5,8 @@ export interface IRecordChecklist extends Document {
     record_id: mongoose.Types.ObjectId;
     status: 'pending' | 'completed' | 'skipped';
     note?: string;
+    // Array of suggested center auto part IDs related to this checklist item
+    suggest?: mongoose.Types.ObjectId[]; // references CenterAutoPart
     createdAt: Date;
     updatedAt: Date;
 }
@@ -29,7 +31,15 @@ const RecordChecklistSchema: Schema = new Schema(
         note: {
             type: String,
             default: ''
-        }
+        },
+        // Suggestions of center-specific auto parts for resolving this checklist item
+        suggest: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'CenterAutoPart',
+                default: []
+            }
+        ]
     },
     {
         timestamps: true
