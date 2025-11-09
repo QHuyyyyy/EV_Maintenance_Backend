@@ -1,0 +1,97 @@
+import ServiceDetail from '../models/serviceDetail.model';
+import PartWarranty from '../models/partWarranty.model';
+import CenterAutoPart from '../models/centerAutoPart.model';
+import AutoPart from '../models/autoPart.model';
+import ServiceRecord from '../models/serviceRecord.model';
+import Appointment from '../models/appointment.model';
+
+/**
+ * QUY TRÌNH 1: Tạo Bảo hành
+ * 
+ * Flow này được kích hoạt SAU khi thanh toán hoàn tất
+ * Mục tiêu: Tạo document PartWarranty cho mỗi linh kiện được bán
+ * 
+ * @param serviceRecordId - ID của ServiceRecord vừa hoàn tất
+ */
+export async function createWarrantiesForServiceRecord(serviceRecordId: string): Promise<void> {
+    try {
+        console.log(`🔄 Bắt đầu tạo bảo hành cho ServiceRecord: ${serviceRecordId}`);
+
+        // 1. Lấy ServiceRecord và populate appointment để có vehicle_id
+        const serviceRecord = await ServiceRecord.findById(serviceRecordId).populate('appointment_id');
+
+        if (!serviceRecord) {
+            throw new Error(`ServiceRecord không tìm thấy: ${serviceRecordId}`);
+        }
+
+        const appointment = serviceRecord.appointment_id as any;
+        const vehicleId = appointment.vehicle_id;
+
+        console.log(`📍 Xe ID: ${vehicleId}`);
+
+        // 2. Lấy tất cả ServiceDetail của ServiceRecord này
+        const serviceDetails = await ServiceDetail.find({ record_id: serviceRecordId });
+
+        if (serviceDetails.length === 0) {
+            console.log(`⚠️ Không có chi tiết dịch vụ nào, bỏ qua tạo bảo hành`);
+            return;
+        }
+
+        console.log(`📦 Tìm thấy ${serviceDetails.length} linh kiện để xử lý`);
+
+        for (const detail of serviceDetails) {
+            try {
+                // Lấy thông tin CenterAutoPart
+                const centerPart = await CenterAutoPart.findById(detail.centerpart_id).populate('part_id');
+
+                if (!centerPart) {
+                    console.warn(`⚠️ CenterAutoPart không tìm thấy: ${detail.centerpart_id}`);
+                    continue;
+                }
+
+                const autoPart = centerPart.part_id as any;
+
+                // Kiểm tra warranty_time (là date - số ngày)
+                const warrantyDays = autoPart.warranty_time || 0;
+
+                console.log(`   📝 Linh kiện: ${autoPart.name}, Bảo hành: ${warrantyDays} ngày`);
+
+                // 4. Chỉ tạo bảo hành nếu linh kiện có bảo hành
+                if (warrantyDays > 0) {
+                    const startDate = new Date();
+                    const endDate = new Date();
+                    endDate.setDate(startDate.getDate() + warrantyDays); // Cộng số ngày
+
+                    // 5. Tạo document bảo hành
+                    const warranty = await PartWarranty.create({
+                        detail_id: detail._id,
+                        centerpart_id: detail.centerpart_id,
+                        part_id: autoPart._id,
+                        vehicle_id: vehicleId,
+                        start_date: startDate,
+                        end_date: endDate,
+                        warranty_status: 'active'
+                    });
+
+                    console.log(` Bảo hành tạo thành công`);
+                    console.log(` Ngày bắt đầu: ${startDate.toLocaleDateString()}`);
+                    console.log(`  Ngày hết hạn: ${endDate.toLocaleDateString()}`);
+                } else {
+                    console.log(` Linh kiện này không có bảo hành, bỏ qua`);
+                }
+            } catch (error) {
+                console.error(`Lỗi xử lý chi tiết linh kiện:`, error);
+            }
+        }
+
+        console.log(`Hoàn tất tạo bảo hành cho ServiceRecord: ${serviceRecordId}`);
+
+    } catch (error) {
+        console.error('Lỗi trong createWarrantiesForServiceRecord:', error);
+        throw error;
+    }
+}
+
+export default {
+    createWarrantiesForServiceRecord
+};

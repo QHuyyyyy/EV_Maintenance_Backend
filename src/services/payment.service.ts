@@ -2,6 +2,7 @@ import Payment from '../models/payment.model';
 import payOS from '../config/payos.config';
 import { CreatePaymentRequest, IPayment, PaymentWebhookData } from '../types/payment.type';
 import { VehicleSubscription } from '../models/vehicleSubcription.model';
+import { createWarrantiesForServiceRecord } from './warranty.service';
 
 export class PaymentService {
 
@@ -229,6 +230,15 @@ export class PaymentService {
                 // If it's a subscription payment and it's paid, activate the subscription
                 if (payment.payment_type === 'subscription' && payment.subscription_id) {
                     await VehicleSubscription.findByIdAndUpdate(payment.subscription_id, { status: 'ACTIVE' });
+                }
+
+                if (payment.payment_type === 'service_record' && payment.service_record_id) {
+                    try {
+                        console.log(`\nTạo bảo hành`);
+                        await createWarrantiesForServiceRecord(String(payment.service_record_id));
+                    } catch (warrantyError) {
+                        console.error(`Lỗi tạo bảo hành:`, warrantyError);
+                    }
                 }
             }
 
