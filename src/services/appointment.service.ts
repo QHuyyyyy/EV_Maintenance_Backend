@@ -3,44 +3,58 @@ import Slot from '../models/slot.model';
 import moment from 'moment-timezone';
 import { VIETNAM_TIMEZONE } from '../utils/time';
 import { CreateAppointmentRequest, UpdateAppointmentRequest, IAppointment } from '../types/appointment.type';
+import { Vehicle } from '../models/vehicle.model';
+import mongoose from 'mongoose';
 
 export class AppointmentService {
     async createAppointment(appointmentData: CreateAppointmentRequest): Promise<IAppointment> {
         try {
-            // Validate slot and increment booked_count atomically if capacity available
+            // Vehicle ownership check
+            if (appointmentData.vehicle_id && appointmentData.customer_id) {
+                const vehicle = await Vehicle.findById(appointmentData.vehicle_id).select('customerId').lean();
+                if (!vehicle) throw new Error('Vehicle not found');
+                const ownerId = vehicle.customerId ? String(vehicle.customerId) : null;
+                if (!ownerId || ownerId !== String(appointmentData.customer_id)) {
+                    throw new Error('Vehicle does not belong to the specified customer');
+                }
+            }
+
+            // Slot validation
             const slot = await Slot.findById(appointmentData.slot_id);
             if (!slot) throw new Error('Slot not found');
             if (String(slot.center_id) !== String(appointmentData.center_id)) {
                 throw new Error('Slot does not belong to the specified center');
             }
-            // Build slot end datetime based on slot_date (Date) + end_time (HH:mm)
+
+            // Expiry check
             const [endH, endM] = String((slot as any).end_time).split(':').map((n: string) => parseInt(n, 10));
             const slotEnd = moment(slot.slot_date).tz(VIETNAM_TIMEZONE).set({ hour: endH || 0, minute: endM || 0, second: 0, millisecond: 0 }).toDate();
             const now = moment().tz(VIETNAM_TIMEZONE).toDate();
             if (slotEnd < now || slot.status === 'expired') {
                 throw new Error('Slot is expired');
             }
-            // try to increment if capacity not reached
+
+            // Atomic capacity increment
             const updatedSlot = await Slot.findOneAndUpdate(
                 { _id: appointmentData.slot_id, $expr: { $lt: ['$booked_count', '$capacity'] }, status: { $in: ['active', 'full'] } },
                 { $inc: { booked_count: 1 } },
                 { new: true }
             );
-            if (!updatedSlot) {
-                throw new Error('Slot is full');
-            }
-
-            // Update status to full if reached capacity
+            if (!updatedSlot) throw new Error('Slot is full');
             if (updatedSlot.booked_count >= updatedSlot.capacity && updatedSlot.status !== 'full') {
                 await Slot.findByIdAndUpdate(updatedSlot._id, { $set: { status: 'full' } });
             }
 
             const appointment = new Appointment(appointmentData);
-            return await appointment.save() as any;
+            const saved = await appointment.save();
+            return await Appointment.findById(saved._id)
+                .populate('customer_id', 'customerName address')
+                .populate('vehicle_id', 'vehicleName model plateNumber mileage')
+                .populate('center_id', 'name address phone')
+                .populate('slot_id')
+                .lean() as any;
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to create appointment: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to create appointment: ${error.message}`);
             throw new Error('Failed to create appointment: Unknown error');
         }
     }
@@ -54,9 +68,7 @@ export class AppointmentService {
                 .populate('slot_id')
                 .lean() as any;
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to get appointment: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to get appointment: ${error.message}`);
             throw new Error('Failed to get appointment: Unknown error');
         }
     }
@@ -65,16 +77,9 @@ export class AppointmentService {
         status?: string;
         customer_id?: string;
         center_id?: string;
-
         page?: number;
         limit?: number;
-    }): Promise<{
-        appointments: IAppointment[];
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-    }> {
+    }): Promise<{ appointments: IAppointment[]; total: number; page: number; limit: number; totalPages: number; }> {
         try {
             const page = filters?.page || 1;
             const limit = filters?.limit || 10;
@@ -82,10 +87,8 @@ export class AppointmentService {
 
             const match: any = {};
             if (filters?.status) match.status = filters.status;
-            if (filters?.customer_id) match.customer_id = new (require('mongoose').Types.ObjectId)(filters.customer_id);
-            if (filters?.center_id) match.center_id = new (require('mongoose').Types.ObjectId)(filters.center_id);
-
-            const timeMatch: any = {};
+            if (filters?.customer_id && mongoose.Types.ObjectId.isValid(filters.customer_id)) match.customer_id = new mongoose.Types.ObjectId(filters.customer_id);
+            if (filters?.center_id && mongoose.Types.ObjectId.isValid(filters.center_id)) match.center_id = new mongoose.Types.ObjectId(filters.center_id);
 
             const pipeline: any[] = [
                 { $match: match },
@@ -100,34 +103,23 @@ export class AppointmentService {
                 { $unwind: '$slot' },
                 { $addFields: { slot_id: '$slot' } },
                 { $project: { slot: 0 } },
-            ];
-            if (Object.keys(timeMatch).length) {
-                pipeline.push({ $match: { 'slot.start_time': timeMatch } });
-            }
-            pipeline.push({ $sort: { 'slot.start_time': -1 } });
-            pipeline.push({
-                $facet: {
-                    data: [{ $skip: skip }, { $limit: limit }],
-                    total: [{ $count: 'count' }]
+                { $sort: { 'slot.start_time': -1 } },
+                {
+                    $facet: {
+                        data: [{ $skip: skip }, { $limit: limit }],
+                        total: [{ $count: 'count' }]
+                    }
                 }
-            });
+            ];
 
             const aggRes: any[] = await (Appointment as any).aggregate(pipeline).exec();
             const data = aggRes[0] || { data: [], total: [] };
             const appointments = data.data as IAppointment[];
             const total = (data.total[0]?.count || 0) as number;
 
-            return {
-                appointments,
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit)
-            };
+            return { appointments, total, page, limit, totalPages: Math.ceil(total / limit) };
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to get appointments: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to get appointments: ${error.message}`);
             throw new Error('Failed to get appointments: Unknown error');
         }
     }
@@ -137,16 +129,14 @@ export class AppointmentService {
             const current = await Appointment.findById(appointmentId).lean();
             if (!current) return null;
 
-            // Handle status transition effects on booked_count when staying on same slot
+            // Status transition without slot change
             if (updateData.status && !updateData.slot_id) {
                 const fromStatus = (current as any).status as string;
                 const toStatus = updateData.status as string;
                 if (fromStatus !== toStatus) {
-                    // Cancel -> decrement count
                     if (toStatus === 'cancelled' && (current as any).slot_id) {
                         await Slot.findByIdAndUpdate((current as any).slot_id, { $inc: { booked_count: -1 }, $set: { status: 'active' } });
                     }
-                    // From cancelled -> active-like statuses: try to increment back if capacity
                     if (fromStatus === 'cancelled' && toStatus !== 'cancelled' && (current as any).slot_id) {
                         const incRes = await Slot.findOneAndUpdate(
                             { _id: (current as any).slot_id, $expr: { $lt: ['$booked_count', '$capacity'] }, status: { $in: ['active', 'full'] } },
@@ -161,8 +151,8 @@ export class AppointmentService {
                 }
             }
 
+            // Slot move
             if (updateData.slot_id && String(updateData.slot_id) !== String((current as any).slot_id)) {
-                // try increment new slot first
                 const slotDoc = await Slot.findById(updateData.slot_id);
                 if (!slotDoc) throw new Error('New slot not found');
                 if (String(slotDoc.center_id) !== String((current as any).center_id)) {
@@ -180,7 +170,6 @@ export class AppointmentService {
                 );
                 if (!newSlot) throw new Error('New slot is full or not available');
 
-                // update appointment
                 const updated = await Appointment.findByIdAndUpdate(
                     appointmentId,
                     updateData,
@@ -192,7 +181,6 @@ export class AppointmentService {
                     .populate('slot_id')
                     .lean() as any;
 
-                // decrement old slot after moving
                 await Slot.findByIdAndUpdate((current as any).slot_id, { $inc: { booked_count: -1 }, $set: { status: 'active' } });
                 return updated;
             }
@@ -208,16 +196,13 @@ export class AppointmentService {
                 .populate('slot_id')
                 .lean() as any;
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to update appointment: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to update appointment: ${error.message}`);
             throw new Error('Failed to update appointment: Unknown error');
         }
     }
 
     async assignStaff(appointmentId: string, staffId: string | null): Promise<IAppointment | null> {
         try {
-            // allow setting to null to remove staff
             return await Appointment.findByIdAndUpdate(
                 appointmentId,
                 { staffId },
@@ -228,9 +213,7 @@ export class AppointmentService {
                 .populate('center_id', 'name address phone')
                 .lean() as any;
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to assign staff: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to assign staff: ${error.message}`);
             throw new Error('Failed to assign staff: Unknown error');
         }
     }
@@ -243,9 +226,7 @@ export class AppointmentService {
             }
             return appt as any;
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to delete appointment: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to delete appointment: ${error.message}`);
             throw new Error('Failed to delete appointment: Unknown error');
         }
     }
