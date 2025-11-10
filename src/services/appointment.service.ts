@@ -40,8 +40,9 @@ export class AppointmentService {
             if (slotEnd < now || slot.status === 'expired') {
                 throw new Error('Slot is expired');
             }
-
-            // Atomic capacity increment
+            if (slot.status === 'inactive' || slot.capacity === 0) {
+                throw new Error('Slot is inactive');
+            }
             const updatedSlot = await Slot.findOneAndUpdate(
                 { _id: appointmentData.slot_id, $expr: { $lt: ['$booked_count', '$capacity'] }, status: { $in: ['active', 'full'] } },
                 { $inc: { booked_count: 1 } },
