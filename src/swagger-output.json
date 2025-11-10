@@ -56,10 +56,6 @@
       "description": "Service record management endpoints"
     },
     {
-      "name": "Service Checklists",
-      "description": "Service checklist management endpoints"
-    },
-    {
       "name": "Auto Parts",
       "description": "Auto part inventory management endpoints"
     },
@@ -6443,7 +6439,7 @@
     "/api/service-checklists": {
       "post": {
         "tags": [
-          "Service Checklists"
+          "Checklists"
         ],
         "summary": "Create Service Checklist",
         "description": "Create a new service checklist item",
@@ -6476,7 +6472,7 @@
       },
       "get": {
         "tags": [
-          "Service Checklists"
+          "Checklists"
         ],
         "summary": "Get All Service Checklists",
         "description": "Get all service checklists with optional filters",
@@ -6532,7 +6528,7 @@
     "/api/service-checklists/{id}": {
       "get": {
         "tags": [
-          "Service Checklists"
+          "Checklists"
         ],
         "summary": "Get Service Checklist by ID",
         "description": "Get service checklist by ID",
@@ -6569,7 +6565,7 @@
       },
       "put": {
         "tags": [
-          "Service Checklists"
+          "Checklists"
         ],
         "summary": "Update Service Checklist Item",
         "description": "Update a service checklist item",
@@ -6616,7 +6612,7 @@
       },
       "delete": {
         "tags": [
-          "Service Checklists"
+          "Checklists"
         ],
         "summary": "Delete Service Checklist Item",
         "description": "Delete a service checklist item",
@@ -7233,7 +7229,7 @@
           "Service Details"
         ],
         "summary": "Create a new service detail entry",
-        "description": "Create a new service detail entry",
+        "description": "Create a new service detail entry with automatic warranty check",
         "responses": {
           "201": {
             "description": "Created"

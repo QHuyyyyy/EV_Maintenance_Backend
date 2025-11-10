@@ -73,59 +73,87 @@ export class SlotService {
         }
 
         const toCreate: Partial<ISlot>[] = [];
+
+        // Precompute centers and dates
+        const centerObjectIds = centerIds.map(id => new mongoose.Types.ObjectId(id));
+        const dateObjs = dates.map(d => new Date(`${d}T00:00:00.000Z`));
+        const minDateAll = dateObjs.reduce((min, d) => (min && min < d ? min : d));
+        const maxDateAll = dateObjs.reduce((max, d) => (max && max > d ? max : d));
+
+        // 1) Fetch all active shifts once
+        const allShifts = await WorkShift.find({
+            center_id: { $in: centerObjectIds },
+            shift_date: { $gte: minDateAll, $lte: maxDateAll },
+            status: 'active'
+        }).lean();
+
+        // Build map center|date -> shift windows
+        const shiftMap = new Map<string, Array<{ id: mongoose.Types.ObjectId; start: number; end: number }>>();
+        for (const s of allShifts as any[]) {
+            const [sh, sm] = (s.start_time as string).split(':').map(Number);
+            const [eh, em] = (s.end_time as string).split(':').map(Number);
+            const key = `${s.center_id.toString()}|${new Date(s.shift_date).toISOString().slice(0, 10)}`;
+            const arr = shiftMap.get(key) || [];
+            arr.push({ id: s._id, start: sh * 60 + sm, end: eh * 60 + em });
+            shiftMap.set(key, arr);
+        }
+
+        // 2) Fetch capacity for all shifts once (TECHNICIAN only)
+        let capacityByShift = new Map<string, number>();
+        const allShiftIds = (allShifts as any[]).map(s => s._id);
+        if (allShiftIds.length > 0) {
+            const aggAll = await ShiftAssignment.aggregate([
+                { $match: { workshift_id: { $in: allShiftIds } } },
+                {
+                    $lookup: {
+                        from: 'systemusers',
+                        localField: 'system_user_id',
+                        foreignField: '_id',
+                        as: 'su'
+                    }
+                },
+                { $unwind: '$su' },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'su.userId',
+                        foreignField: '_id',
+                        as: 'u'
+                    }
+                },
+                { $unwind: '$u' },
+                { $match: { 'u.role': 'TECHNICIAN' } },
+                { $group: { _id: '$workshift_id', cnt: { $sum: 1 } } }
+            ]);
+            capacityByShift = new Map<string, number>(aggAll.map((a: any) => [String(a._id), a.cnt]));
+        }
+
+        // 3) Generate slots from in-memory data
         for (const centerId of centerIds) {
+            const centerObjectId = new mongoose.Types.ObjectId(centerId);
             for (const dateStr of dates) {
                 const slotDate = new Date(`${dateStr}T00:00:00.000Z`);
-                // Convert centerId string to ObjectId for querying
-                const centerObjectId = new mongoose.Types.ObjectId(centerId);
+                const key = `${centerObjectId.toString()}|${dateStr}`;
+                const windows = shiftMap.get(key) || [];
 
-                // Fetch all active shifts for this center/date with ANY overlap against requested window
-                const shifts = await WorkShift.find({
-                    center_id: centerObjectId,
-                    shift_date: slotDate,
-                    status: 'active'
-                }).lean();
-
-                if (!shifts || shifts.length === 0) {
+                if (windows.length === 0) {
                     errors.push(`No active shift for center ${centerId} on ${dateStr}, skipped.`);
                     continue;
                 }
 
-                // Map shift to minutes window and collect ids
-                const shiftWindows = shifts.map(s => {
-                    const [sh, sm] = (s.start_time as any as string).split(':').map(Number);
-                    const [eh, em] = (s.end_time as any as string).split(':').map(Number);
-                    return { id: (s as any)._id, start: sh * 60 + sm, end: eh * 60 + em };
-                });
-
-                // Filter shifts that have intersection with requested window
-                const overlapping = shiftWindows.filter(w => Math.max(w.start, startTotal) < Math.min(w.end, endTotal));
+                const overlapping = windows.filter(w => Math.max(w.start, startTotal) < Math.min(w.end, endTotal));
                 if (overlapping.length === 0) {
                     errors.push(`No overlapping shift window for center ${centerId} on ${dateStr}, skipped.`);
                     continue;
                 }
 
-                // Count assignments per shift in a single aggregation
-                const agg = await ShiftAssignment.aggregate([
-                    { $match: { workshift_id: { $in: overlapping.map(o => o.id) } } },
-                    { $group: { _id: '$workshift_id', cnt: { $sum: 1 } } }
-                ]);
-                const capacityByShift = new Map<string, number>(agg.map((a: any) => [String(a._id), a.cnt]));
-
-                // Generate slots: for each overlapping shift, generate slots across the requested window
                 for (const overlappingShift of overlapping) {
                     const shiftCapacity = capacityByShift.get(String(overlappingShift.id)) || 0;
-                    if (shiftCapacity <= 0) continue; // skip if no technicians assigned
-
-                    // Find the shift object to get full details
-                    const shiftObj = shifts.find(s => (s as any)._id.toString() === overlappingShift.id.toString());
-                    if (!shiftObj) continue;
 
                     for (let current = startTotal; current + duration <= endTotal; current += duration) {
                         const slotStart = current;
                         const slotEnd = current + duration;
 
-                        // Only create slot if it falls completely within the shift
                         if (overlappingShift.start <= slotStart && overlappingShift.end >= slotEnd) {
                             const slotStartHour = Math.floor(slotStart / 60);
                             const slotStartMinute = slotStart % 60;
@@ -139,7 +167,7 @@ export class SlotService {
                                 slot_date: slotDate,
                                 capacity: shiftCapacity,
                                 booked_count: 0,
-                                status: 'active',
+                                status: (shiftCapacity === 0) ? 'inactive' : 'active',
                                 workshift_id: overlappingShift.id
                             });
                         }
@@ -156,8 +184,7 @@ export class SlotService {
         const minDate = toCreate.reduce((min, s) => !min || (s.slot_date! < min) ? s.slot_date! as Date : min as Date, toCreate[0].slot_date! as Date);
         const maxDate = toCreate.reduce((max, s) => !max || (s.slot_date! > max) ? s.slot_date! as Date : max as Date, toCreate[0].slot_date! as Date);
 
-        // Convert centerIds to ObjectIds for query
-        const centerObjectIds = centerIds.map(id => new mongoose.Types.ObjectId(id));
+        // Convert centerIds to ObjectIds for query (reuse precomputed centerObjectIds)
 
         const existing = await Slot.find({
             center_id: { $in: centerObjectIds },
@@ -325,6 +352,7 @@ export class SlotService {
             technician: technicianArray
         };
     }
+
 }
 
 export default new SlotService();

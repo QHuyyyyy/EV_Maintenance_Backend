@@ -55,4 +55,5 @@ export class ShiftAssignmentService {
         const deleted = await ShiftAssignmentModel.findByIdAndDelete(id);
         return !!deleted;
     }
+
 }

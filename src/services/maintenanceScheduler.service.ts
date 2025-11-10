@@ -19,9 +19,11 @@ interface AlertPayload {
 
 export class MaintenanceSchedulerService {
     private cronJob: any;
+    private subscriptionExpiryCron: any; // cron job for subscription expiry
     startScheduler() {
         console.log('🚀 Starting Maintenance Scheduler...');
 
+        // Maintenance check every 6 hours
         this.cronJob = cron.schedule('0 */6 * * *', async () => {
             console.log(`[${nowVN()}] Timer Running maintenance check...`);
             try {
@@ -29,6 +31,21 @@ export class MaintenanceSchedulerService {
                 console.log('✅ Maintenance check completed');
             } catch (error) {
                 console.error('❌ Error in maintenance check:', error);
+            }
+        }, {
+            scheduled: true,
+            timezone: 'Asia/Ho_Chi_Minh'
+        });
+
+        // Vehicle subscription expiry daily at 00:10 VN time
+        // Marks ACTIVE subscriptions whose end_date < now as EXPIRED
+        this.subscriptionExpiryCron = cron.schedule('10 0 * * *', async () => {
+            console.log(`[${nowVN()}] Subscription expiry cron running...`);
+            try {
+                const result = await this.expireVehicleSubscriptions();
+                console.log(`✅ Subscription expiry processed: matched=${result.matchedCount || result.modifiedCount || 'n/a'} modified=${result.modifiedCount || 'n/a'}`);
+            } catch (error) {
+                console.error('❌ Error expiring subscriptions:', error);
             }
         }, {
             scheduled: true,
@@ -45,6 +62,10 @@ export class MaintenanceSchedulerService {
         if (this.cronJob) {
             this.cronJob.stop();
             console.log('🛑 Maintenance Scheduler stopped');
+        }
+        if (this.subscriptionExpiryCron) {
+            this.subscriptionExpiryCron.stop();
+            console.log('🛑 Subscription Expiry Cron stopped');
         }
     }
 
@@ -422,6 +443,26 @@ export class MaintenanceSchedulerService {
     async manualTrigger() {
         console.log('🔫 Manual trigger called');
         await this.checkMaintenanceAlerts();
+    }
+
+    /**
+     * Expire vehicle subscriptions whose end_date < now and status still ACTIVE.
+     * Idempotent: running multiple times only affects remaining ACTIVE past-due subs.
+     */
+    private async expireVehicleSubscriptions() {
+        try {
+            const res = await VehicleSubscription.updateMany(
+                {
+                    status: 'ACTIVE',
+                    end_date: { $lt: new Date() }
+                },
+                { $set: { status: 'EXPIRED' } }
+            );
+            return res;
+        } catch (error) {
+            console.error('Error in expireVehicleSubscriptions:', error);
+            throw error;
+        }
     }
 }
 

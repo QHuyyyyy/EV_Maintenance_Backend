@@ -71,18 +71,6 @@ const SlotSchema: Schema = new Schema({
     }
 }, { timestamps: true });
 
-// Auto status update pre-save
-SlotSchema.pre('save', function (next) {
-    const slot = this as any as ISlot;
-    if (slot.booked_count >= slot.capacity) {
-        slot.status = 'full';
-    } else if (slot.status === 'full' && slot.booked_count < slot.capacity) {
-        slot.status = 'active';
-    }
-    next();
-});
-
-
 SlotSchema.index({ center_id: 1, slot_date: 1 });
 
 
