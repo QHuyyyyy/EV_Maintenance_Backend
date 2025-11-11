@@ -291,6 +291,44 @@ export class PaymentService {
             throw new Error('Failed to get payment info: Unknown error');
         }
     }
+
+    // DEVELOPMENT ONLY: Simulate payment success for testing
+    async simulatePaymentSuccess(orderCode: number): Promise<IPayment | null> {
+        try {
+            // Only allow in development environment
+            if (process.env.NODE_ENV !== 'development' && process.env.ENABLE_PAYMENT_BYPASS !== 'true') {
+                throw new Error('Payment simulation is only available in development mode');
+            }
+
+            const payment = await Payment.findOne({ order_code: orderCode });
+
+            if (!payment) {
+                throw new Error('Payment not found');
+            }
+
+            if (payment.status === 'paid') {
+                throw new Error('Payment is already paid');
+            }
+
+            // Simulate webhook data
+            const simulatedWebhookData: PaymentWebhookData = {
+                order_code: orderCode,
+                status: 'PAID',
+                transaction_id: `TEST_${Date.now()}`,
+                payment_method: 'SIMULATED',
+                amount: payment.amount,
+                description: payment.description || 'Simulated payment for testing'
+            };
+
+            // Use existing webhook handler
+            return await this.handlePaymentWebhook(simulatedWebhookData);
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to simulate payment: ${error.message}`);
+            }
+            throw new Error('Failed to simulate payment: Unknown error');
+        }
+    }
 }
 
 export default new PaymentService();

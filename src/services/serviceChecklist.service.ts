@@ -1,4 +1,5 @@
 import ServiceChecklist from '../models/serviceChecklist.model';
+import RecordChecklist from '../models/recordChecklist.model';
 import { CreateServiceChecklistRequest, UpdateServiceChecklistRequest, IServiceChecklist } from '../types/serviceChecklist.type';
 
 export class ServiceChecklistService {
@@ -85,6 +86,11 @@ export class ServiceChecklistService {
 
     async deleteServiceChecklist(checklistId: string): Promise<IServiceChecklist | null> {
         try {
+            // Guard: prevent deletion if any record checklist references this checklist
+            const inUseCount = await RecordChecklist.countDocuments({ checklist_id: checklistId });
+            if (inUseCount > 0) {
+                throw new Error('Không thể xóa checklist vì đang được sử dụng trong record checklist');
+            }
             return await ServiceChecklist.findByIdAndDelete(checklistId).lean() as any;
         } catch (error) {
             if (error instanceof Error) {

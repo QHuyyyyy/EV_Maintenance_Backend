@@ -276,4 +276,80 @@ export class VehicleSubscriptionService {
             throw new Error(`Error updating expired subscriptions: ${error}`);
         }
     }
+
+    // Tính discount cho hóa đơn dựa trên subscription của xe
+    async calculateSubscriptionDiscount(vehicleId: string, totalAmount: number): Promise<{
+        hasSubscription: boolean;
+        discount: number;
+        discountPercent: number;
+        finalAmount: number;
+        subscriptionId?: string;
+        packageName?: string;
+    }> {
+        try {
+            // Kiểm tra xe có subscription đang active không
+            const activeSubscription = await VehicleSubscription.findOne({
+                vehicleId,
+                status: 'ACTIVE',
+                start_date: { $lte: new Date() },
+                end_date: { $gte: new Date() }
+            }).populate('package_id', 'name discount_percent');
+
+            if (!activeSubscription) {
+                return {
+                    hasSubscription: false,
+                    discount: 0,
+                    discountPercent: 0,
+                    finalAmount: totalAmount
+                };
+            }
+
+            const servicePackage = activeSubscription.package_id as any;
+            const discountPercent = servicePackage.discount_percent || 0;
+            const discount = (totalAmount * discountPercent) / 100;
+            const finalAmount = totalAmount - discount;
+
+            return {
+                hasSubscription: true,
+                discount: Math.round(discount),
+                discountPercent,
+                finalAmount: Math.round(finalAmount),
+                subscriptionId: activeSubscription._id.toString(),
+                packageName: servicePackage.name
+            };
+        } catch (error) {
+            throw new Error(`Error calculating subscription discount: ${error}`);
+        }
+    }
+
+    // Lấy thông tin subscription của xe để hiển thị khi tạo hóa đơn
+    async getSubscriptionForBilling(vehicleId: string) {
+        try {
+            const activeSubscription = await VehicleSubscription.findOne({
+                vehicleId,
+                status: 'ACTIVE',
+                start_date: { $lte: new Date() },
+                end_date: { $gte: new Date() }
+            })
+                .populate('package_id', 'name description price discount_percent duration')
+                .populate('vehicleId', 'vehicleName model plateNumber');
+
+            if (!activeSubscription) {
+                return null;
+            }
+
+            return {
+                subscriptionId: activeSubscription._id,
+                vehicleInfo: activeSubscription.vehicleId,
+                packageInfo: activeSubscription.package_id,
+                startDate: activeSubscription.start_date,
+                endDate: activeSubscription.end_date,
+                status: activeSubscription.status
+            };
+        } catch (error) {
+            throw new Error(`Error fetching subscription for billing: ${error}`);
+        }
+    }
 }
+
+export default new VehicleSubscriptionService();
