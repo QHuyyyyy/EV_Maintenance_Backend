@@ -298,6 +298,39 @@ export class PaymentController {
             }
         }
     }
+
+    async simulatePaymentSuccess(req: Request, res: Response) {
+        /* #swagger.tags = ['Payments']
+           #swagger.description = '[DEV ONLY] Simulate payment success for testing'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['orderCode'] = {
+               in: 'path',
+               description: 'Order Code',
+               required: true,
+               type: 'number'
+           }
+        */
+        try {
+            const payment = await paymentService.simulatePaymentSuccess(Number(req.params.orderCode));
+            res.status(200).json({
+                success: true,
+                message: 'Payment simulated successfully (DEV MODE)',
+                data: payment
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            } else {
+                res.status(400).json({
+                    success: false,
+                    message: 'Failed to simulate payment'
+                });
+            }
+        }
+    }
 }
 
 export default new PaymentController();

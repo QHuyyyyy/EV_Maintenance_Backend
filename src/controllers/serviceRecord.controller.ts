@@ -271,6 +271,69 @@ export class ServiceRecordController {
         }
     }
 
+    async calculateBillWithSubscription(req: Request, res: Response) {
+        /* #swagger.tags = ['Service Records']
+           #swagger.summary = 'Calculate bill with subscription discount'
+           #swagger.description = 'Calculate total bill for a service record including subscription discount if applicable'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['id'] = {
+               in: 'path',
+               description: 'Service Record ID',
+               required: true,
+               type: 'string'
+           }
+           #swagger.requestBody = {
+               required: true,
+               content: {
+                   'application/json': {
+                       schema: {
+                           type: 'object',
+                           properties: {
+                               serviceCharges: { type: 'number', description: 'Total service charges' },
+                               partsTotal: { type: 'number', description: 'Total parts cost' }
+                           },
+                           required: ['serviceCharges', 'partsTotal']
+                       }
+                   }
+               }
+           }
+        */
+        try {
+            const { serviceCharges, partsTotal } = req.body;
+            
+            if (typeof serviceCharges !== 'number' || typeof partsTotal !== 'number') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'serviceCharges and partsTotal must be numbers'
+                });
+            }
+
+            const billCalculation = await serviceRecordService.calculateBillWithSubscription(
+                req.params.id,
+                serviceCharges,
+                partsTotal
+            );
+
+            res.status(200).json({
+                success: true,
+                message: 'Bill calculated successfully',
+                data: billCalculation
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            } else {
+                res.status(400).json({
+                    success: false,
+                    message: 'Failed to calculate bill'
+                });
+            }
+        }
+    }
+
 
 }
 

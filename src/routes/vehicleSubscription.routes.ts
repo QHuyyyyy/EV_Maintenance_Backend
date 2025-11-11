@@ -13,6 +13,9 @@ router.get('/:id', validate, VehicleSubscriptionController.getSubscriptionById.b
 // GET /api/vehicle-subscriptions/vehicle/:vehicleId - Lấy đăng ký theo xe
 router.get('/vehicle/:vehicleId', validate, VehicleSubscriptionController.getSubscriptionsByVehicle.bind(VehicleSubscriptionController));
 
+// GET /api/vehicle-subscriptions/vehicle/:vehicleId/billing - Lấy thông tin subscription cho billing
+router.get('/vehicle/:vehicleId/billing', validate, VehicleSubscriptionController.getSubscriptionForBilling.bind(VehicleSubscriptionController));
+
 // GET /api/vehicle-subscriptions/customer/:customerId - Lấy đăng ký theo khách hàng
 router.get('/customer/:customerId', validate, VehicleSubscriptionController.getSubscriptionsByCustomer.bind(VehicleSubscriptionController));
 
