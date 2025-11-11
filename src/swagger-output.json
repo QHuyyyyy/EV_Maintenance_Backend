@@ -4732,6 +4732,42 @@
         ]
       }
     },
+    "/api/vehicle-subscriptions/service-record/{serviceRecordId}/package": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get package by service record",
+        "description": "Get active subscription package information for a service record",
+        "parameters": [
+          {
+            "name": "serviceRecordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/vehicle-subscriptions/customer/{customerId}": {
       "get": {
         "tags": [
