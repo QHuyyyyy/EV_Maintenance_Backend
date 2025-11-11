@@ -25,9 +25,10 @@ export class InvoiceService {
                 throw new Error('Cannot create invoice for unpaid payment');
             }
 
-            if (!payment.transaction_id) {
-                throw new Error('Payment does not have a transaction ID yet');
-            }
+            // Transaction ID check is optional - webhook will have it, manual creation might not
+            // if (!payment.transaction_id) {
+            //     throw new Error('Payment does not have a transaction ID yet');
+            // }
 
             // Tự động tính minusAmount nếu là service_record payment
             let minusAmount = invoiceData.minusAmount || 0;

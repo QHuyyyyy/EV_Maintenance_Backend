@@ -442,6 +442,41 @@ class ChatSocketService {
     }
 
     /**
+     * Emit a generic notification event
+     */
+    emitNotification(data: any) {
+        this.io?.emit('notification:new', data);
+    }
+
+    /**
+     * Emit when a new forecast analysis is created for a part
+     */
+    emitForecastNew(data: { center_id: string; part_id: string; analysisId?: string; createdAt?: Date }) {
+        this.io?.emit('forecast:new', { ...data, timestamp: nowVN() });
+        // also emit via generic notification channel for UI notification list
+        this.emitNotification({
+            type: 'forecast',
+            title: 'Dữ liệu dự báo mới',
+            message: 'Đã có phân tích mới cho phụ tùng',
+            meta: data,
+            createdAt: nowVN(),
+        });
+    }
+
+    /**
+     * Emit when a batch forecast job completed for a center
+     */
+    emitForecastBatchComplete(data: { center_id: string; totalResults: number }) {
+        this.emitNotification({
+            type: 'forecast_batch',
+            title: 'Hoàn tất phân tích dự báo',
+            message: 'Dự báo đã được cập nhật',
+            meta: data,
+            createdAt: nowVN(),
+        });
+    }
+
+    /**
      * Check if user is currently connected via socket
      * Used to determine if customer is online/offline
      * @param userId 

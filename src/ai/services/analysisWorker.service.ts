@@ -1,6 +1,7 @@
 import { Worker } from 'bullmq';
 import centerAutoPartService from '../../services/centerAutoPart.service';
 import llmAnalysis from '../services/llmAnalysis.service';
+import chatSocketService from '../../socket/chat.socket';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
@@ -11,7 +12,13 @@ async function processCenterAnalysis(job: any) {
   let totalResults = 0;
 
   while (true) {
-    const resp = await centerAutoPartService.getAllCenterAutoParts({ center_id: centerId, page, limit });
+    let resp: any;
+    try {
+      resp = await centerAutoPartService.getAllCenterAutoParts({ center_id: centerId, page, limit });
+    } catch (e) {
+      console.error('centerAutoPart fetch failed, skipping center', centerId, e);
+      break;
+    }
     const items = resp.items || [];
     if (!items || items.length === 0) break;
     for (const cp of items) {
@@ -50,6 +57,10 @@ export function startAnalysisWorker() {
 
   worker.on('completed', (job, returnvalue) => {
     console.log('Analysis job completed', job.id, returnvalue);
+    const center_id = job?.data?.centerId;
+    const totalResults = (returnvalue && returnvalue.totalResults) || 0;
+    // Only emit via socket (no persistence)
+    chatSocketService.emitForecastBatchComplete({ center_id, totalResults });
   });
 
   worker.on('failed', (job, err) => {

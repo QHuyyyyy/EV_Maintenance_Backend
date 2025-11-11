@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
 import { enqueueCenterJob } from '../ai/services/analysisJob.service';
+import mongoose from 'mongoose';
 import partAnalysisModel from '../models/partAnalysis.model';
 
 
 export async function getCenterAnalyses(req: Request, res: Response) {
     // #swagger.tags = ['Forecast']
     // #swagger.summary = 'Get recent part analyses for a center.'
+    /* #swagger.security = [{ "bearerAuth": [] }] */
     // #swagger.description = 'Get recent part analyses for a center.'
+    // #swagger.parameters['part_id'] = { in: 'query', description: 'Optional part ID to filter analyses by specific part.', type: 'string' }
     // #swagger.parameters['limit'] = { in: 'query', description: 'Maximum number of analysis records to return. Default is 100.', type: 'integer' }
     // #swagger.parameters['page'] = { in: 'query', description: 'Page number for pagination.', type: 'integer' }
     // #swagger.parameters['date'] = { in: 'query', description: 'Optional date (YYYY-MM-DD) to filter analyses created on that date.', type: 'string' }
@@ -14,6 +17,9 @@ export async function getCenterAnalyses(req: Request, res: Response) {
 
         const centerId = (req.params.centerId || req.params.centerID) as string;
         if (!centerId) return res.status(400).json({ success: false, message: 'centerId is required in params' });
+        if (!mongoose.isValidObjectId(centerId)) {
+            return res.status(400).json({ success: false, message: 'Invalid centerId format' });
+        }
 
         const limit = Math.max(1, parseInt(req.query.limit as string) || 10);
 
@@ -31,6 +37,11 @@ export async function getCenterAnalyses(req: Request, res: Response) {
         // optional `date` query param (expected format: YYYY-MM-DD or any Date-parsable string)
         const dateStr = req.query.date as string | undefined;
         const filter: any = { center_id: centerId };
+        // optional filter by part_id
+        const partId = (req.query.part_id as string | undefined)?.trim();
+        if (partId) {
+            filter.part_id = partId;
+        }
         if (dateStr) {
             const start = new Date(dateStr);
             if (isNaN(start.getTime())) {
@@ -62,10 +73,14 @@ export async function getCenterAnalyses(req: Request, res: Response) {
 export async function postCenterForecast(req: Request, res: Response) {
     // #swagger.tags = ['Forecast']
     // #swagger.summary = 'Enqueue center forecast analysis job.'
+    /* #swagger.security = [{ "bearerAuth": [] }] */
     // #swagger.description = 'Enqueue center forecast analysis job.'
     try {
         const { centerId } = req.params as { centerId?: string };
         if (!centerId) return res.status(400).json({ success: false, message: 'centerId is required in params' });
+        if (!mongoose.isValidObjectId(centerId)) {
+            return res.status(400).json({ success: false, message: 'Invalid centerId format' });
+        }
 
         // Enqueue the center analysis job (async). enqueueCenterJob returns a Bull Job object.
         const job = await enqueueCenterJob(centerId);
