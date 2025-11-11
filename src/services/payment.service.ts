@@ -316,7 +316,8 @@ export class PaymentService {
                 status: 'PAID',
                 transaction_id: `TEST_${Date.now()}`,
                 payment_method: 'SIMULATED',
-                amount: payment.amount
+                amount: payment.amount,
+                description: payment.description || 'Simulated payment for testing'
             };
 
             // Use existing webhook handler
