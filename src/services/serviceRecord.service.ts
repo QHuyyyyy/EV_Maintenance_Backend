@@ -5,6 +5,7 @@ import Appointment from '../models/appointment.model';
 import RecordChecklist from '../models/recordChecklist.model';
 import serviceDetailModel from '../models/serviceDetail.model';
 import recordChecklistModel from '../models/recordChecklist.model';
+import CenterAutoPart from '../models/centerAutoPart.model';
 
 export class ServiceRecordService {
     async createServiceRecord(recordData: CreateServiceRecordRequest): Promise<IServiceRecord> {
@@ -176,47 +177,83 @@ export class ServiceRecordService {
         try {
             const record = await ServiceRecord.findById(recordId);
             if (!record) throw new Error('Service record not found');
-
+            // Populate center auto part and nested auto part (name, selling_price)
             const checklistItems = await RecordChecklist.find({ record_id: recordId })
-                .populate({ path: 'suggest.part_id', select: 'part_name price stock' })
+                .populate({
+                    path: 'suggest.part_id',
+                    populate: { path: 'part_id', select: 'name selling_price warranty_time image' }
+                })
                 .lean();
 
             interface AggItem {
-                part_id: any;
-                part_name: string;
-                price: number;
-                stock: number;
-                total_quantity: number; // tổng quantity gợi ý
-                occurrences: number; // số checklist items có gợi ý part này
+                center_auto_part_id: any; // CenterAutoPart _id
+                auto_part_id: any; // AutoPart _id
+                name: string; // AutoPart name
+                selling_price: number; // AutoPart selling price
+                center_stock: number; // CenterAutoPart.quantity (stock tại center)
+                total_suggested_quantity: number; // tổng quantity được gợi ý
+                warranty_time?: number;
+                image?: string;
             }
-            const partsMap = new Map<string, AggItem>();
+
+            const aggMap = new Map<string, AggItem>();
+            const rawCenterAutoPartIds: any[] = []; // backward compat ids chưa populate
 
             checklistItems.forEach((item: any) => {
                 const suggestions = Array.isArray(item.suggest) ? item.suggest : [];
                 suggestions.forEach((s: any) => {
-                    // backward compat: nếu là ObjectId thuần
-                    let partDoc = s.part_id || s; // s.part_id populated hoặc raw ObjectId
-                    if (!partDoc) return;
-                    const partIdStr = (partDoc._id ? partDoc._id : partDoc).toString();
                     const quantity = s.quantity && s.quantity > 0 ? s.quantity : 1;
-                    const existing = partsMap.get(partIdStr);
+                    const centerAutoPartDoc = s.part_id && s.part_id._id ? s.part_id : null; // nếu đã populate CenterAutoPart
+                    if (!centerAutoPartDoc) {
+                        // backward compat: có thể suggest là ObjectId hoặc object cũ
+                        const rawId = (s.part_id || s);
+                        if (rawId) rawCenterAutoPartIds.push(rawId.toString());
+                        return;
+                    }
+                    const autoPartDoc = centerAutoPartDoc.part_id && centerAutoPartDoc.part_id._id ? centerAutoPartDoc.part_id : null;
+                    const key = centerAutoPartDoc._id.toString();
+                    const existing = aggMap.get(key);
                     if (existing) {
-                        existing.total_quantity += quantity;
-                        existing.occurrences += 1;
+                        existing.total_suggested_quantity += quantity;
                     } else {
-                        partsMap.set(partIdStr, {
-                            part_id: partDoc._id ? partDoc._id : partDoc,
-                            part_name: partDoc.part_name || '',
-                            price: partDoc.price || 0,
-                            stock: partDoc.stock || 0,
-                            total_quantity: quantity,
-                            occurrences: 1
+                        aggMap.set(key, {
+                            center_auto_part_id: centerAutoPartDoc._id,
+                            auto_part_id: autoPartDoc ? autoPartDoc._id : undefined,
+                            name: autoPartDoc ? autoPartDoc.name : '',
+                            selling_price: autoPartDoc ? autoPartDoc.selling_price : 0,
+                            center_stock: centerAutoPartDoc.quantity || 0,
+                            total_suggested_quantity: quantity,
+                            warranty_time: autoPartDoc ? autoPartDoc.warranty_time : undefined,
+                            image: autoPartDoc ? autoPartDoc.image : undefined
                         });
                     }
                 });
             });
 
-            return Array.from(partsMap.values());
+            // Handle backward compatibility: fetch missing center auto parts and include them
+            if (rawCenterAutoPartIds.length) {
+                const uniqueIds = Array.from(new Set(rawCenterAutoPartIds));
+                const legacyParts = await CenterAutoPart.find({ _id: { $in: uniqueIds } })
+                    .populate({ path: 'part_id', select: 'name selling_price warranty_time image' })
+                    .lean();
+                legacyParts.forEach((cap: any) => {
+                    const key = cap._id.toString();
+                    if (!aggMap.has(key)) {
+                        aggMap.set(key, {
+                            center_auto_part_id: cap._id,
+                            auto_part_id: cap.part_id?._id,
+                            name: cap.part_id?.name || '',
+                            selling_price: cap.part_id?.selling_price || 0,
+                            center_stock: cap.quantity || 0,
+                            total_suggested_quantity: 0, // không có quantity thông tin từ raw entries (mặc định 0)
+                            warranty_time: cap.part_id?.warranty_time,
+                            image: cap.part_id?.image
+                        });
+                    }
+                });
+            }
+
+            return Array.from(aggMap.values());
         } catch (error) {
             if (error instanceof Error) throw new Error(`Failed to get suggested parts: ${error.message}`);
             throw new Error('Failed to get suggested parts: Unknown error');

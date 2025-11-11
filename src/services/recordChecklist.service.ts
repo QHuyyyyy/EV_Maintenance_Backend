@@ -70,12 +70,11 @@ export class RecordChecklistService {
 
     async getRecordChecklistsByRecord(recordId: string): Promise<IRecordChecklist[]> {
         try {
-            // Populate checklist, suggested center auto parts and nested auto part inside each center auto part
             return await RecordChecklist.find({ record_id: recordId })
                 .populate({ path: 'checklist_id' })
                 .populate({
                     path: 'suggest.part_id',
-                    populate: { path: 'part_id' } // nested populate AutoPart inside CenterAutoPart
+                    populate: { path: 'part_id' }
                 })
                 .sort({ createdAt: 1 })
                 .lean() as any;
