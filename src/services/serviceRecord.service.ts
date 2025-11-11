@@ -32,7 +32,7 @@ export class ServiceRecordService {
                 })
                 .populate({
                     path: 'technician_id',
-                    select: 'name userId centerId isOnline',
+                    select: 'name userId centerId isOnline certificates',
                     populate: { path: 'userId', select: 'email' }
                 })
                 .lean() as any;
@@ -96,7 +96,7 @@ export class ServiceRecordService {
                     })
                     .populate({
                         path: 'technician_id',
-                        select: 'name userId centerId isOnline',
+                        select: 'name userId centerId isOnline certificates',
                         populate: { path: 'userId', select: 'email' }
                     })
                     .sort({ start_time: -1 })

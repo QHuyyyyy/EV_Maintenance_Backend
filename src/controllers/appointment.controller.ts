@@ -18,18 +18,34 @@ function isSameDate(a: Date, b: Date): boolean {
     return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
+// Combine a date (or date-like) with a HH:mm string into a single Date in local time
+function combineDateAndTime(dateInput?: string | number | Date | null, time?: string): Date | null {
+    if (!dateInput || !time) return null;
+    const base = new Date(dateInput as any);
+    if (isNaN(base.getTime())) return null;
+    const parts = time.split(":").map(p => parseInt(p, 10));
+    if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return null;
+    base.setHours(parts[0], parts[1], 0, 0);
+    return base;
+}
+
 function isDateTimeWithinShifts(dt: Date, shifts: any[]): boolean {
-    if (!dt || !Array.isArray(shifts)) return false;
+    if (!dt || !(dt instanceof Date) || isNaN(dt.getTime()) || !Array.isArray(shifts)) return false;
     const dtMinutes = dt.getHours() * 60 + dt.getMinutes();
     for (const s of shifts) {
         try {
             const shiftDate = s.shift_date ? new Date(s.shift_date) : null;
-            if (!shiftDate) continue;
+            if (!shiftDate || isNaN(shiftDate.getTime())) continue;
             if (!isSameDate(dt, shiftDate)) continue;
             const startMin = timeStringToMinutes(s.start_time);
             const endMin = timeStringToMinutes(s.end_time);
             if (startMin === null || endMin === null) continue;
-            if (startMin <= dtMinutes && dtMinutes <= endMin) return true;
+            // handle both normal and overnight shifts (e.g., 22:00 - 06:00)
+            if (endMin >= startMin) {
+                if (startMin <= dtMinutes && dtMinutes <= endMin) return true;
+            } else {
+                if (dtMinutes >= startMin || dtMinutes <= endMin) return true;
+            }
         } catch (e) {
             continue;
         }
@@ -317,8 +333,11 @@ export class AppointmentController {
             }
 
             const shifts = await shiftAssignmentService.getShiftsOfUser(staffId);
-            // slot-based start time (legacy fallback removed)
-            const apptStart = (appointmentObj as any)?.slot_id?.start_time ? new Date((appointmentObj as any).slot_id.start_time) : null;
+            // Prefer combining slot_date + start_time if available; fallback to parsing start_time as a Date
+            const slot = (appointmentObj as any)?.slot_id;
+            const apptStart = slot?.slot_date && slot?.start_time
+                ? combineDateAndTime(slot.slot_date, slot.start_time)
+                : (slot?.start_time ? new Date(slot.start_time) : null);
             const inShift = apptStart ? isDateTimeWithinShifts(apptStart, shifts) : false;
             if (!inShift) {
                 return res.status(400).json({ success: false, message: 'Staff is not scheduled for a shift covering the appointment time' });
@@ -396,7 +415,10 @@ export class AppointmentController {
 
             // Ensure technician has a shift covering the appointment time
             const techShifts = await shiftAssignmentService.getShiftsOfUser(technician_id);
-            const apptStart = (appointment as any)?.slot_id?.start_time ? new Date((appointment as any).slot_id.start_time) : null;
+            const slot2 = (appointment as any)?.slot_id;
+            const apptStart = slot2?.slot_date && slot2?.start_time
+                ? combineDateAndTime(slot2.slot_date, slot2.start_time)
+                : (slot2?.start_time ? new Date(slot2.start_time) : null);
             const techInShift = apptStart ? isDateTimeWithinShifts(apptStart, techShifts) : false;
             if (!techInShift) {
                 return res.status(400).json({ success: false, message: 'Technician is not scheduled for a shift covering the appointment time' });
