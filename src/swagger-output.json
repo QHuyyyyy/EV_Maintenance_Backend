@@ -4693,6 +4693,45 @@
         ]
       }
     },
+    "/api/vehicle-subscriptions/vehicle/{vehicleId}/billing": {
+      "get": {
+        "tags": [
+          "Vehicle Subscriptions"
+        ],
+        "summary": "Get subscription info for billing",
+        "description": "API to get active subscription information for a vehicle when creating bill/invoice",
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/vehicle-subscriptions/customer/{customerId}": {
       "get": {
         "tags": [
@@ -6434,6 +6473,66 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/service-records/{id}/calculate-bill": {
+      "post": {
+        "tags": [
+          "Service Records"
+        ],
+        "summary": "Calculate bill with subscription discount",
+        "description": "Calculate total bill for a service record including subscription discount if applicable",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceCharges": {
+                    "type": "number",
+                    "description": "Total service charges"
+                  },
+                  "partsTotal": {
+                    "type": "number",
+                    "description": "Total parts cost"
+                  }
+                },
+                "required": [
+                  "serviceCharges",
+                  "partsTotal"
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/api/service-checklists": {
@@ -8879,6 +8978,60 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/invoices/preview/{serviceRecordId}": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "description": "Preview invoice with discount calculation before payment",
+        "parameters": [
+          {
+            "name": "serviceRecordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "totalAmount": {
+                    "type": "number",
+                    "description": "Total amount before discount"
+                  }
+                },
+                "required": [
+                  "totalAmount"
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/api/invoices/payment/{paymentId}": {

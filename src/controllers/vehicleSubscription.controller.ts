@@ -379,5 +379,35 @@ export class VehicleSubscriptionController {
             });
         }
     }
+
+    async getSubscriptionForBilling(req: Request, res: Response): Promise<void> {
+        // #swagger.tags = ['Vehicle Subscriptions']
+        // #swagger.summary = 'Get subscription info for billing'
+        // #swagger.description = 'API to get active subscription information for a vehicle when creating bill/invoice'
+        // #swagger.security = [{ "bearerAuth": [] }]
+        // #swagger.parameters['vehicleId'] = { description: 'Vehicle ID', required: true, type: 'string' }
+        try {
+            const { vehicleId } = req.params;
+            const subscriptionInfo = await this.vehicleSubscriptionService.getSubscriptionForBilling(vehicleId);
+
+            if (!subscriptionInfo) {
+                res.status(404).json({
+                    success: false,
+                    message: 'No active subscription found for this vehicle'
+                });
+                return;
+            }
+
+            res.status(200).json({
+                success: true,
+                data: subscriptionInfo
+            });
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
 }
 export default new VehicleSubscriptionController();

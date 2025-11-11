@@ -257,6 +257,65 @@ export class InvoiceController {
             }
         }
     }
+
+    async previewInvoice(req: Request, res: Response) {
+        /* #swagger.tags = ['Invoices']
+           #swagger.description = 'Preview invoice with discount calculation before payment'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['serviceRecordId'] = {
+               in: 'path',
+               description: 'Service Record ID',
+               required: true,
+               type: 'string'
+           }
+           #swagger.requestBody = {
+               required: true,
+               content: {
+                   'application/json': {
+                       schema: {
+                           type: 'object',
+                           properties: {
+                               totalAmount: { type: 'number', description: 'Total amount before discount' }
+                           },
+                           required: ['totalAmount']
+                       }
+                   }
+               }
+           }
+        */
+        try {
+            const { totalAmount } = req.body;
+            
+            if (!totalAmount || typeof totalAmount !== 'number') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'totalAmount is required and must be a number'
+                });
+            }
+
+            const preview = await invoiceService.previewInvoiceForServiceRecord(
+                req.params.serviceRecordId,
+                totalAmount
+            );
+
+            res.status(200).json({
+                success: true,
+                data: preview
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            } else {
+                res.status(400).json({
+                    success: false,
+                    message: 'Failed to preview invoice'
+                });
+            }
+        }
+    }
 }
 
 export default new InvoiceController();
