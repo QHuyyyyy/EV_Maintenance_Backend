@@ -30,6 +30,11 @@ export class ServiceRecordService {
                         { path: 'center_id', select: 'center_id name address phone' }
                     ]
                 })
+                .populate({
+                    path: 'technician_id',
+                    select: 'name userId centerId isOnline',
+                    populate: { path: 'userId', select: 'email' }
+                })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {
@@ -89,6 +94,11 @@ export class ServiceRecordService {
                             { path: 'center_id', select: 'name address phone' }
                         ]
                     })
+                    .populate({
+                        path: 'technician_id',
+                        select: 'name userId centerId isOnline',
+                        populate: { path: 'userId', select: 'email' }
+                    })
                     .sort({ start_time: -1 })
                     .skip(skip)
                     .limit(limit)
@@ -125,6 +135,11 @@ export class ServiceRecordService {
                         { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
                         { path: 'center_id', select: 'name address phone' }
                     ]
+                })
+                .populate({
+                    path: 'technician_id',
+                    select: 'name userId centerId isOnline certificates',
+                    populate: { path: 'userId', select: 'email' }
                 })
                 .lean() as any;
         } catch (error) {

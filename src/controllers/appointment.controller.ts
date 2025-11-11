@@ -307,6 +307,15 @@ export class AppointmentController {
                 return res.status(404).json({ success: false, message: 'Appointment not found' });
             }
 
+            // Ensure staff belongs to the same center as the appointment
+            const apptCenterId = (appointmentObj as any)?.center_id?._id
+                ? String((appointmentObj as any).center_id._id)
+                : String((appointmentObj as any).center_id);
+            const staffCenterId = (systemUser as any)?.centerId ? String((systemUser as any).centerId) : null;
+            if (!staffCenterId || String(staffCenterId) !== String(apptCenterId)) {
+                return res.status(400).json({ success: false, message: 'Staff must belong to the same center as the appointment' });
+            }
+
             const shifts = await shiftAssignmentService.getShiftsOfUser(staffId);
             // slot-based start time (legacy fallback removed)
             const apptStart = (appointmentObj as any)?.slot_id?.start_time ? new Date((appointmentObj as any).slot_id.start_time) : null;
@@ -374,6 +383,15 @@ export class AppointmentController {
             const techRole = (techUser.userId as any)?.role;
             if (techRole !== 'TECHNICIAN') {
                 return res.status(400).json({ success: false, message: `User role must be TECHNICIAN to be assigned as technician (current: ${techRole})` });
+            }
+
+            // Center validation: technician and appointment must share the same center
+            const apptCenterId2 = (appointment as any)?.center_id?._id
+                ? String((appointment as any).center_id._id)
+                : String((appointment as any).center_id);
+            const techCenterId = (techUser as any)?.centerId ? String((techUser as any).centerId) : null;
+            if (!techCenterId || String(techCenterId) !== String(apptCenterId2)) {
+                return res.status(400).json({ success: false, message: 'Technician must belong to the same center as the appointment' });
             }
 
             // Ensure technician has a shift covering the appointment time
