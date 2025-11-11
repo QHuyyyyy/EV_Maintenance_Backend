@@ -1,7 +1,13 @@
 import { Request, Response } from 'express';
 import autoPartService from '../services/autoPart.service';
+import { FirebaseStorageService } from '../firebase/storage.service';
+
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
+}
 
 export class AutoPartController {
+    private firebaseStorageService = new FirebaseStorageService();
     async createAutoPart(req: Request, res: Response) {
         /* #swagger.tags = ['Auto Parts']
            #swagger.summary = 'Create a new auto part'
@@ -10,14 +16,35 @@ export class AutoPartController {
            #swagger.requestBody = {
                required: true,
                content: {
-                   'application/json': {
-                       schema: { $ref: '#/components/schemas/CreateAutoPart' }
+                   'multipart/form-data': {
+                       schema: {
+                           type: 'object',
+                           required: ['name','cost_price','selling_price'],
+                           properties: {
+                               name: { type: 'string', example: 'Brake Pad' },
+                               cost_price: { type: 'number', example: 50 },
+                               selling_price: { type: 'number', example: 80 },
+                               warranty_time: { type: 'number', example: 12 },
+                               image: { type: 'string', format: 'binary', description: 'Auto part image' }
+                           }
+                       }
                    }
                }
            }
         */
         try {
-            const part = await autoPartService.createAutoPart(req.body);
+            const payload: any = req.body;
+
+            if ((req as MulterRequest).file) {
+                const imageUrl = await this.firebaseStorageService.uploadFile(
+                    (req as MulterRequest).file as Express.Multer.File,
+                    undefined,
+                    'autoParts'
+                );
+                payload.image = imageUrl;
+            }
+
+            const part = await autoPartService.createAutoPart(payload);
             res.status(201).json({
                 success: true,
                 message: 'Auto part created successfully',
@@ -144,14 +171,42 @@ export class AutoPartController {
            #swagger.requestBody = {
                required: true,
                content: {
-                   'application/json': {
-                       schema: { $ref: '#/components/schemas/UpdateAutoPart' }
+                   'multipart/form-data': {
+                       schema: {
+                           type: 'object',
+                           properties: {
+                               name: { type: 'string' },
+                               cost_price: { type: 'number' },
+                               selling_price: { type: 'number' },
+                               warranty_time: { type: 'number' },
+                               image: { type: 'string', format: 'binary', description: 'Auto part image' }
+                           }
+                       }
                    }
                }
            }
         */
         try {
-            const part = await autoPartService.updateAutoPart(req.params.id, req.body);
+            const updateData: any = req.body;
+
+
+            // If no new file uploaded and image field is empty / undefined -> keep old image (do not overwrite)
+            if (!(req as MulterRequest).file) {
+                if ('image' in updateData && (updateData.image === '' || updateData.image === undefined || updateData.image === null)) {
+                    delete updateData.image; // prevent clearing existing image accidentally
+                }
+            }
+
+            if ((req as MulterRequest).file) {
+                const imageUrl = await this.firebaseStorageService.uploadFile(
+                    (req as MulterRequest).file as Express.Multer.File,
+                    undefined,
+                    'autoParts'
+                );
+                updateData.image = imageUrl;
+            }
+
+            const part = await autoPartService.updateAutoPart(req.params.id, updateData);
             if (!part) {
                 return res.status(404).json({
                     success: false,
