@@ -19,6 +19,10 @@ export class ServiceDetailService {
     async getServiceDetailById(id: string): Promise<IServiceDetail | null> {
         try {
             return await ServiceDetail.findById(id)
+                .populate({
+                    path: 'centerpart_id',
+                    populate: { path: 'part_id' }
+                })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {
@@ -55,6 +59,10 @@ export class ServiceDetailService {
 
             const [details, total] = await Promise.all([
                 ServiceDetail.find(query)
+                    .populate({
+                        path: 'centerpart_id',
+                        populate: { path: 'part_id' }
+                    })
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit)
@@ -80,6 +88,10 @@ export class ServiceDetailService {
     async updateServiceDetail(id: string, updateData: UpdateServiceDetailRequest): Promise<IServiceDetail | null> {
         try {
             return await ServiceDetail.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+                .populate({
+                    path: 'centerpart_id',
+                    populate: { path: 'part_id' }
+                })
                 .lean() as any;
         } catch (error) {
             if (error instanceof Error) {

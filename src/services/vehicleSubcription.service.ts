@@ -379,48 +379,46 @@ export class VehicleSubscriptionService {
                 throw new Error('Service record not found');
             }
 
+            console.log('📋 Service Record found:', {
+                id: serviceRecord._id,
+                appointment: serviceRecord.appointment_id ? 'exists' : 'missing'
+            });
+
             const appointment = serviceRecord.appointment_id as any;
             if (!appointment || !appointment.vehicle_id) {
-                throw new Error('Vehicle information not found in service record');
+                return {
+                    hasSubscription: false,
+                    message: 'Vehicle information not found in service record',
+                    debug: {
+                        hasAppointment: !!appointment,
+                        hasVehicle: !!(appointment && appointment.vehicle_id)
+                    }
+                };
             }
 
             const vehicleId = appointment.vehicle_id._id.toString();
+            console.log('🚗 Vehicle ID:', vehicleId);
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset to start of day for comparison
 
             // Tìm subscription active của vehicle
             const activeSubscription = await VehicleSubscription.findOne({
                 vehicleId,
-                status: 'ACTIVE',
-                start_date: { $lte: new Date() },
-                end_date: { $gte: new Date() }
+                status: 'ACTIVE'
+                // Bỏ check date ở đây vì có thể chênh lệch timestamp
             })
                 .populate('package_id')
                 .populate('vehicleId', 'vehicleName model plateNumber');
 
+            console.log('📦 Active subscription:', activeSubscription ? 'found' : 'not found');
+
             if (!activeSubscription) {
-                return {
-                    hasSubscription: false,
-                    message: 'No active subscription found for this vehicle'
-                };
+                return null;
             }
 
-            const subscriptionData = activeSubscription as any;
-
-            return {
-                hasSubscription: true,
-                subscription: {
-                    subscriptionId: activeSubscription._id,
-                    vehicleId: vehicleId,
-                    vehicleInfo: activeSubscription.vehicleId,
-                    status: activeSubscription.status,
-                    startDate: activeSubscription.start_date,
-                    endDate: activeSubscription.end_date,
-                    originalPrice: subscriptionData.original_price,
-                    discountPercent: subscriptionData.discount_percent,
-                    discountAmount: subscriptionData.discount_amount,
-                    finalPrice: subscriptionData.final_price
-                },
-                package: activeSubscription.package_id
-            };
+            // Chỉ trả về package
+            return activeSubscription.package_id;
         } catch (error) {
             throw new Error(`Error fetching package by service record: ${error}`);
         }
