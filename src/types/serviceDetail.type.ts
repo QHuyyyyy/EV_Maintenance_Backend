@@ -16,7 +16,7 @@ export interface CreateServiceDetailRequest {
     centerpart_id: string;
     description?: string;
     quantity: number;
-    unit_price: number;
+    unit_price?: number;
 }
 
 export interface UpdateServiceDetailRequest {
