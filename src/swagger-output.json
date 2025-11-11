@@ -6930,9 +6930,37 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateAutoPart"
+                "type": "object",
+                "required": [
+                  "name",
+                  "cost_price",
+                  "selling_price"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Brake Pad"
+                  },
+                  "cost_price": {
+                    "type": "number",
+                    "example": 50
+                  },
+                  "selling_price": {
+                    "type": "number",
+                    "example": 80
+                  },
+                  "warranty_time": {
+                    "type": "number",
+                    "example": 12
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Auto part image"
+                  }
+                }
               }
             }
           }
@@ -7070,9 +7098,28 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAutoPart"
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "cost_price": {
+                    "type": "number"
+                  },
+                  "selling_price": {
+                    "type": "number"
+                  },
+                  "warranty_time": {
+                    "type": "number"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Auto part image"
+                  }
+                }
               }
             }
           }

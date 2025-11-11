@@ -4,6 +4,7 @@ export interface IAutoPart {
     cost_price: number;
     selling_price: number;
     warranty_time?: number;
+    image: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -13,6 +14,7 @@ export interface CreateAutoPartRequest {
     cost_price: number;
     selling_price: number;
     warranty_time?: number;
+    image: string; // URL uploaded to Firebase Storage
     // Inventory fields moved to CenterAutoPart
 }
 
@@ -21,5 +23,6 @@ export interface UpdateAutoPartRequest {
     cost_price?: number;
     selling_price?: number;
     warranty_time?: number;
+    image?: string; // URL uploaded to Firebase Storage
     // Inventory fields moved to CenterAutoPart
 }
