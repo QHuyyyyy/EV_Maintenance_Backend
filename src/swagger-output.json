@@ -8879,6 +8879,41 @@
         ]
       }
     },
+    "/api/payments/simulate/{orderCode}": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "[DEV ONLY] Simulate payment success for testing",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/invoices": {
       "post": {
         "tags": [
