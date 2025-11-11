@@ -3877,7 +3877,7 @@
                   },
                   "service_interval_days": {
                     "type": "number",
-                    "example": 365,
+                    "example": 60,
                     "description": "Maintenance frequency in days (default: 365)"
                   }
                 }
@@ -9559,6 +9559,9 @@
           "404": {
             "description": "Not Found"
           },
+          "409": {
+            "description": "Conflict"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -9798,6 +9801,31 @@
             "description": "Internal Server Error"
           }
         }
+      }
+    },
+    "/api/forecast/trigger-all": {
+      "post": {
+        "tags": [
+          "Forecast"
+        ],
+        "summary": "Trigger forecast jobs for all centers",
+        "description": "Enqueue forecast analysis jobs for all centers immediately.",
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/slots/generate": {
