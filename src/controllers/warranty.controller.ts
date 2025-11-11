@@ -10,6 +10,7 @@ class WarrantyController {
         try {
             /*  #swagger.tags = ['Warranty']
                 #swagger.summary = 'Get warrantied parts by customer'
+                #swagger.security = [{ "bearerAuth": [] }]
                 #swagger.description = 'Return all active part warranties for a customer, optionally filtered by vehicle.'
                 #swagger.parameters['customerId'] = { in: 'query', required: true, type: 'string' }
                 #swagger.parameters['vehicle_id'] = { in: 'query', required: false, type: 'string' }
@@ -34,6 +35,7 @@ class WarrantyController {
         try {
             /*  #swagger.tags = ['Warranty']
                 #swagger.summary = 'Get warranties (paginated)'
+                #swagger.security = [{ "bearerAuth": [] }]
                 #swagger.description = 'Return paginated list of warranties with optional vehicle filter.'
                 #swagger.parameters['page'] = { in: 'query', type: 'integer', default: 1 }
                 #swagger.parameters['limit'] = { in: 'query', type: 'integer', default: 10 }

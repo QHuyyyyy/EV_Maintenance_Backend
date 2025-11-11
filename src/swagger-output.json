@@ -4959,7 +4959,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -5285,7 +5290,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -9783,6 +9793,14 @@
             }
           },
           {
+            "name": "part_id",
+            "in": "query",
+            "description": "Optional part ID to filter analyses by specific part.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "description": "Maximum number of analysis records to return. Default is 100.",
@@ -9817,7 +9835,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/forecast/center/{centerId}": {
@@ -9847,7 +9870,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/forecast/trigger-all": {
@@ -10066,7 +10094,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/warranties": {
@@ -10112,7 +10145,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -11605,7 +11643,7 @@
             "items": {
               "type": "object",
               "properties": {
-                "part_id": {
+                "centerpart_id": {
                   "type": "string",
                   "example": "60f1b2b3c4e5f6g7h8i9j0p2"
                 },
@@ -11691,7 +11729,7 @@
             "items": {
               "type": "object",
               "properties": {
-                "part_id": {
+                "centerpart_id": {
                   "type": "string",
                   "example": "60f1b2b3c4e5f6g7h8i9j0p3"
                 },
@@ -11707,7 +11745,7 @@
             "items": {
               "type": "object",
               "properties": {
-                "part_id": {
+                "centerpart_id": {
                   "type": "string",
                   "example": "60f1b2b3c4e5f6g7h8i9j0p1"
                 },

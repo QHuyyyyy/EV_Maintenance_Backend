@@ -103,6 +103,7 @@ app.use('/api/shift-assignments', shiftAssignmentRoutes);
 app.use('/api/forecast', forecastRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/warranties', warrantyRoutes);
+// Notifications route removed: we emit via websocket only
 
 // Root route redirect to API docs
 
@@ -119,8 +120,8 @@ app.use((req, res) => {
     });
 });
 
-// Start server
-const PORT = process.env.PORT ?? 3000;
+// Start server (default 5000 so dashboard can connect websocket ws://localhost:5000)
+const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 const httpServer = http.createServer(app);
 
 // Initialize Socket.io
