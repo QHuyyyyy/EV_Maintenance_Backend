@@ -13,6 +13,7 @@ export class AlertController {
     static async getAllAlerts(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Alerts']
         // #swagger.summary = 'Get all alerts with filtering and pagination'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'API to get all alerts with optional filtering and pagination'
         // #swagger.parameters['vehicleId'] = { description: 'Filter by vehicle ID', required: false, type: 'string' }
         // #swagger.parameters['isRead'] = { description: 'Filter by read status', required: false, type: 'boolean' }
@@ -65,6 +66,7 @@ export class AlertController {
     static async getAlertById(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Alerts']
         // #swagger.summary = 'Get alert by ID'
+        /* #swagger.security = [{ "bearerAuth": [] }] */
         // #swagger.description = 'API to get a specific alert by its ID'
         // #swagger.parameters['id'] = { description: 'Alert ID', required: true, type: 'string' }
         /* #swagger.responses[200] = {

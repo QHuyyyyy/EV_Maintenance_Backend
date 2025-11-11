@@ -2,6 +2,7 @@ import { OpenAI } from 'openai';
 import { z } from 'zod';
 import partDataAggregator from './partDataAggregator.service';
 import PartAnalysisModel from '../../models/partAnalysis.model';
+import chatSocketService from '../../socket/chat.socket';
 import centerAutoPartService from '../../services/centerAutoPart.service';
 import moment from 'moment-timezone';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
