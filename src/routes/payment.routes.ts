@@ -25,4 +25,7 @@ router.put('/cancel/:orderCode', validate, paymentController.cancelPayment);
 // Get payment info from PayOS (protected)
 router.get('/info/:orderCode', validate, paymentController.getPaymentInfo);
 
+// [DEV ONLY] Simulate payment success (protected)
+router.post('/simulate/:orderCode', validate, paymentController.simulatePaymentSuccess);
+
 export default router;

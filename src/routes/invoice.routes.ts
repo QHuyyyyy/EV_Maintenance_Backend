@@ -7,6 +7,9 @@ const router = express.Router();
 // Create invoice (protected)
 router.post('/', validate, invoiceController.createInvoice);
 
+// Preview invoice with discount calculation (protected)
+router.post('/preview/:serviceRecordId', validate, invoiceController.previewInvoice);
+
 // Get all invoices with filters (protected)
 router.get('/', validate, invoiceController.getAllInvoices);
 
