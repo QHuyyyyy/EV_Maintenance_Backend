@@ -461,7 +461,10 @@ const doc = {
             record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             status: 'pending',
             note: 'Optional note for this checklist item on the record',
-            suggest: ['60f1b2b3c4e5f6g7h8i9j0p1', '60f1b2b3c4e5f6g7h8i9j0p2'], // CenterAutoPart IDs
+            suggest: [
+                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p1', quantity: 2 },
+                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p2', quantity: 1 }
+            ], // CenterAutoPart with quantities
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
@@ -470,12 +473,20 @@ const doc = {
             record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             status: 'pending',
             note: 'Optional note for this checklist item on the record',
-            suggest: ['60f1b2b3c4e5f6g7h8i9j0p1']
+            suggest: [
+                // You can also send plain IDs for quantity=1
+                { part_id: '60f1b2b3c4e5f6g7h8i9j0p1', quantity: 3 }
+            ]
         },
         UpdateRecordChecklist: {
             status: 'completed',
             note: 'Inspected and completed',
-            suggest_add: ['60f1b2b3c4e5f6g7h8i9j0p3'],
+            suggest_add: [
+                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p3', quantity: 2 }
+            ],
+            suggest_update_qty: [
+                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p1', quantity: 5 }
+            ],
             suggest_remove: ['60f1b2b3c4e5f6g7h8i9j0p2']
         }
     },
