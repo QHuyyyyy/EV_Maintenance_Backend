@@ -409,5 +409,27 @@ export class VehicleSubscriptionController {
             });
         }
     }
+
+    async getPackageByServiceRecord(req: Request, res: Response): Promise<void> {
+        // #swagger.tags = ['Vehicle Subscriptions']
+        // #swagger.summary = 'Get package by service record'
+        // #swagger.description = 'Get active subscription package information for a service record'
+        // #swagger.security = [{ "bearerAuth": [] }]
+        // #swagger.parameters['serviceRecordId'] = { description: 'Service Record ID', required: true, type: 'string' }
+        try {
+            const { serviceRecordId } = req.params;
+            const result = await this.vehicleSubscriptionService.getPackageByServiceRecord(serviceRecordId);
+
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
 }
 export default new VehicleSubscriptionController();
