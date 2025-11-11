@@ -8607,6 +8607,67 @@
         ]
       }
     },
+    "/api/payments/webhook": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Handle PayOS webhook - Automatically updates payment status when payment is completed",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentWebhook"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/simulate/{orderCode}": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "[DEV ONLY] Simulate payment success for testing",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Order Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/payments": {
       "post": {
         "tags": [
@@ -8740,114 +8801,12 @@
         ]
       }
     },
-    "/api/payments/{id}": {
-      "get": {
-        "tags": [
-          "Payments"
-        ],
-        "description": "Get payment by ID",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Payment ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/payments/order/{orderCode}": {
       "get": {
         "tags": [
           "Payments"
         ],
         "description": "Get payment by order code",
-        "parameters": [
-          {
-            "name": "orderCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Order Code"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/payments/webhook": {
-      "post": {
-        "tags": [
-          "Payments"
-        ],
-        "description": "Handle PayOS webhook",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaymentWebhook"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/payments/cancel/{orderCode}": {
-      "put": {
-        "tags": [
-          "Payments"
-        ],
-        "description": "Cancel a payment",
         "parameters": [
           {
             "name": "orderCode",
@@ -8915,12 +8874,50 @@
         ]
       }
     },
-    "/api/payments/simulate/{orderCode}": {
-      "post": {
+    "/api/payments/{id}": {
+      "get": {
         "tags": [
           "Payments"
         ],
-        "description": "[DEV ONLY] Simulate payment success for testing",
+        "description": "Get payment by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/payments/cancel/{orderCode}": {
+      "put": {
+        "tags": [
+          "Payments"
+        ],
+        "description": "Cancel a payment",
         "parameters": [
           {
             "name": "orderCode",
@@ -8941,6 +8938,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           }
         },
         "security": [

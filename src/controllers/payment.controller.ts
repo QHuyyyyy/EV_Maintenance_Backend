@@ -196,7 +196,7 @@ export class PaymentController {
 
     async handleWebhook(req: Request, res: Response) {
         /* #swagger.tags = ['Payments']
-           #swagger.description = 'Handle PayOS webhook'
+           #swagger.description = 'Handle PayOS webhook - Automatically updates payment status when payment is completed'
            #swagger.requestBody = {
                required: true,
                content: {
@@ -207,22 +207,29 @@ export class PaymentController {
            }
         */
         try {
+            console.log('📨 Received PayOS webhook:', JSON.stringify(req.body, null, 2));
+            
             const payment = await paymentService.handlePaymentWebhook(req.body);
+            
+            console.log('✅ Webhook processed successfully');
+            
+            // PayOS expects response format: { code: "00", desc: "success" }
             res.status(200).json({
-                success: true,
-                message: 'Webhook processed successfully',
+                code: "00",
+                desc: "success",
                 data: payment
             });
         } catch (error) {
+            console.error('❌ Webhook processing failed:', error);
             if (error instanceof Error) {
                 res.status(400).json({
-                    success: false,
-                    message: error.message
+                    code: "01",
+                    desc: error.message
                 });
             } else {
                 res.status(400).json({
-                    success: false,
-                    message: 'Failed to process webhook'
+                    code: "01",
+                    desc: 'Failed to process webhook'
                 });
             }
         }
