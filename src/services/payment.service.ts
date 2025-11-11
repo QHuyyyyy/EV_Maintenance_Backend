@@ -15,6 +15,13 @@ export class PaymentService {
                 throw new Error('Subscription not found');
             }
 
+            // Use final_price from subscription (already includes discount)
+            const subscriptionData = subscription as any;
+            if (subscriptionData.final_price !== undefined && subscriptionData.final_price >= 0) {
+                return subscriptionData.final_price;
+            }
+
+            // Fallback to package price (for old subscriptions without pricing fields)
             const packageData = subscription.package_id as any;
             if (!packageData || !packageData.price) {
                 throw new Error('Package price not found');

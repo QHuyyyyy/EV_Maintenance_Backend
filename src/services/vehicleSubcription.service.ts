@@ -97,13 +97,25 @@ export class VehicleSubscriptionService {
 
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + servicePackage.duration);
+            
+            // Calculate pricing with discount
+            const originalPrice = servicePackage.price || 0;
+            const discountPercent = servicePackage.discount_percent || 0;
+            const discountAmount = Math.floor((originalPrice * discountPercent) / 100);
+            const finalPrice = originalPrice - discountAmount;
+            
             const subscription = new VehicleSubscription({
                 vehicleId: subscriptionData.vehicleId,
                 package_id: subscriptionData.package_id,
                 start_date: startDate,
                 end_date: endDate,
                 // Always start as PENDING until payment is completed via webhook
-                status: 'PENDING'
+                status: 'PENDING',
+                // Pricing information
+                original_price: originalPrice,
+                discount_percent: discountPercent,
+                discount_amount: discountAmount,
+                final_price: finalPrice
             });
 
             const savedSubscription = await subscription.save();
@@ -348,6 +360,69 @@ export class VehicleSubscriptionService {
             };
         } catch (error) {
             throw new Error(`Error fetching subscription for billing: ${error}`);
+        }
+    }
+
+    // Lấy package theo service record
+    async getPackageByServiceRecord(serviceRecordId: string) {
+        try {
+            const ServiceRecord = require('../models/serviceRecord.model').default;
+            
+            // Lấy service record và populate appointment -> vehicle
+            const serviceRecord = await ServiceRecord.findById(serviceRecordId)
+                .populate({
+                    path: 'appointment_id',
+                    populate: { path: 'vehicle_id' }
+                });
+
+            if (!serviceRecord) {
+                throw new Error('Service record not found');
+            }
+
+            const appointment = serviceRecord.appointment_id as any;
+            if (!appointment || !appointment.vehicle_id) {
+                throw new Error('Vehicle information not found in service record');
+            }
+
+            const vehicleId = appointment.vehicle_id._id.toString();
+
+            // Tìm subscription active của vehicle
+            const activeSubscription = await VehicleSubscription.findOne({
+                vehicleId,
+                status: 'ACTIVE',
+                start_date: { $lte: new Date() },
+                end_date: { $gte: new Date() }
+            })
+                .populate('package_id')
+                .populate('vehicleId', 'vehicleName model plateNumber');
+
+            if (!activeSubscription) {
+                return {
+                    hasSubscription: false,
+                    message: 'No active subscription found for this vehicle'
+                };
+            }
+
+            const subscriptionData = activeSubscription as any;
+
+            return {
+                hasSubscription: true,
+                subscription: {
+                    subscriptionId: activeSubscription._id,
+                    vehicleId: vehicleId,
+                    vehicleInfo: activeSubscription.vehicleId,
+                    status: activeSubscription.status,
+                    startDate: activeSubscription.start_date,
+                    endDate: activeSubscription.end_date,
+                    originalPrice: subscriptionData.original_price,
+                    discountPercent: subscriptionData.discount_percent,
+                    discountAmount: subscriptionData.discount_amount,
+                    finalPrice: subscriptionData.final_price
+                },
+                package: activeSubscription.package_id
+            };
+        } catch (error) {
+            throw new Error(`Error fetching package by service record: ${error}`);
         }
     }
 }
