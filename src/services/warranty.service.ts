@@ -4,6 +4,8 @@ import CenterAutoPart from '../models/centerAutoPart.model';
 import AutoPart from '../models/autoPart.model';
 import ServiceRecord from '../models/serviceRecord.model';
 import Appointment from '../models/appointment.model';
+import { Vehicle } from '../models/vehicle.model';
+import { nowVN } from '../utils/time';
 
 /**
  * QUY TRÌNH 1: Tạo Bảo hành
@@ -94,4 +96,128 @@ export async function createWarrantiesForServiceRecord(serviceRecordId: string):
 
 export default {
     createWarrantiesForServiceRecord
+};
+
+
+export async function getPartWarrantiesForCustomer(
+    customerId: string,
+    vehicleId?: string,
+    status?: string,
+): Promise<Array<{
+    warranty_id: string;
+    part_id: string;
+    part_name: string;
+    part_image?: string;
+    vehicle_id: string;
+    start_date: Date;
+    end_date: Date;
+    days_remaining: number;
+    status: string;
+}>> {
+    try {
+        const today = nowVN();
+        today.setHours(0, 0, 0, 0);
+
+        // 1. Lấy danh sách xe của customer
+        let vehicleIds: string[] = [];
+        if (vehicleId) {
+            // Kiểm tra xe có thuộc customer không
+            const vehicle = await Vehicle.findById(vehicleId).select('_id customerId');
+            if (!vehicle) throw new Error('Vehicle không tồn tại');
+            if (String(vehicle.customerId) !== String(customerId)) {
+                throw new Error('Vehicle không thuộc customer');
+            }
+            vehicleIds = [vehicleId];
+        } else {
+            const vehicles = await Vehicle.find({ customerId }).select('_id');
+            vehicleIds = vehicles.map(v => String(v._id));
+        }
+
+        if (vehicleIds.length === 0) {
+            return []; // Không có xe => không có bảo hành
+        }
+
+        // 2. Query bảo hành còn hạn
+        const warranties = await PartWarranty.find({
+            vehicle_id: { $in: vehicleIds },
+            end_date: { $gte: today },
+        })
+            .populate('part_id')
+            .populate('vehicle_id');
+
+        // 3. Map dữ liệu trả về
+        return warranties.map(w => {
+            const part: any = w.part_id;
+            const end = w.end_date as Date;
+            const daysRemaining = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            return {
+                warranty_id: String(w._id),
+                part_id: String(part?._id),
+                part_name: part?.name,
+                part_image: part?.image,
+                vehicle_id: String(w.vehicle_id),
+                start_date: w.start_date,
+                end_date: w.end_date,
+                days_remaining: daysRemaining,
+                status: w.warranty_status
+            };
+        });
+    } catch (error) {
+        console.error('Lỗi trong getActivePartWarrantiesForCustomer:', error);
+        throw error;
+    }
+}
+
+export const warrantyQueryService = {
+    getPartWarrantiesForCustomer
+};
+
+export async function paginateWarranties(params?: {
+    page?: number;
+    limit?: number;
+    vehicle_id?: string;
+}): Promise<{
+    warranties: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}> {
+    try {
+        const page = params?.page || 1;
+        const limit = params?.limit || 10;
+        const skip = (page - 1) * limit;
+
+        const query: any = {};
+        if (params?.vehicle_id) {
+            query.vehicle_id = params.vehicle_id;
+        }
+
+        const [warranties, total] = await Promise.all([
+            PartWarranty.find(query)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('part_id')
+                .populate('vehicle_id')
+                .populate('centerpart_id')
+                .lean(),
+            PartWarranty.countDocuments(query)
+        ]);
+
+        return {
+            warranties,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        };
+    } catch (error) {
+        console.error('Lỗi trong paginateWarranties:', error);
+        throw error;
+    }
+}
+
+export const warrantyService = {
+    paginateWarranties,
 };
