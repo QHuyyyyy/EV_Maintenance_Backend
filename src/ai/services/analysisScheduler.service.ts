@@ -9,18 +9,7 @@ export function startAnalysisScheduler() {
     async () => {
       console.log('Starting scheduler: enqueueing analysis jobs for all centers (single-instance)');
       try {
-        let page = 1;
-        const limit = 50;
-        while (true) {
-          const resp = await centerAutoPartService.getAllCenterAutoParts({ page, limit });
-          const items = resp.items || [];
-          for (const it of items) {
-            const centerId = it.center_id?._id?.toString() ?? it.center_id?.toString();
-            if (centerId) await enqueueCenterJob(centerId);
-          }
-          if (items.length < limit) break;
-          page++;
-        }
+        await triggerAnalysisNow();
         console.log('Enqueue complete.');
       } catch (err) {
         console.error('Failed to enqueue analysis jobs', err);
@@ -33,4 +22,20 @@ export function startAnalysisScheduler() {
   );
 }
 
-export default { startAnalysisScheduler };
+// Manual trigger: enqueue analysis for all centers immediately
+export async function triggerAnalysisNow() {
+  let page = 1;
+  const limit = 50;
+  while (true) {
+    const resp = await centerAutoPartService.getAllCenterAutoParts({ page, limit });
+    const items = (resp as any).items || [];
+    for (const it of items) {
+      const centerId = it.center_id?._id?.toString?.() ?? it.center_id?.toString?.();
+      if (centerId) await enqueueCenterJob(centerId);
+    }
+    if (items.length < limit) break;
+    page++;
+  }
+}
+
+export default { startAnalysisScheduler, triggerAnalysisNow };

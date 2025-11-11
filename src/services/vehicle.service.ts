@@ -225,6 +225,11 @@ export class VehicleService {
     // Xóa xe
     async deleteVehicle(id: string) {
         try {
+            // Guard: don't delete if there is an active subscription
+            const hasActive = await this.hasActiveSubscriptions(id);
+            if (hasActive) {
+                throw new Error('Không thể xóa xe vì đang có gói đăng ký (subscription) còn hiệu lực');
+            }
             const deletedVehicle = await Vehicle.findByIdAndDelete(id);
             return deletedVehicle;
         } catch (error) {

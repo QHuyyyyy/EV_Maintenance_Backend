@@ -3,6 +3,8 @@ import { CreateServiceRecordRequest, UpdateServiceRecordRequest, IServiceRecord 
 import vehicleSubscriptionService from './vehicleSubcription.service';
 import Appointment from '../models/appointment.model';
 import RecordChecklist from '../models/recordChecklist.model';
+import serviceDetailModel from '../models/serviceDetail.model';
+import recordChecklistModel from '../models/recordChecklist.model';
 
 export class ServiceRecordService {
     async createServiceRecord(recordData: CreateServiceRecordRequest): Promise<IServiceRecord> {
@@ -135,6 +137,16 @@ export class ServiceRecordService {
 
     async deleteServiceRecord(recordId: string): Promise<IServiceRecord | null> {
         try {
+            // Guard: prevent deletion if has any ServiceDetail or RecordChecklist linked
+            const [detailCount, checklistCount] = await Promise.all([
+                serviceDetailModel.countDocuments({ record_id: recordId }),
+                recordChecklistModel.countDocuments({ record_id: recordId })
+            ]);
+
+            if (detailCount > 0 || checklistCount > 0) {
+                throw new Error('Không thể xóa service record vì đã có service detail hoặc record checklist liên quan');
+            }
+
             return await ServiceRecord.findByIdAndDelete(recordId).lean() as any;
         } catch (error) {
             if (error instanceof Error) {
@@ -159,7 +171,7 @@ export class ServiceRecordService {
 
             // Group và đếm các parts
             const partsMap = new Map();
-            
+
             checklistItems.forEach((item: any) => {
                 if (item.suggested_part) {
                     const partId = item.suggested_part._id.toString();

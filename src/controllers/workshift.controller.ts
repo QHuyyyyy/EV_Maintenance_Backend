@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { WorkShift } from '../models/workshift.model';
+import { ShiftAssignment } from '../models/shift-assignment.model';
+import { Slot } from '../models/slot.model';
 
 
 export const createWorkShift = async (req: Request, res: Response) => {
@@ -153,6 +155,17 @@ export const deleteWorkShift = async (req: Request, res: Response) => {
     } */
     try {
         const { id } = req.params;
+        // Guard: prevent deletion when there are shift assignments or slots referencing this workshift
+        const [assignmentCount, slotCount] = await Promise.all([
+            ShiftAssignment.countDocuments({ workshift_id: id }),
+            Slot.countDocuments({ workshift_id: id })
+        ]);
+        if (assignmentCount > 0 || slotCount > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Không thể xóa ca làm việc vì còn shift assignment hoặc slot liên quan'
+            });
+        }
         const deleted = await WorkShift.findByIdAndDelete(id);
         if (!deleted) return res.status(404).json({ success: false, message: 'WorkShift not found' });
         res.status(200).json({ success: true, message: 'Deleted successfully' });

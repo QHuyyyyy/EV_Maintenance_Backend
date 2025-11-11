@@ -40,8 +40,6 @@ export class ServicePackageService {
             if (packageData.km_interval <= 0) {
                 throw new Error('KM interval must be greater than 0');
             }
-
-            // service_interval_days: maintenance frequency (default 365 days if not provided)
             if (packageData.service_interval_days !== undefined && packageData.service_interval_days <= 0) {
                 throw new Error('Service interval days must be greater than 0');
             }
