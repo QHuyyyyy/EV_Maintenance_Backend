@@ -3,6 +3,7 @@ import payOS from '../config/payos.config';
 import { CreatePaymentRequest, IPayment, PaymentWebhookData } from '../types/payment.type';
 import { VehicleSubscription } from '../models/vehicleSubcription.model';
 import { createWarrantiesForServiceRecord } from './warranty.service';
+import Invoice from '../models/invoice.model';
 
 export class PaymentService {
 
@@ -239,13 +240,46 @@ export class PaymentService {
                     await VehicleSubscription.findByIdAndUpdate(payment.subscription_id, { status: 'ACTIVE' });
                 }
 
+                // If it's a service record payment, create warranties
                 if (payment.payment_type === 'service_record' && payment.service_record_id) {
                     try {
-                        console.log(`\nTạo bảo hành`);
+                        console.log(`\n✅ Tạo bảo hành cho service record: ${payment.service_record_id}`);
                         await createWarrantiesForServiceRecord(String(payment.service_record_id));
                     } catch (warrantyError) {
-                        console.error(`Lỗi tạo bảo hành:`, warrantyError);
+                        console.error(`❌ Lỗi tạo bảo hành:`, warrantyError);
                     }
+                }
+
+                // Auto-create invoice after successful payment
+                try {
+                    console.log(`\n📄 Tạo invoice cho payment: ${payment._id}`);
+                    
+                    // Check if invoice already exists
+                    const existingInvoice = await Invoice.findOne({ payment_id: payment._id });
+                    
+                    if (!existingInvoice) {
+                        const invoiceService = require('./invoice.service').default;
+                        const paymentId = (payment._id as any).toString();
+                        
+                        // Create invoice with auto-calculated minusAmount
+                        const invoice = await invoiceService.createInvoice({
+                            payment_id: paymentId,
+                            invoiceType: payment.payment_type === 'subscription' 
+                                ? 'Subscription Package' 
+                                : 'Service Completion',
+                            totalAmount: payment.amount,
+                            status: 'issued'
+                        });
+                        
+                        console.log(`✅ Invoice created successfully: ${invoice._id}`);
+                        console.log(`   - Total Amount: ${invoice.totalAmount}`);
+                        console.log(`   - Minus Amount: ${invoice.minusAmount}`);
+                    } else {
+                        console.log(`ℹ️  Invoice already exists for this payment`);
+                    }
+                } catch (invoiceError) {
+                    console.error(`❌ Lỗi tạo invoice:`, invoiceError);
+                    // Don't throw error, just log it - payment is still successful
                 }
             }
 

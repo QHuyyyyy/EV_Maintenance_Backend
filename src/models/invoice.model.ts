@@ -1,8 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export type InvoiceType = 'Subscription Package' | 'Service Completion';
+
 export interface IInvoice extends Document {
     payment_id: mongoose.Types.ObjectId;
-    invoiceType: string;
+    invoiceType: InvoiceType;
     minusAmount: number;
     totalAmount: number;
     status: 'pending' | 'issued' | 'cancelled';
@@ -19,6 +21,7 @@ const invoiceSchema = new Schema<IInvoice>(
         },
         invoiceType: {
             type: String,
+            enum: ['Subscription Package', 'Service Completion'],
             required: true
         },
         minusAmount: {
