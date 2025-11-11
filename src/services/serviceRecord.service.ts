@@ -156,45 +156,54 @@ export class ServiceRecordService {
         }
     }
 
-    // Lấy tất cả suggested parts từ record checklist
-    async getAllSuggestedParts(recordId: string): Promise<any> {
+    // Lấy tất cả suggested parts từ record checklist (bao gồm tổng số lượng)
+    async getAllSuggestedParts(recordId: string): Promise<any[]> {
         try {
             const record = await ServiceRecord.findById(recordId);
-            if (!record) {
-                throw new Error('Service record not found');
-            }
+            if (!record) throw new Error('Service record not found');
 
-            // Lấy tất cả record checklist items cho service record này
             const checklistItems = await RecordChecklist.find({ record_id: recordId })
-                .populate('suggested_part', 'part_name price stock')
+                .populate({ path: 'suggest.part_id', select: 'part_name price stock' })
                 .lean();
 
-            // Group và đếm các parts
-            const partsMap = new Map();
+            interface AggItem {
+                part_id: any;
+                part_name: string;
+                price: number;
+                stock: number;
+                total_quantity: number; // tổng quantity gợi ý
+                occurrences: number; // số checklist items có gợi ý part này
+            }
+            const partsMap = new Map<string, AggItem>();
 
             checklistItems.forEach((item: any) => {
-                if (item.suggested_part) {
-                    const partId = item.suggested_part._id.toString();
-                    if (partsMap.has(partId)) {
-                        const existing = partsMap.get(partId);
-                        existing.count += 1;
+                const suggestions = Array.isArray(item.suggest) ? item.suggest : [];
+                suggestions.forEach((s: any) => {
+                    // backward compat: nếu là ObjectId thuần
+                    let partDoc = s.part_id || s; // s.part_id populated hoặc raw ObjectId
+                    if (!partDoc) return;
+                    const partIdStr = (partDoc._id ? partDoc._id : partDoc).toString();
+                    const quantity = s.quantity && s.quantity > 0 ? s.quantity : 1;
+                    const existing = partsMap.get(partIdStr);
+                    if (existing) {
+                        existing.total_quantity += quantity;
+                        existing.occurrences += 1;
                     } else {
-                        partsMap.set(partId, {
-                            part_id: item.suggested_part._id,
-                            part_name: item.suggested_part.part_name,
-                            price: item.suggested_part.price,
-                            stock: item.suggested_part.stock,
-                            count: 1
+                        partsMap.set(partIdStr, {
+                            part_id: partDoc._id ? partDoc._id : partDoc,
+                            part_name: partDoc.part_name || '',
+                            price: partDoc.price || 0,
+                            stock: partDoc.stock || 0,
+                            total_quantity: quantity,
+                            occurrences: 1
                         });
                     }
-                }
+                });
             });
 
             return Array.from(partsMap.values());
         } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to get suggested parts: ${error.message}`);
-            }
+            if (error instanceof Error) throw new Error(`Failed to get suggested parts: ${error.message}`);
             throw new Error('Failed to get suggested parts: Unknown error');
         }
     }

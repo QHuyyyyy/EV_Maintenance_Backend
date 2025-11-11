@@ -11602,12 +11602,18 @@
           },
           "suggest": {
             "type": "array",
-            "example": [
-              "60f1b2b3c4e5f6g7h8i9j0p1",
-              "60f1b2b3c4e5f6g7h8i9j0p2"
-            ],
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
             }
           },
           "createdAt": {
@@ -11650,11 +11656,18 @@
           },
           "suggest": {
             "type": "array",
-            "example": [
-              "60f1b2b3c4e5f6g7h8i9j0p1"
-            ],
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
             }
           }
         },
@@ -11675,11 +11688,34 @@
           },
           "suggest_add": {
             "type": "array",
-            "example": [
-              "60f1b2b3c4e5f6g7h8i9j0p3"
-            ],
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p3"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 2
+                }
+              }
+            }
+          },
+          "suggest_update_qty": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 5
+                }
+              }
             }
           },
           "suggest_remove": {
