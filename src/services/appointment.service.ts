@@ -109,17 +109,53 @@ export class AppointmentService {
                     }
                 },
                 { $unwind: '$slot' },
+                // Replace slot_id (ObjectId) bằng full slot object để giữ nguyên tên field
                 { $addFields: { slot_id: '$slot' } },
                 { $project: { slot: 0 } },
-                { $sort: { 'slot.start_time': -1 } },
+                // Populate customer
+                {
+                    $lookup: {
+                        from: 'customers',
+                        localField: 'customer_id',
+                        foreignField: '_id',
+                        as: 'customer'
+                    }
+                },
+                { $unwind: { path: '$customer', preserveNullAndEmptyArrays: true } },
+                { $addFields: { customer_id: '$customer' } },
+                { $project: { customer: 0 } },
+                // Populate vehicle
+                {
+                    $lookup: {
+                        from: 'vehicles',
+                        localField: 'vehicle_id',
+                        foreignField: '_id',
+                        as: 'vehicle'
+                    }
+                },
+                { $unwind: { path: '$vehicle', preserveNullAndEmptyArrays: true } },
+                { $addFields: { vehicle_id: '$vehicle' } },
+                { $project: { vehicle: 0 } },
+                // Populate center
+                {
+                    $lookup: {
+                        from: 'centers',
+                        localField: 'center_id',
+                        foreignField: '_id',
+                        as: 'center'
+                    }
+                },
+                { $unwind: { path: '$center', preserveNullAndEmptyArrays: true } },
+                { $addFields: { center_id: '$center' } },
+                { $project: { center: 0 } },
+                { $sort: { 'slot.slot_date': -1, 'slot.start_time': -1 } },
                 {
                     $facet: {
                         data: [{ $skip: skip }, { $limit: limit }],
                         total: [{ $count: 'count' }]
                     }
                 }
-            ];
-
+            ]
             const aggRes: any[] = await (Appointment as any).aggregate(pipeline).exec();
             const data = aggRes[0] || { data: [], total: [] };
             const appointments = data.data as IAppointment[];

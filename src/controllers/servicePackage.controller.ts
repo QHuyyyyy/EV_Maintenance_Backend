@@ -104,7 +104,7 @@ export class ServicePackageController {
                             price: { type: "number", example: 100 },
                             duration: { type: "number", example: 30, description: "Subscription active period (days)" },
                             km_interval: { type: "number", example: 10000, description: "Mileage interval for maintenance" },
-                            service_interval_days: { type: "number", example: 365, description: "Maintenance frequency in days (default: 365)" }
+                            service_interval_days: { type: "number", example: 60, description: "Maintenance frequency in days (default: 365)" }
                         }
                     }
                 }
