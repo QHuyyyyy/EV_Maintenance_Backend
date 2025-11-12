@@ -221,19 +221,25 @@ export class PaymentService {
 
     async handlePaymentWebhook(webhookData: any): Promise<IPayment | null> {
         try {
-            console.log('🔍 Processing webhook data...');
+            console.log('🔍 Processing webhook data:', JSON.stringify(webhookData, null, 2));
+            
+            // Check if webhookData is empty or null
+            if (!webhookData || Object.keys(webhookData).length === 0) {
+                console.log('⚠️  Empty webhook data - PayOS test webhook');
+                return null; // Accept empty test webhook
+            }
             
             // PayOS webhook format có thể là:
             // { code: "00", desc: "success", data: { orderCode, amount, ... } }
             // hoặc trực tiếp { order_code, status, ... }
             
-            let orderCode: number;
+            let orderCode: number | undefined;
             let isPaid = false;
             let transactionId: string | undefined;
             let paymentMethod: string | undefined;
             
             // Check format từ PayOS webhook documentation
-            if (webhookData.code && webhookData.data) {
+            if (webhookData.code !== undefined && webhookData.data) {
                 // Format mới: { code: "00", data: { orderCode, ... } }
                 orderCode = webhookData.data.orderCode;
                 isPaid = webhookData.code === "00" && webhookData.desc === "success";
@@ -250,7 +256,15 @@ export class PaymentService {
                 
                 console.log(`  Format: Direct webhook (status: ${webhookData.status})`);
             } else {
-                throw new Error('Invalid webhook format: missing orderCode');
+                // PayOS test webhook hoặc invalid format
+                console.log('⚠️  Webhook test or unknown format - accepting for webhook verification');
+                console.log('  Available keys:', Object.keys(webhookData));
+                return null; // Return null but don't throw error (200 OK for PayOS)
+            }
+
+            if (!orderCode) {
+                console.log('⚠️  No orderCode found - test webhook');
+                return null;
             }
 
             console.log(`  Order Code: ${orderCode}, Paid: ${isPaid}`);
@@ -258,7 +272,10 @@ export class PaymentService {
             const payment = await Payment.findOne({ order_code: orderCode });
 
             if (!payment) {
-                throw new Error(`Payment not found for order code: ${orderCode}`);
+                // Payment không tồn tại - có thể là test webhook từ PayOS
+                console.log(`⚠️  Payment not found for order code: ${orderCode} - might be PayOS test webhook`);
+                // Return null nhưng không throw error để PayOS nhận 200 OK
+                return null;
             }
 
             // Update payment status based on webhook
