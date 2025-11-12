@@ -6,6 +6,10 @@ export interface IServiceDetailDocument extends Document {
     description?: string;
     quantity: number;
     unit_price: number;
+    // Số lượng miễn phí do bảo hành áp dụng (0đ)
+    warranty_qty?: number;
+    // Số lượng phải trả tiền (đã tính tiền)
+    paid_qty?: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -35,6 +39,16 @@ const ServiceDetailSchema: Schema = new Schema(
             type: Number,
             required: [true, 'Unit price is required'],
             min: [0, 'Unit price cannot be negative']
+        },
+        warranty_qty: {
+            type: Number,
+            default: 0,
+            min: [0, 'Warranty quantity cannot be negative']
+        },
+        paid_qty: {
+            type: Number,
+            default: 0,
+            min: [0, 'Paid quantity cannot be negative']
         }
     },
     {

@@ -112,16 +112,10 @@ export class ServiceDetailService {
         }
     }
 
-    /**
-     * Return aggregated daily consumption for a given centerpart_id for the last `days` days.
-     * Output: [{ date: 'YYYY-MM-DD', qty: number }, ...] ordered by date asc
-     */
     async getPartHistory(centerpart_id: string, days = 180): Promise<{ date: string; qty: number }[]> {
         try {
-            // lấy mốc bắt đầu theo múi giờ VN, bao phủ đủ `days` ngày gần nhất
             const from = moment().tz(VIETNAM_TIMEZONE).subtract(days - 1, 'days').startOf('day').toDate();
 
-            // Find service details linked to the centerpart within date range
             const details = await ServiceDetail.find({
                 centerpart_id,
                 createdAt: { $gte: from }
