@@ -219,40 +219,92 @@ export class PaymentService {
         }
     }
 
-    async handlePaymentWebhook(webhookData: PaymentWebhookData): Promise<IPayment | null> {
+    async handlePaymentWebhook(webhookData: any): Promise<IPayment | null> {
         try {
-            const payment = await Payment.findOne({ order_code: webhookData.order_code });
+            console.log('🔍 Processing webhook data...');
+            
+            // PayOS webhook format có thể là:
+            // { code: "00", desc: "success", data: { orderCode, amount, ... } }
+            // hoặc trực tiếp { order_code, status, ... }
+            
+            let orderCode: number;
+            let isPaid = false;
+            let transactionId: string | undefined;
+            let paymentMethod: string | undefined;
+            
+            // Check format từ PayOS webhook documentation
+            if (webhookData.code && webhookData.data) {
+                // Format mới: { code: "00", data: { orderCode, ... } }
+                orderCode = webhookData.data.orderCode;
+                isPaid = webhookData.code === "00" && webhookData.desc === "success";
+                transactionId = webhookData.data.reference || webhookData.data.transactionDateTime;
+                paymentMethod = webhookData.data.counterAccountBankName || 'Bank Transfer';
+                
+                console.log(`  Format: PayOS webhook v2 (code: ${webhookData.code})`);
+            } else if (webhookData.order_code || webhookData.orderCode) {
+                // Format cũ: { order_code, status, ... }
+                orderCode = webhookData.order_code || webhookData.orderCode;
+                isPaid = webhookData.status === 'PAID';
+                transactionId = webhookData.transaction_id;
+                paymentMethod = webhookData.payment_method;
+                
+                console.log(`  Format: Direct webhook (status: ${webhookData.status})`);
+            } else {
+                throw new Error('Invalid webhook format: missing orderCode');
+            }
+
+            console.log(`  Order Code: ${orderCode}, Paid: ${isPaid}`);
+
+            const payment = await Payment.findOne({ order_code: orderCode });
 
             if (!payment) {
-                throw new Error('Payment not found');
+                throw new Error(`Payment not found for order code: ${orderCode}`);
             }
 
             // Update payment status based on webhook
-            payment.status = webhookData.status === 'PAID' ? 'paid' : 'cancelled';
-            payment.transaction_id = webhookData.transaction_id;
-            payment.payment_method = webhookData.payment_method;
+            payment.status = isPaid ? 'paid' : 'cancelled';
+            
+            if (transactionId) {
+                payment.transaction_id = transactionId;
+            }
+            if (paymentMethod) {
+                payment.payment_method = paymentMethod;
+            }
 
-            if (webhookData.status === 'PAID') {
+            if (isPaid) {
                 payment.paid_at = new Date();
+                
+                console.log(`💰 Payment marked as PAID for order: ${orderCode}`);
+            } else {
+                console.log(`❌ Payment marked as CANCELLED for order: ${orderCode}`);
+            }
 
+            // ⚠️ IMPORTANT: Save payment FIRST before creating related records
+            await payment.save();
+            console.log(`  ✓ Payment saved to database`);
+
+            // Now handle post-payment actions (only if paid)
+            if (isPaid) {
                 // If it's a subscription payment and it's paid, activate the subscription
                 if (payment.payment_type === 'subscription' && payment.subscription_id) {
                     await VehicleSubscription.findByIdAndUpdate(payment.subscription_id, { status: 'ACTIVE' });
+                    console.log(`  ✓ Subscription activated`);
                 }
 
                 // If it's a service record payment, create warranties
                 if (payment.payment_type === 'service_record' && payment.service_record_id) {
                     try {
-                        console.log(`\n✅ Tạo bảo hành cho service record: ${payment.service_record_id}`);
+                        console.log(`  ✓ Creating warranties for service record...`);
                         await createWarrantiesForServiceRecord(String(payment.service_record_id));
+                        console.log(`  ✓ Warranties created successfully`);
                     } catch (warrantyError) {
-                        console.error(`❌ Lỗi tạo bảo hành:`, warrantyError);
+                        console.error(`  ✗ Error creating warranties:`, warrantyError);
                     }
                 }
 
                 // Auto-create invoice after successful payment
                 try {
-                    console.log(`\n📄 Tạo invoice cho payment: ${payment._id}`);
+                    console.log(`  ✓ Creating invoice...`);
                     
                     // Check if invoice already exists
                     const existingInvoice = await Invoice.findOne({ payment_id: payment._id });
@@ -271,19 +323,15 @@ export class PaymentService {
                             status: 'issued'
                         });
                         
-                        console.log(`✅ Invoice created successfully: ${invoice._id}`);
-                        console.log(`   - Total Amount: ${invoice.totalAmount}`);
-                        console.log(`   - Minus Amount: ${invoice.minusAmount}`);
+                        console.log(`  ✓ Invoice created: ${invoice._id}`);
                     } else {
-                        console.log(`ℹ️  Invoice already exists for this payment`);
+                        console.log(`  ℹ Invoice already exists`);
                     }
                 } catch (invoiceError) {
-                    console.error(`❌ Lỗi tạo invoice:`, invoiceError);
+                    console.error(`  ✗ Error creating invoice:`, invoiceError);
                     // Don't throw error, just log it - payment is still successful
                 }
             }
-
-            await payment.save();
 
             return await Payment.findById(payment._id)
                 .populate('service_record_id')
