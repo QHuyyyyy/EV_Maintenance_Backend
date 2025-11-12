@@ -34,26 +34,24 @@ export class ServiceDetailController {
             console.log(`   - Giá/cái: ${warrantyResult.unitPrice} đ`);
             console.log(`   - Tổng tiền linh kiện: ${totalPrice} đ`);
 
-            // Tạo ServiceDetail với thông tin đã tính toán
+            // Tạo ServiceDetail với thông tin đã tính toán + lưu warranty_qty & paid_qty để refresh vẫn giữ logic giá
             const detail = await serviceDetailService.createServiceDetail({
                 record_id,
                 centerpart_id,
                 quantity,
                 description: warrantyResult.description,
-                unit_price: warrantyResult.unitPrice
+                unit_price: warrantyResult.unitPrice,
+                warranty_qty: warrantyResult.warrantyQty,
+                paid_qty: warrantyResult.paidQty
             });
 
-
+            // Trả về đơn giản: data chứa các trường đã lưu + totalPrice tính nhanh
             res.status(201).json({
                 success: true,
                 message: 'Service detail created successfully',
-                data: detail,
-                warranty: {
-                    warrantyQty: warrantyResult.warrantyQty,
-                    paidQty: warrantyResult.paidQty,
-                    unitPrice: warrantyResult.unitPrice,
-                    totalPrice: totalPrice,
-                    description: warrantyResult.description
+                data: {
+                    ...detail,
+                    totalPrice
                 }
             });
         } catch (error) {
@@ -92,9 +90,19 @@ export class ServiceDetailController {
                     message: 'Service detail not found'
                 });
             }
+            const d: any = detail;
+            const warrantyQty = typeof d.warranty_qty === 'number' ? d.warranty_qty : 0;
+            const paidQty = typeof d.paid_qty === 'number' ? d.paid_qty : (d.quantity || 0);
+            const unitPrice = d.unit_price || 0;
+            const totalPriceId = paidQty * unitPrice;
             res.status(200).json({
                 success: true,
-                data: detail
+                data: {
+                    ...detail,
+                    totalPrice: totalPriceId,
+                    warranty_qty: warrantyQty,
+                    paid_qty: paidQty
+                }
             });
         } catch (error) {
             if (error instanceof Error) {
@@ -151,9 +159,28 @@ export class ServiceDetailController {
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
             };
             const result = await serviceDetailService.getAllServiceDetails(filters);
+
+            // Chuẩn hóa thêm totalPrice vào từng phần tử để FE dùng trực tiếp
+            const normalized = (result.details || []).map((d: any) => {
+                const warrantyQty = typeof d.warranty_qty === 'number' ? d.warranty_qty : 0;
+                const paidQty = typeof d.paid_qty === 'number' ? d.paid_qty : (d.quantity || 0);
+                const unitPrice = d.unit_price || 0;
+                return {
+                    ...d,
+                    warranty_qty: warrantyQty,
+                    paid_qty: paidQty,
+                    totalPrice: paidQty * unitPrice
+                };
+            });
             res.status(200).json({
                 success: true,
-                data: result
+                data: {
+                    details: normalized,
+                    total: result.total,
+                    page: result.page,
+                    limit: result.limit,
+                    totalPages: result.totalPages
+                }
             });
         } catch (error) {
             if (error instanceof Error) {

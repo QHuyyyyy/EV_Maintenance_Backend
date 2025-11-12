@@ -7,6 +7,8 @@ export interface IServiceDetail {
     description?: string;
     quantity: number;
     unit_price: number;
+    warranty_qty?: number;
+    paid_qty?: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -17,6 +19,8 @@ export interface CreateServiceDetailRequest {
     description?: string;
     quantity: number;
     unit_price?: number;
+    warranty_qty?: number;
+    paid_qty?: number;
 }
 
 export interface UpdateServiceDetailRequest {
@@ -25,4 +29,6 @@ export interface UpdateServiceDetailRequest {
     description?: string;
     quantity?: number;
     unit_price?: number;
+    warranty_qty?: number;
+    paid_qty?: number;
 }

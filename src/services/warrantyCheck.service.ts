@@ -64,7 +64,6 @@ export async function checkAndApplyWarranty(
 
         // 4. Quyết định giá dựa trên số lượng bảo hành
         if (activeWarranties.length > 0) {
-            // ✅ TÌM THẤY BẢO HÀNH!
             warrantyQty = Math.min(activeWarranties.length, quantity); // Dùng tối đa bảo hành có sẵn
             paidQty = quantity - warrantyQty; // Phần còn lại tính tiền
 
