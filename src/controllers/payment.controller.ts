@@ -201,7 +201,32 @@ export class PaymentController {
                required: true,
                content: {
                    'application/json': {
-                       schema: { $ref: '#/components/schemas/PaymentWebhook' }
+                       schema: {
+                           type: 'object',
+                           properties: {
+                               code: { type: 'string', example: '00' },
+                               desc: { type: 'string', example: 'success' },
+                               data: {
+                                   type: 'object',
+                                   properties: {
+                                       orderCode: { type: 'number', example: 824551 },
+                                       amount: { type: 'number', example: 204250 },
+                                       description: { type: 'string', example: 'Thanh toán dịch vụ' }
+                                       
+                                   
+                                   }
+                               }
+                           },
+                           example: {
+                               code: '00',
+                               desc: 'success',
+                               data: {
+                                   orderCode: 824551,
+                                   amount: 204250,
+                                   description: 'Thanh toán dịch vụ'
+                               }
+                           }
+                       }
                    }
                }
            }
@@ -211,9 +236,15 @@ export class PaymentController {
             
             const payment = await paymentService.handlePaymentWebhook(req.body);
             
-            console.log('✅ Webhook processed successfully');
+            if (payment === null) {
+                // Test webhook hoặc payment không tồn tại - vẫn trả 200 OK
+                console.log('ℹ️  Webhook accepted (test or payment not found)');
+            } else {
+                console.log('✅ Webhook processed successfully');
+            }
             
             // PayOS expects response format: { code: "00", desc: "success" }
+            // ALWAYS return 200 OK để PayOS verify webhook thành công
             res.status(200).json({
                 code: "00",
                 desc: "success",
@@ -221,13 +252,15 @@ export class PaymentController {
             });
         } catch (error) {
             console.error('❌ Webhook processing failed:', error);
+            
+            // Vẫn trả 200 OK với code error để PayOS không retry liên tục
             if (error instanceof Error) {
-                res.status(400).json({
+                res.status(200).json({
                     code: "01",
                     desc: error.message
                 });
             } else {
-                res.status(400).json({
+                res.status(200).json({
                     code: "01",
                     desc: 'Failed to process webhook'
                 });

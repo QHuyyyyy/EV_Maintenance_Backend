@@ -8673,9 +8673,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
           }
         },
         "requestBody": {
@@ -8683,7 +8680,43 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentWebhook"
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "00"
+                  },
+                  "desc": {
+                    "type": "string",
+                    "example": "success"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "orderCode": {
+                        "type": "number",
+                        "example": 824551
+                      },
+                      "amount": {
+                        "type": "number",
+                        "example": 204250
+                      },
+                      "description": {
+                        "type": "string",
+                        "example": "Thanh toán dịch vụ"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "00",
+                  "desc": "success",
+                  "data": {
+                    "orderCode": 824551,
+                    "amount": 204250,
+                    "description": "Thanh toán dịch vụ"
+                  }
+                }
               }
             }
           }
