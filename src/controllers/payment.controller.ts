@@ -201,7 +201,60 @@ export class PaymentController {
                required: true,
                content: {
                    'application/json': {
-                       schema: { $ref: '#/components/schemas/PaymentWebhook' }
+                       schema: {
+                           type: 'object',
+                           properties: {
+                               code: { type: 'string', example: '00' },
+                               desc: { type: 'string', example: 'success' },
+                               success: { type: 'boolean', example: true },
+                               data: {
+                                   type: 'object',
+                                   properties: {
+                                       orderCode: { type: 'number', example: 824551 },
+                                       amount: { type: 'number', example: 204250 },
+                                       description: { type: 'string', example: 'Thanh toán dịch vụ' },
+                                       accountNumber: { type: 'string', example: '123456789' },
+                                       reference: { type: 'string', example: 'FT24336ABCD' },
+                                       transactionDateTime: { type: 'string', example: '2025-11-12T10:00:00.000Z' },
+                                       currency: { type: 'string', example: 'VND' },
+                                       paymentLinkId: { type: 'string', example: '6912aea7349b9897739a491' },
+                                       code: { type: 'string', example: '00' },
+                                       desc: { type: 'string', example: 'Thành công' },
+                                       counterAccountBankId: { type: 'string', example: 'MB' },
+                                       counterAccountBankName: { type: 'string', example: 'MB Bank' },
+                                       counterAccountName: { type: 'string', example: 'NGUYEN VAN A' },
+                                       counterAccountNumber: { type: 'string', example: '9876543210' },
+                                       virtualAccountName: { type: 'string', example: 'PAYOS' },
+                                       virtualAccountNumber: { type: 'string', example: '1234567890' }
+                                   }
+                               },
+                               signature: { type: 'string', example: '8d88ea9...' }
+                           },
+                           example: {
+                               code: '00',
+                               desc: 'success',
+                               success: true,
+                               data: {
+                                   orderCode: 824551,
+                                   amount: 204250,
+                                   description: 'Thanh toán dịch vụ',
+                                   accountNumber: '123456789',
+                                   reference: 'FT24336ABCD',
+                                   transactionDateTime: '2025-11-12T10:00:00.000Z',
+                                   currency: 'VND',
+                                   paymentLinkId: '6912aea7349b9897739a491',
+                                   code: '00',
+                                   desc: 'Thành công',
+                                   counterAccountBankId: 'MB',
+                                   counterAccountBankName: 'MB Bank',
+                                   counterAccountName: 'NGUYEN VAN A',
+                                   counterAccountNumber: '9876543210',
+                                   virtualAccountName: 'PAYOS',
+                                   virtualAccountNumber: '1234567890'
+                               },
+                               signature: '8d88ea9...'
+                           }
+                       }
                    }
                }
            }
@@ -211,9 +264,15 @@ export class PaymentController {
             
             const payment = await paymentService.handlePaymentWebhook(req.body);
             
-            console.log('✅ Webhook processed successfully');
+            if (payment === null) {
+                // Test webhook hoặc payment không tồn tại - vẫn trả 200 OK
+                console.log('ℹ️  Webhook accepted (test or payment not found)');
+            } else {
+                console.log('✅ Webhook processed successfully');
+            }
             
             // PayOS expects response format: { code: "00", desc: "success" }
+            // ALWAYS return 200 OK để PayOS verify webhook thành công
             res.status(200).json({
                 code: "00",
                 desc: "success",
@@ -221,13 +280,15 @@ export class PaymentController {
             });
         } catch (error) {
             console.error('❌ Webhook processing failed:', error);
+            
+            // Vẫn trả 200 OK với code error để PayOS không retry liên tục
             if (error instanceof Error) {
-                res.status(400).json({
+                res.status(200).json({
                     code: "01",
                     desc: error.message
                 });
             } else {
-                res.status(400).json({
+                res.status(200).json({
                     code: "01",
                     desc: 'Failed to process webhook'
                 });
