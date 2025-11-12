@@ -50,8 +50,8 @@ connect();
 // Start maintenance scheduler
 maintenanceScheduler.startScheduler();
 // Start analysis scheduler and worker
-// startAnalysisScheduler();
-// startAnalysisWorker();
+startAnalysisScheduler();
+startAnalysisWorker();
 
 const app = express();
 
