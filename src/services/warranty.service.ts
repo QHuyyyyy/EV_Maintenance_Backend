@@ -108,7 +108,7 @@ export async function getPartWarrantiesForCustomer(
     part_id: string;
     part_name: string;
     part_image?: string;
-    vehicle_id: string;
+    vehicle_id: Object;
     start_date: Date;
     end_date: Date;
     days_remaining: number;
@@ -155,7 +155,7 @@ export async function getPartWarrantiesForCustomer(
                 part_id: String(part?._id),
                 part_name: part?.name,
                 part_image: part?.image,
-                vehicle_id: String(w.vehicle_id),
+                vehicle_id: w.vehicle_id,
                 start_date: w.start_date,
                 end_date: w.end_date,
                 days_remaining: daysRemaining,
