@@ -115,15 +115,8 @@ export class InvoiceController {
 
     async getAllInvoices(req: Request, res: Response) {
         /* #swagger.tags = ['Invoices']
-           #swagger.description = 'Get all invoices with optional filters'
+           #swagger.description = 'Get all issued invoices with pagination and optional payment filter'
            #swagger.security = [{ "bearerAuth": [] }]
-           #swagger.parameters['status'] = {
-               in: 'query',
-               description: 'Filter by status',
-               required: false,
-               type: 'string',
-               enum: ['pending', 'issued', 'cancelled']
-           }
            #swagger.parameters['payment_id'] = {
                in: 'query',
                description: 'Filter by payment ID',
@@ -147,7 +140,6 @@ export class InvoiceController {
         */
         try {
             const filters = {
-                status: req.query.status as string,
                 payment_id: req.query.payment_id as string,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
@@ -285,7 +277,7 @@ export class InvoiceController {
         */
         try {
             const { totalAmount } = req.body;
-            
+
             if (!totalAmount || typeof totalAmount !== 'number') {
                 return res.status(400).json({
                     success: false,

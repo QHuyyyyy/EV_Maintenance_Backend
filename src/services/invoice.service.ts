@@ -16,7 +16,7 @@ export class InvoiceService {
                         populate: { path: 'vehicle_id' }
                     }
                 });
-            
+
             if (!payment) {
                 throw new Error('Payment not found');
             }
@@ -32,20 +32,20 @@ export class InvoiceService {
 
             // Tự động tính minusAmount nếu là service_record payment
             let minusAmount = invoiceData.minusAmount || 0;
-            
+
             if (payment.payment_type === 'service_record' && payment.service_record_id) {
                 const serviceRecord = payment.service_record_id as any;
-                
+
                 if (serviceRecord?.appointment_id?.vehicle_id) {
                     const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
                     const paymentAmount = payment.amount;
-                    
+
                     // Tính discount dựa vào subscription
                     const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
                         vehicleId,
                         paymentAmount
                     );
-                    
+
                     if (discountInfo.hasSubscription) {
                         minusAmount = discountInfo.discount;
                     }
@@ -97,7 +97,6 @@ export class InvoiceService {
     }
 
     async getAllInvoices(filters?: {
-        status?: string;
         payment_id?: string;
         page?: number;
         limit?: number;
@@ -114,9 +113,8 @@ export class InvoiceService {
             const skip = (page - 1) * limit;
 
             const query: any = {};
-            if (filters?.status) {
-                query.status = filters.status;
-            }
+            // Always return issued invoices only
+            query.status = 'issued';
             if (filters?.payment_id) {
                 query.payment_id = filters.payment_id;
             }
@@ -172,6 +170,214 @@ export class InvoiceService {
                 throw new Error(`Failed to delete invoice: ${error.message}`);
             }
             throw new Error('Failed to delete invoice: Unknown error');
+        }
+    }
+
+    async getRevenueStats(params?: { invoiceType?: 'Subscription Package' | 'Service Completion' }): Promise<{
+        totalRevenue: number;
+    }> {
+        try {
+            const amountExpr = '$totalAmount' as any;
+
+            const match: any = { status: 'issued' };
+            if (params?.invoiceType) {
+                match.invoiceType = params.invoiceType;
+            }
+
+            const [result] = await Invoice.aggregate([
+                { $match: match },
+                {
+                    $facet: {
+                        total: [
+                            { $group: { _id: null, revenue: { $sum: amountExpr } } }
+                        ]
+                    }
+                }
+            ]);
+
+            const totalRevenue = (result?.total?.[0]?.revenue as number) || 0;
+
+
+            return { totalRevenue };
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get revenue stats: ${error.message}`);
+            }
+            throw new Error('Failed to get revenue stats: Unknown error');
+        }
+    }
+
+    async getDailyRevenueByMonth(params: {
+        month: number; // 1-12
+        year?: number; // default current year
+        invoiceType?: 'Subscription Package' | 'Service Completion';
+    }): Promise<Array<{ date: string; revenue: number }>> {
+        try {
+            const { month } = params;
+            const year = params.year ?? new Date().getFullYear();
+
+            if (!month || month < 1 || month > 12) {
+                throw new Error('Invalid month. Must be 1-12');
+            }
+
+            const amountExpr = '$totalAmount' as any;
+
+            // Use Vietnam timezone for correct day bucketing
+            const TZ = 'Asia/Ho_Chi_Minh';
+
+            const match: any = { status: 'issued' };
+            if (params.invoiceType) {
+                match.invoiceType = params.invoiceType;
+            }
+
+            const results = await Invoice.aggregate([
+                { $match: match },
+                {
+                    $addFields: {
+                        viYear: { $toInt: { $dateToString: { date: '$createdAt', format: '%Y', timezone: TZ } } },
+                        viMonth: { $toInt: { $dateToString: { date: '$createdAt', format: '%m', timezone: TZ } } },
+                        viDay: { $toInt: { $dateToString: { date: '$createdAt', format: '%d', timezone: TZ } } }
+                    }
+                },
+                { $match: { viYear: year, viMonth: month } },
+                {
+                    $group: {
+                        _id: '$viDay',
+                        revenue: { $sum: amountExpr }
+                    }
+                },
+                { $sort: { _id: 1 } }
+            ]);
+
+            // Build full array with zeros for missing days
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const map = new Map<number, number>();
+            for (const r of results) {
+                map.set(r._id as number, (r.revenue as number) || 0);
+            }
+            const daily: Array<{ date: string; revenue: number }> = [];
+            const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${pad(month)}-${pad(d)}`;
+                daily.push({ date: dateStr, revenue: map.get(d) ?? 0 });
+            }
+
+            return daily;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get daily revenue: ${error.message}`);
+            }
+            throw new Error('Failed to get daily revenue: Unknown error');
+        }
+    }
+
+    async getMonthlyRevenueByYear(params: {
+        year: number; // e.g., 2025
+        invoiceType?: 'Subscription Package' | 'Service Completion';
+    }): Promise<Array<{ month: number; revenue: number }>> {
+        try {
+            const { year } = params;
+
+            if (!year || year < 1970) {
+                throw new Error('Invalid year');
+            }
+
+            const amountExpr = '$totalAmount' as any;
+            const TZ = 'Asia/Ho_Chi_Minh';
+
+            const match: any = { status: 'issued' };
+            if (params.invoiceType) {
+                match.invoiceType = params.invoiceType;
+            }
+
+            const results = await Invoice.aggregate([
+                { $match: match },
+                {
+                    $addFields: {
+                        viYear: { $toInt: { $dateToString: { date: '$createdAt', format: '%Y', timezone: TZ } } },
+                        viMonth: { $toInt: { $dateToString: { date: '$createdAt', format: '%m', timezone: TZ } } }
+                    }
+                },
+                { $match: { viYear: year } },
+                {
+                    $group: {
+                        _id: '$viMonth',
+                        revenue: { $sum: amountExpr }
+                    }
+                },
+                { $sort: { _id: 1 } }
+            ]);
+
+            const map = new Map<number, number>();
+            for (const r of results) {
+                map.set(r._id as number, (r.revenue as number) || 0);
+            }
+            const monthly: Array<{ month: number; revenue: number }> = [];
+            for (let m = 1; m <= 12; m++) {
+                monthly.push({ month: m, revenue: map.get(m) ?? 0 });
+            }
+
+            return monthly;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get monthly revenue: ${error.message}`);
+            }
+            throw new Error('Failed to get monthly revenue: Unknown error');
+        }
+    }
+
+
+    async getSubscriptionRevenueByPackage(params?: { month?: number; year?: number }): Promise<Array<{ packageId: string; packageName: string; revenue: number }>> {
+        try {
+            const TZ = 'Asia/Ho_Chi_Minh';
+            const month = params?.month;
+            const year = params?.year;
+
+            const pipeline: any[] = [
+                { $match: { status: 'issued', invoiceType: 'Subscription Package' } },
+                { $lookup: { from: 'payments', localField: 'payment_id', foreignField: '_id', as: 'pay' } },
+                { $unwind: '$pay' },
+                { $lookup: { from: 'vehiclesubscriptions', localField: 'pay.subscription_id', foreignField: '_id', as: 'vs' } },
+                { $unwind: '$vs' },
+                { $lookup: { from: 'servicepackages', localField: 'vs.package_id', foreignField: '_id', as: 'sp' } },
+                { $unwind: '$sp' },
+            ];
+
+            // Add VN time fields and optional month/year filtering
+            pipeline.push({
+                $addFields: {
+                    viYear: { $toInt: { $dateToString: { date: '$createdAt', format: '%Y', timezone: TZ } } },
+                    viMonth: { $toInt: { $dateToString: { date: '$createdAt', format: '%m', timezone: TZ } } }
+                }
+            });
+
+            const dateMatch: any = {};
+            if (typeof month === 'number' && !Number.isNaN(month)) {
+                dateMatch.viMonth = month;
+            }
+            if (typeof year === 'number' && !Number.isNaN(year)) {
+                dateMatch.viYear = year;
+            }
+            if (Object.keys(dateMatch).length > 0) {
+                pipeline.push({ $match: dateMatch });
+            }
+
+            pipeline.push({
+                $group: {
+                    _id: { packageId: '$sp._id', name: '$sp.name' },
+                    revenue: { $sum: '$totalAmount' }
+                }
+            });
+            pipeline.push({ $project: { _id: 0, packageId: '$_id.packageId', packageName: '$_id.name', revenue: 1 } });
+            pipeline.push({ $sort: { revenue: -1, packageName: 1 } });
+
+            const results = await (Invoice as any).aggregate(pipeline);
+            return results as Array<{ packageId: string; packageName: string; revenue: number }>;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get subscription revenue by package: ${error.message}`);
+            }
+            throw new Error('Failed to get subscription revenue by package: Unknown error');
         }
     }
 
