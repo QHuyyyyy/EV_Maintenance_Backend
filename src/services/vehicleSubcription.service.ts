@@ -16,6 +16,57 @@ export class VehicleSubscriptionService {
         }
     }
 
+    // Thống kê số lượng đăng ký theo gói (package)
+    // Nếu truyền month (1-12), sẽ lọc theo tháng trong year (mặc định năm hiện tại nếu không truyền year)
+    // Nếu không truyền month, trả về toàn bộ theo từng gói
+    async getSubscriptionCountsByPackage(params?: { month?: number; year?: number }): Promise<Array<{ packageId: string; packageName: string; count: number }>> {
+        try {
+            const month = params?.month;
+            const year = params?.year ?? new Date().getFullYear();
+            const TZ = 'Asia/Ho_Chi_Minh';
+
+            const pipeline: any[] = [];
+
+            if (month && month >= 1 && month <= 12) {
+                pipeline.push(
+                    {
+                        $addFields: {
+                            viYear: { $toInt: { $dateToString: { date: '$createdAt', format: '%Y', timezone: TZ } } },
+                            viMonth: { $toInt: { $dateToString: { date: '$createdAt', format: '%m', timezone: TZ } } }
+                        }
+                    },
+                    { $match: { viYear: year, viMonth: month } }
+                );
+            }
+
+            pipeline.push(
+                { $group: { _id: '$package_id', count: { $sum: 1 } } },
+                {
+                    $lookup: {
+                        from: 'servicepackages',
+                        localField: '_id',
+                        foreignField: '_id',
+                        as: 'pkg'
+                    }
+                },
+                { $unwind: '$pkg' },
+                {
+                    $project: {
+                        _id: 0,
+                        packageId: '$_id',
+                        packageName: '$pkg.name',
+                        count: 1
+                    }
+                },
+                { $sort: { count: -1, packageName: 1 } }
+            );
+
+            const results = await VehicleSubscription.aggregate(pipeline);
+            return results as any;
+        } catch (error) {
+            throw new Error(`Error aggregating subscription counts by package: ${error}`);
+        }
+    }
     async getSubscriptionById(id: string) {
         try {
             const subscription = await VehicleSubscription.findById(id)
@@ -97,13 +148,13 @@ export class VehicleSubscriptionService {
 
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + servicePackage.duration);
-            
+
             // Calculate pricing with discount
             const originalPrice = servicePackage.price || 0;
             const discountPercent = servicePackage.discount_percent || 0;
             const discountAmount = Math.floor((originalPrice * discountPercent) / 100);
             const finalPrice = originalPrice - discountAmount;
-            
+
             const subscription = new VehicleSubscription({
                 vehicleId: subscriptionData.vehicleId,
                 package_id: subscriptionData.package_id,
@@ -367,7 +418,7 @@ export class VehicleSubscriptionService {
     async getPackageByServiceRecord(serviceRecordId: string) {
         try {
             const ServiceRecord = require('../models/serviceRecord.model').default;
-            
+
             // Lấy service record và populate appointment -> vehicle
             const serviceRecord = await ServiceRecord.findById(serviceRecordId)
                 .populate({
