@@ -25,43 +25,40 @@ export class VehicleSubscriptionService {
             const year = params?.year ?? new Date().getFullYear();
             const TZ = 'Asia/Ho_Chi_Minh';
 
-            const pipeline: any[] = [];
-
-            if (month && month >= 1 && month <= 12) {
-                pipeline.push(
-                    {
-                        $addFields: {
-                            viYear: { $toInt: { $dateToString: { date: '$createdAt', format: '%Y', timezone: TZ } } },
-                            viMonth: { $toInt: { $dateToString: { date: '$createdAt', format: '%m', timezone: TZ } } }
-                        }
-                    },
-                    { $match: { viYear: year, viMonth: month } }
-                );
-            }
-
-            pipeline.push(
-                { $group: { _id: '$package_id', count: { $sum: 1 } } },
+            // Start from all ServicePackages to include packages with zero subscriptions
+            const results = await ServicePackage.aggregate([
                 {
                     $lookup: {
-                        from: 'servicepackages',
-                        localField: '_id',
-                        foreignField: '_id',
-                        as: 'pkg'
+                        from: 'vehiclesubscriptions',
+                        let: { pkgId: '$_id' },
+                        pipeline: [
+                            { $match: { $expr: { $eq: ['$package_id', '$$pkgId'] } } },
+                            ...(month && month >= 1 && month <= 12
+                                ? [
+                                    {
+                                        $addFields: {
+                                            viYear: { $toInt: { $dateToString: { date: '$createdAt', format: '%Y', timezone: TZ } } },
+                                            viMonth: { $toInt: { $dateToString: { date: '$createdAt', format: '%m', timezone: TZ } } }
+                                        }
+                                    },
+                                    { $match: { viYear: year, viMonth: month } }
+                                ]
+                                : [])
+                        ],
+                        as: 'subs'
                     }
                 },
-                { $unwind: '$pkg' },
                 {
                     $project: {
                         _id: 0,
                         packageId: '$_id',
-                        packageName: '$pkg.name',
-                        count: 1
+                        packageName: '$name',
+                        count: { $size: { $ifNull: ['$subs', []] } }
                     }
                 },
-                { $sort: { count: -1, packageName: 1 } }
-            );
+                { $sort: { packageName: 1 } }
+            ]);
 
-            const results = await VehicleSubscription.aggregate(pipeline);
             return results as any;
         } catch (error) {
             throw new Error(`Error aggregating subscription counts by package: ${error}`);

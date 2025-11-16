@@ -9648,14 +9648,48 @@
         ]
       }
     },
-    "/api/statistics/revenue/subscription/by-package": {
+    "/api/statistics/subscriptions/count-by-package": {
       "get": {
-        "description": "",
+        "tags": [
+          "Statistics"
+        ],
+        "description": "Get total number of vehicle subscriptions grouped by service package. Optional month/year filtering (Vietnam time).",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "description": "Target month (1-12). If omitted, aggregate all time",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "description": "Target year (defaults to current year when month is provided)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
           "401": {
             "description": "Unauthorized"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/workshifts": {
