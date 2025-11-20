@@ -17,7 +17,6 @@ export async function buildPartForecastPayload({ part_id, center_id, horizon_day
 
   const metadata: any = {
     name: part?.name ?? '',
-    criticality: 'medium',
     unit_cost: part?.cost_price ?? 0,
     min_stock: centerPart?.min_stock ?? 0,
     recommended_min_stock: centerPart?.recommended_min_stock ?? 0,

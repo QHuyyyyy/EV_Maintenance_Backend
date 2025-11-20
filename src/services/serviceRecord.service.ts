@@ -1,11 +1,13 @@
 import ServiceRecord from '../models/serviceRecord.model';
 import { CreateServiceRecordRequest, UpdateServiceRecordRequest, IServiceRecord } from '../types/serviceRecord.type';
 import vehicleSubscriptionService from './vehicleSubcription.service';
+import vehicleService from './vehicle.service';
 import Appointment from '../models/appointment.model';
 import RecordChecklist from '../models/recordChecklist.model';
 import serviceDetailModel from '../models/serviceDetail.model';
 import recordChecklistModel from '../models/recordChecklist.model';
 import CenterAutoPart from '../models/centerAutoPart.model';
+import { nowVN } from '../utils/time';
 
 export class ServiceRecordService {
     async createServiceRecord(recordData: CreateServiceRecordRequest): Promise<IServiceRecord> {
@@ -124,7 +126,7 @@ export class ServiceRecordService {
 
     async updateServiceRecord(recordId: string, updateData: UpdateServiceRecordRequest): Promise<IServiceRecord | null> {
         try {
-            return await ServiceRecord.findByIdAndUpdate(
+            const updatedRecord = await ServiceRecord.findByIdAndUpdate(
                 recordId,
                 updateData,
                 { new: true, runValidators: true }
@@ -143,6 +145,19 @@ export class ServiceRecordService {
                     populate: { path: 'userId', select: 'email' }
                 })
                 .lean() as any;
+
+            if (updateData.status === 'completed' && updatedRecord) {
+                try {
+                    const appointment = updatedRecord.appointment_id;
+                    if (appointment && appointment.vehicle_id) {
+                        await vehicleService.updateLastServiceDate(appointment.vehicle_id.toString(), nowVN());
+                    }
+                } catch (err) {
+                    console.log('[ServiceRecord] Failed to update vehicle last_service_date:', err);
+                }
+            }
+
+            return updatedRecord;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to update service record: ${error.message}`);

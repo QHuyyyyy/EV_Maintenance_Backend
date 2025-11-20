@@ -72,9 +72,10 @@ export const createWorkShift = async (req: Request, res: Response) => {
 
 export const getAllWorkShifts = async (req: Request, res: Response) => {
     // #swagger.tags = ['Work Shifts']
-    // #swagger.summary = 'Get all work shifts'
+    // #swagger.summary = 'Get all work shifts with optional filters'
     /* #swagger.security = [{ "bearerAuth": [] }] */
     // #swagger.parameters['center_id'] = { in: 'query', required: false, type: 'string' }
+    // #swagger.parameters['status'] = { in: 'query', required: false, type: 'string', description: 'Filter by status (active, completed, cancelled)' }
     // #swagger.parameters['date'] = { in: 'query', required: false, type: 'string', description: 'YYYY-MM-DD' }
     // #swagger.parameters['page'] = { in: 'query', required: false, type: 'integer', example: 1 }
     // #swagger.parameters['limit'] = { in: 'query', required: false, type: 'integer', example: 10 }
@@ -83,9 +84,10 @@ export const getAllWorkShifts = async (req: Request, res: Response) => {
         schema: { success: true, data: [{ $ref: '#/definitions/WorkShift' }], pagination: { $ref: '#/definitions/PaginationInfo' } }
     } */
     try {
-        const { center_id, date, page = '1', limit = '10' } = req.query as any;
+        const { center_id, status, date, page = '1', limit = '10' } = req.query as any;
         const q: any = {};
         if (center_id) q.center_id = center_id;
+        if (status) q.status = status;
         if (date) {
             const start = new Date(`${date}T00:00:00.000Z`);
             const end = new Date(`${date}T23:59:59.999Z`);

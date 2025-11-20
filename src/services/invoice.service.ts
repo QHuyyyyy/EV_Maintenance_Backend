@@ -3,6 +3,8 @@ import Payment from '../models/payment.model';
 import { CreateInvoiceRequest, IInvoice, UpdateInvoiceRequest } from '../types/invoice.type';
 import vehicleSubscriptionService from './vehicleSubcription.service';
 import ServiceRecord from '../models/serviceRecord.model';
+import { VehicleSubscription } from '../models/vehicleSubcription.model';
+import serviceDetailModel from '../models/serviceDetail.model';
 
 export class InvoiceService {
     async createInvoice(invoiceData: CreateInvoiceRequest): Promise<IInvoice> {
@@ -34,14 +36,14 @@ export class InvoiceService {
                 const serviceRecord = payment.service_record_id as any;
                 if (serviceRecord?.appointment_id?.vehicle_id) {
                     const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
-                    
+
                     // Get discount_percent directly from VehicleSubscription (already stored there)
                     const { VehicleSubscription } = require('../models/vehicleSubcription.model');
                     const activeSubscription = await VehicleSubscription.findOne({
                         vehicleId,
                         status: 'ACTIVE'
                     }).select('discount_percent');
-                    
+
                     if (activeSubscription) {
                         discountPercent = activeSubscription.discount_percent || 0;
                     }
@@ -57,7 +59,7 @@ export class InvoiceService {
             }
 
             // If minusAmount is explicitly provided, always convert from money amount to percentage
-        
+
             if (invoiceData.minusAmount !== undefined && invoiceData.minusAmount >= 0) {
                 if (invoiceData.totalAmount > 0) {
                     // Convert money amount to percentage: (minusAmount / totalAmount) * 100
@@ -101,10 +103,51 @@ export class InvoiceService {
             const invoice = await Invoice.findById(invoiceId)
                 .populate('payment_id')
                 .lean() as any;
-            
-            // minusAmount is already calculated and stored as discount % (0-100) at creation time
-            // No need to recalculate here
-            
+
+            if (!invoice) {
+                return null;
+            }
+
+            const payment = invoice.payment_id;
+            if (!payment) {
+                return invoice;
+            }
+
+            // Based on payment_type, populate additional details
+            if (payment.payment_type === 'service_record' && payment.service_record_id) {
+                // Get all service details for this service record
+                const details = await serviceDetailModel.find({ record_id: payment.service_record_id })
+                    .populate([
+                        {
+                            path: 'centerpart_id',
+                            select: '_id part_id center_id',
+                            populate: {
+                                path: 'part_id',
+                                select: 'name image'
+                            }
+                        }
+                    ])
+                    .lean() as any;
+
+                return {
+                    ...invoice,
+                    data: details || []
+                };
+            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                // Populate subscription with vehicle and package details
+                const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                    .populate([
+                        { path: 'vehicleId', select: 'vehicleName model plateNumber mileage customerId' },
+                        { path: 'package_id', select: 'name description price duration km_interval' }
+                    ])
+                    .lean() as any;
+
+                return {
+                    ...invoice,
+                    data: subscription
+                };
+            }
+
             return invoice;
         } catch (error) {
             if (error instanceof Error) {
@@ -119,10 +162,10 @@ export class InvoiceService {
             const invoice = await Invoice.findOne({ payment_id: paymentId })
                 .populate('payment_id')
                 .lean() as any;
-            
+
             // minusAmount is already calculated and stored as discount % (0-100) at creation time
             // No need to recalculate here
-            
+
             return invoice;
         } catch (error) {
             if (error instanceof Error) {

@@ -4,6 +4,7 @@ import { checkAndApplyWarranty } from '../services/warrantyCheck.service';
 
 export class ServiceDetailController {
     async createServiceDetail(req: Request, res: Response) {
+
         /* #swagger.tags = ['Service Details']
            #swagger.summary = 'Create a new service detail entry'
            #swagger.description = 'Create a new service detail entry with automatic warranty check'

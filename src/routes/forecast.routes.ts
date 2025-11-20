@@ -6,6 +6,7 @@ import { triggerAnalysisNow } from '../ai/services/analysisScheduler.service';
 const router = Router();
 // đặt tên cho route này để get thông tin phân tích của trung tâm
 router.get('/info/:centerID', forecastController.getCenterAnalyses);
+router.get('/urgent/:centerID', forecastController.getUrgentParts);
 router.post('/center/:centerId', forecastController.postCenterForecast);
 
 // Manually trigger forecast jobs for all centers now
