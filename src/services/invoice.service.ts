@@ -102,39 +102,23 @@ export class InvoiceService {
 
     async getInvoiceById(invoiceId: string): Promise<IInvoice | null> {
         try {
-            // First fetch invoice as Mongoose document to sync status if needed
-            let invoice = await Invoice.findById(invoiceId)
-                .populate('payment_id');
+            const invoice = await Invoice.findById(invoiceId)
+                .populate('payment_id')
+                .lean() as any;
 
             if (!invoice) {
                 return null;
             }
 
-            // Sync invoice status with payment status
-            const payment = invoice.payment_id as any;
-            if (payment && payment.status === 'paid' && invoice.status === 'pending') {
-                invoice.status = 'issued';
-                await invoice.save();
-            }
-
-            // Now fetch as lean object for response
-            const invoiceLean = await Invoice.findById(invoiceId)
-                .populate('payment_id')
-                .lean() as any;
-
-            if (!invoiceLean) {
-                return null;
-            }
-
-            const paymentLean = invoiceLean.payment_id;
-            if (!paymentLean) {
-                return invoiceLean;
+            const payment = invoice.payment_id;
+            if (!payment) {
+                return invoice;
             }
 
             // Based on payment_type, populate additional details
-            if (paymentLean.payment_type === 'service_record' && paymentLean.service_record_id) {
+            if (payment.payment_type === 'service_record' && payment.service_record_id) {
                 // Get all service details for this service record
-                const details = await serviceDetailModel.find({ record_id: paymentLean.service_record_id })
+                const details = await serviceDetailModel.find({ record_id: payment.service_record_id })
                     .populate([
                         {
                             path: 'centerpart_id',
@@ -148,12 +132,12 @@ export class InvoiceService {
                     .lean() as any;
 
                 return {
-                    ...invoiceLean,
+                    ...invoice,
                     data: details || []
                 };
-            } else if (paymentLean.payment_type === 'subscription' && paymentLean.subscription_id) {
+            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
                 // Populate subscription with vehicle and package details
-                const subscription = await VehicleSubscription.findById(paymentLean.subscription_id)
+                const subscription = await VehicleSubscription.findById(payment.subscription_id)
                     .populate([
                         { path: 'vehicleId', select: 'vehicleName model plateNumber mileage customerId' },
                         { path: 'package_id', select: 'name description price duration km_interval' }
@@ -161,12 +145,12 @@ export class InvoiceService {
                     .lean() as any;
 
                 return {
-                    ...invoiceLean,
+                    ...invoice,
                     data: subscription
                 };
             }
 
-            return invoiceLean;
+            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
