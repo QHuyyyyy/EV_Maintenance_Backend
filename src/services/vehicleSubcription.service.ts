@@ -4,13 +4,34 @@ import { ServicePackage } from '../models/servicePackage';
 import { nowVN } from '../utils/time';
 
 export class VehicleSubscriptionService {
-    async getAllSubscriptions() {
+    async getAllSubscriptions(filters?: { status?: string; page?: number; limit?: number }) {
         try {
-            const subscriptions = await VehicleSubscription.find()
-                .populate('vehicleId', 'vehicleName model VIN')
-                .populate('package_id', 'name description price duration km_interval')
-                .sort({ start_date: -1 });
-            return subscriptions;
+            const page = filters?.page || 1;
+            const limit = filters?.limit || 10;
+            const skip = (page - 1) * limit;
+
+            const query: any = {};
+            if (filters?.status) {
+                query.status = filters.status;
+            }
+
+            const [subscriptions, total] = await Promise.all([
+                VehicleSubscription.find(query)
+                    .populate('vehicleId', 'vehicleName model VIN')
+                    .populate('package_id', 'name description price duration km_interval')
+                    .sort({ start_date: -1 })
+                    .skip(skip)
+                    .limit(limit),
+                VehicleSubscription.countDocuments(query)
+            ]);
+
+            return {
+                data: subscriptions,
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            };
         } catch (error) {
             throw new Error(`Error fetching subscriptions: ${error}`);
         }
