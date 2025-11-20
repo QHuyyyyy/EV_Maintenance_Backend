@@ -3,6 +3,8 @@ import Payment from '../models/payment.model';
 import { CreateInvoiceRequest, IInvoice, UpdateInvoiceRequest } from '../types/invoice.type';
 import vehicleSubscriptionService from './vehicleSubcription.service';
 import ServiceRecord from '../models/serviceRecord.model';
+import { VehicleSubscription } from '../models/vehicleSubcription.model';
+import ServiceDetail from '../models/serviceDetail.model';
 
 export class InvoiceService {
     async createInvoice(invoiceData: CreateInvoiceRequest): Promise<IInvoice> {
@@ -70,11 +72,68 @@ export class InvoiceService {
         }
     }
 
-    async getInvoiceById(invoiceId: string): Promise<IInvoice | null> {
+    async getInvoiceById(invoiceId: string): Promise<{ invoiceId: string; paymentId: string; data: any } | null> {
         try {
-            return await Invoice.findById(invoiceId)
+            // First fetch the invoice with payment to check payment_type
+            const invoice = await Invoice.findById(invoiceId)
                 .populate('payment_id')
                 .lean() as any;
+
+            if (!invoice) {
+                return null;
+            }
+
+            const payment = invoice.payment_id;
+            if (!payment) {
+                return {
+                    invoiceId: invoice._id.toString(),
+                    paymentId: invoice.payment_id?.toString() || '',
+                    data: null
+                };
+            }
+
+            // Based on payment_type, populate additional details
+            if (payment.payment_type === 'service_record' && payment.service_record_id) {
+                // Get all service details for this service record
+                const details = await ServiceDetail.find({ record_id: payment.service_record_id })
+                    .populate([
+                        {
+                            path: 'centerpart_id',
+                            select: '_id part_id center_id',
+                            populate: {
+                                path: 'part_id',
+                                select: 'name image'
+                            }
+                        }
+                    ])
+                    .lean() as any;
+
+                return {
+                    invoiceId: invoice._id.toString(),
+                    paymentId: payment._id.toString(),
+                    data: details || []
+                };
+            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                // Populate subscription with vehicle and package details
+                const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                    .populate([
+                        { path: 'vehicleId', select: 'vehicleName model plateNumber mileage customerId' },
+                        { path: 'package_id', select: 'name description price duration km_interval' }
+                    ])
+                    .lean() as any;
+
+                return {
+                    invoiceId: invoice._id.toString(),
+                    paymentId: payment._id.toString(),
+                    data: subscription
+                };
+            }
+
+            return {
+                invoiceId: invoice._id.toString(),
+                paymentId: payment._id.toString(),
+                data: null
+            };
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);

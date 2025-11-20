@@ -4238,8 +4238,39 @@
         "tags": [
           "Vehicle Subscriptions"
         ],
-        "summary": "Get all vehicle subscriptions",
-        "description": "API to get all vehicle maintenance subscriptions",
+        "summary": "Get all vehicle subscriptions with pagination and filters",
+        "description": "API to get all vehicle maintenance subscriptions with optional status filter and pagination",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status (ACTIVE, EXPIRED, PENDING)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successfully retrieved subscriptions",
@@ -4325,6 +4356,22 @@
                           }
                         }
                       }
+                    },
+                    "total": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "page": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "totalPages": {
+                      "type": "string",
+                      "example": "number"
                     }
                   },
                   "xml": {
@@ -4413,6 +4460,22 @@
                           }
                         }
                       }
+                    },
+                    "total": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "page": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "totalPages": {
+                      "type": "string",
+                      "example": "number"
                     }
                   },
                   "xml": {
@@ -9772,13 +9835,22 @@
         "tags": [
           "Work Shifts"
         ],
-        "summary": "Get all work shifts",
+        "summary": "Get all work shifts with optional filters",
         "description": "",
         "parameters": [
           {
             "name": "center_id",
             "in": "query",
             "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by status (active, completed, cancelled)",
             "schema": {
               "type": "string"
             }
