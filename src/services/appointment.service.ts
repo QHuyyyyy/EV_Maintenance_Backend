@@ -20,6 +20,18 @@ export class AppointmentService {
                 }
             }
 
+            // Check if vehicle already has an appointment with this slot
+            if (appointmentData.vehicle_id && appointmentData.slot_id) {
+                const existingAppointment = await Appointment.findOne({
+                    vehicle_id: appointmentData.vehicle_id,
+                    slot_id: appointmentData.slot_id,
+                    status: { $ne: 'cancelled' }
+                }).lean();
+                if (existingAppointment) {
+                    throw new Error('Vehicle already has an appointment at this slot');
+                }
+            }
+
             // Slot validation
             const slot = await Slot.findById(appointmentData.slot_id);
             if (!slot) throw new Error('Slot not found');

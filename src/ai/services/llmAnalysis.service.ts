@@ -13,14 +13,14 @@ async function analyzePart(part_id: string, center_id: string) {
     // Build aggregated payload
     const payload = await partDataAggregator.buildPartForecastPayload({ part_id, center_id, horizon_days: 30 });
 
-    const prompt = `You are an inventory analyst. Given the following payload, produce a JSON with fields: riskLevel (LOW|MEDIUM|HIGH), title, content (short analysis <=300 tokens),suggestedOrderQty (int).
+    const prompt = `You are an inventory analyst. Given the following payload, produce a JSON with fields: riskLevel (LOW|MEDIUM|HIGH), title, content (short analysis <=300 tokens), suggestedMinStock (int, the new recommended minimum stock level based on usage trends), suggestedOrderQty (int, the quantity to order now).
 
-IMPORTANT - Determine riskLevel based on the comparison between current_stock and recommended_min_stock:
-- If current_stock < recommended_min_stock * 0.5: riskLevel = HIGH (critically low stock)
-- If recommended_min_stock * 0.5 <= current_stock < recommended_min_stock: riskLevel = MEDIUM (stock is below recommended minimum)
-- If current_stock >= recommended_min_stock: riskLevel = LOW (stock is sufficient)
+IMPORTANT - Determine riskLevel by comparing current_stock with the NEW suggestedMinStock (not the old recommended_min_stock):
+- If current_stock < suggestedMinStock * 0.5: riskLevel = HIGH (critically low stock)
+- If suggestedMinStock * 0.5 <= current_stock < suggestedMinStock: riskLevel = MEDIUM (stock is below recommended minimum)
+- If current_stock >= suggestedMinStock: riskLevel = LOW (stock is sufficient)
 
-Also consider the usage history and trends in your analysis.
+Also consider the usage history and trends in your analysis. The suggestedMinStock should be based on the consumption patterns and safety margins.
 
 PAYLOAD:\n${JSON.stringify(payload)}`;
 
@@ -40,6 +40,7 @@ PAYLOAD:\n${JSON.stringify(payload)}`;
         riskLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('LOW'),
         title: z.string().default('Analysis'),
         content: z.string().default(''),
+        suggestedMinStock: z.number().int().default(0),
         suggestedOrderQty: z.number().int().default(0),
     });
 
@@ -92,8 +93,9 @@ PAYLOAD:\n${JSON.stringify(payload)}`;
                 last_forecast_date: moment().tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DDTHH:mm:ss.SSSZ")
             } as any);
         }
-        if (parsed.suggestedOrderQty > 0 && centerPart && centerPart._id) {
-            await centerAutoPartService.updateCenterAutoPart(centerPart._id, { recommended_min_stock: parsed.suggestedOrderQty } as any);
+        // Update recommended_min_stock with the new suggested value from AI
+        if (parsed.suggestedMinStock > 0 && centerPart && centerPart._id) {
+            await centerAutoPartService.updateCenterAutoPart(centerPart._id, { recommended_min_stock: parsed.suggestedMinStock } as any);
         }
     } catch (err) {
         // don't block the main flow if updating last_forecast_date fails

@@ -32,7 +32,7 @@ export class SlotService {
             if (filters.to) query.slot_date.$lte = filters.to;
         }
 
-        return await Slot.find(query).sort({ start_time: 1 }).lean() as any;
+        return await Slot.find(query).sort({ slot_date: -1, start_time: 1 }).lean() as any;
     }
 
 
