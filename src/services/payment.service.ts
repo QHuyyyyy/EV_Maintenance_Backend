@@ -324,14 +324,14 @@ export class PaymentService {
                     console.log(`  ✓ Creating invoice...`);
                     
                     // Check if invoice already exists
-                    const existingInvoice = await Invoice.findOne({ payment_id: payment._id });
+                    let invoice = await Invoice.findOne({ payment_id: payment._id });
                     
-                    if (!existingInvoice) {
+                    if (!invoice) {
                         const invoiceService = require('./invoice.service').default;
                         const paymentId = (payment._id as any).toString();
                         
-                        // Create invoice
-                        const invoice = await invoiceService.createInvoice({
+                        // Create invoice (returns lean object, so we need to fetch it again)
+                        const createdInvoice = await invoiceService.createInvoice({
                             payment_id: paymentId,
                             invoiceType: payment.payment_type === 'subscription' 
                                 ? 'Subscription Package' 
@@ -339,9 +339,18 @@ export class PaymentService {
                             totalAmount: payment.amount
                         });
                         
-                        console.log(`  ✓ Invoice created: ${invoice._id}`);
+                        // Fetch invoice as Mongoose document to update status
+                        invoice = await Invoice.findById(createdInvoice._id);
+                        
                     } else {
                         console.log(`  ℹ Invoice already exists`);
+                    }
+                    
+                    // Update invoice status to 'issued' since payment is completed
+                    if (invoice && invoice.status !== 'issued') {
+                        invoice.status = 'issued';
+                        await invoice.save();
+                        console.log(`  ✓ Invoice status updated to 'issued'`);
                     }
                 } catch (invoiceError) {
                     console.error(`  ✗ Error creating invoice:`, invoiceError);
