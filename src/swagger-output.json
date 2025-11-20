@@ -4238,8 +4238,39 @@
         "tags": [
           "Vehicle Subscriptions"
         ],
-        "summary": "Get all vehicle subscriptions",
-        "description": "API to get all vehicle maintenance subscriptions",
+        "summary": "Get all vehicle subscriptions with pagination and filters",
+        "description": "API to get all vehicle maintenance subscriptions with optional status filter and pagination",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status (ACTIVE, EXPIRED, PENDING)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "required": false,
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successfully retrieved subscriptions",
@@ -4325,6 +4356,22 @@
                           }
                         }
                       }
+                    },
+                    "total": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "page": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "totalPages": {
+                      "type": "string",
+                      "example": "number"
                     }
                   },
                   "xml": {
@@ -4413,6 +4460,22 @@
                           }
                         }
                       }
+                    },
+                    "total": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "page": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "totalPages": {
+                      "type": "string",
+                      "example": "number"
                     }
                   },
                   "xml": {
@@ -9772,13 +9835,22 @@
         "tags": [
           "Work Shifts"
         ],
-        "summary": "Get all work shifts",
+        "summary": "Get all work shifts with optional filters",
         "description": "",
         "parameters": [
           {
             "name": "center_id",
             "in": "query",
             "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by status (active, completed, cancelled)",
             "schema": {
               "type": "string"
             }
@@ -10230,6 +10302,65 @@
             "description": "Optional date (YYYY-MM-DD) to filter analyses created on that date.",
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/forecast/urgent/{centerID}": {
+      "get": {
+        "tags": [
+          "Forecast"
+        ],
+        "summary": "Get urgent (HIGH risk) parts for a center.",
+        "description": "Get list of parts with HIGH risk level that need immediate attention and ordering.",
+        "parameters": [
+          {
+            "name": "centerID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "riskLevel",
+            "in": "query",
+            "description": "Risk level filter (LOW|MEDIUM|HIGH). Default is HIGH.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of urgent parts to return. Default is 50.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination.",
+            "schema": {
+              "type": "integer"
             }
           }
         ],
@@ -11932,7 +12063,7 @@
           },
           "minusAmount": {
             "type": "number",
-            "example": 0
+            "example": 10
           },
           "totalAmount": {
             "type": "number",
@@ -11968,7 +12099,7 @@
           },
           "minusAmount": {
             "type": "number",
-            "example": 0
+            "example": 10
           },
           "totalAmount": {
             "type": "number",
@@ -11988,7 +12119,7 @@
           },
           "minusAmount": {
             "type": "number",
-            "example": 5000
+            "example": 15
           },
           "totalAmount": {
             "type": "number",

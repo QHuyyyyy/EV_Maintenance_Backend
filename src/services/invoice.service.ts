@@ -3,6 +3,8 @@ import Payment from '../models/payment.model';
 import { CreateInvoiceRequest, IInvoice, UpdateInvoiceRequest } from '../types/invoice.type';
 import vehicleSubscriptionService from './vehicleSubcription.service';
 import ServiceRecord from '../models/serviceRecord.model';
+import { VehicleSubscription } from '../models/vehicleSubcription.model';
+import serviceDetailModel from '../models/serviceDetail.model';
 
 export class InvoiceService {
     async createInvoice(invoiceData: CreateInvoiceRequest): Promise<IInvoice> {
@@ -25,39 +27,65 @@ export class InvoiceService {
                 throw new Error('Cannot create invoice for unpaid payment');
             }
 
-            // Transaction ID check is optional - webhook will have it, manual creation might not
-            // if (!payment.transaction_id) {
-            //     throw new Error('Payment does not have a transaction ID yet');
-            // }
+            // Calculate discount percentage from package at invoice creation time
+            // VehicleSubscription already stores discount_percent, no need to populate package
+            let discountPercent = 0;
 
-            // Tự động tính minusAmount nếu là service_record payment
-            let minusAmount = invoiceData.minusAmount || 0;
-
+            // For service_record payments, get discount % from active subscription
             if (payment.payment_type === 'service_record' && payment.service_record_id) {
                 const serviceRecord = payment.service_record_id as any;
-
                 if (serviceRecord?.appointment_id?.vehicle_id) {
                     const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
-                    const paymentAmount = payment.amount;
 
-                    // Tính discount dựa vào subscription
-                    const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
+                    // Get discount_percent directly from VehicleSubscription (already stored there)
+                    const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                    const activeSubscription = await VehicleSubscription.findOne({
                         vehicleId,
-                        paymentAmount
-                    );
+                        status: 'ACTIVE'
+                    }).select('discount_percent');
 
-                    if (discountInfo.hasSubscription) {
-                        minusAmount = discountInfo.discount;
+                    if (activeSubscription) {
+                        discountPercent = activeSubscription.discount_percent || 0;
                     }
+                }
+            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                // For subscription payments, get discount % directly from VehicleSubscription
+                const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                    .select('discount_percent');
+                if (subscription) {
+                    discountPercent = subscription.discount_percent || 0;
                 }
             }
 
+            // If minusAmount is explicitly provided, always convert from money amount to percentage
+
+            if (invoiceData.minusAmount !== undefined && invoiceData.minusAmount >= 0) {
+                if (invoiceData.totalAmount > 0) {
+                    // Convert money amount to percentage: (minusAmount / totalAmount) * 100
+                    discountPercent = (invoiceData.minusAmount / invoiceData.totalAmount) * 100;
+                    // Ensure it doesn't exceed 100%
+                    discountPercent = Math.min(100, discountPercent);
+                    // Round to 2 decimal places for precision
+                    discountPercent = Math.round(discountPercent * 100) / 100;
+                } else {
+                    // Cannot convert without totalAmount
+                    throw new Error('Invalid minusAmount: cannot convert to percentage without totalAmount');
+                }
+            }
+            discountPercent = Math.max(0, Math.min(100, discountPercent));
+
+            // Create invoice with discount percentage (ALWAYS 0-100, never money amount)
+            const { payment_id, invoiceType, totalAmount } = invoiceData;
             const invoice = new Invoice({
-                ...invoiceData,
-                minusAmount: minusAmount
+                payment_id,
+                invoiceType,
+                minusAmount: discountPercent,
+                totalAmount
             });
 
             await invoice.save();
+
 
             return await Invoice.findById(invoice._id)
                 .populate('payment_id')
@@ -72,9 +100,55 @@ export class InvoiceService {
 
     async getInvoiceById(invoiceId: string): Promise<IInvoice | null> {
         try {
-            return await Invoice.findById(invoiceId)
+            const invoice = await Invoice.findById(invoiceId)
                 .populate('payment_id')
                 .lean() as any;
+
+            if (!invoice) {
+                return null;
+            }
+
+            const payment = invoice.payment_id;
+            if (!payment) {
+                return invoice;
+            }
+
+            // Based on payment_type, populate additional details
+            if (payment.payment_type === 'service_record' && payment.service_record_id) {
+                // Get all service details for this service record
+                const details = await serviceDetailModel.find({ record_id: payment.service_record_id })
+                    .populate([
+                        {
+                            path: 'centerpart_id',
+                            select: '_id part_id center_id',
+                            populate: {
+                                path: 'part_id',
+                                select: 'name image'
+                            }
+                        }
+                    ])
+                    .lean() as any;
+
+                return {
+                    ...invoice,
+                    data: details || []
+                };
+            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                // Populate subscription with vehicle and package details
+                const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                    .populate([
+                        { path: 'vehicleId', select: 'vehicleName model plateNumber mileage customerId' },
+                        { path: 'package_id', select: 'name description price duration km_interval' }
+                    ])
+                    .lean() as any;
+
+                return {
+                    ...invoice,
+                    data: subscription
+                };
+            }
+
+            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -85,9 +159,14 @@ export class InvoiceService {
 
     async getInvoiceByPaymentId(paymentId: string): Promise<IInvoice | null> {
         try {
-            return await Invoice.findOne({ payment_id: paymentId })
+            const invoice = await Invoice.findOne({ payment_id: paymentId })
                 .populate('payment_id')
                 .lean() as any;
+
+            // minusAmount is already calculated and stored as discount % (0-100) at creation time
+            // No need to recalculate here
+
+            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -129,8 +208,21 @@ export class InvoiceService {
                 Invoice.countDocuments(query)
             ]);
 
+            // Convert minusAmount from old format (money) to new format (% discount) for display
+            // Old invoices may have minusAmount stored as money amount, need to convert to percentage
+            const normalizedInvoices = invoices.map((invoice: any) => {
+                // If minusAmount > 100, it's likely stored as money amount (old format)
+                // Convert to percentage: (minusAmount / totalAmount) * 100
+                if (invoice.minusAmount > 100 && invoice.totalAmount > 0) {
+                    const discountPercent = (invoice.minusAmount / invoice.totalAmount) * 100;
+                    // Round to 2 decimal places and ensure it's within 0-100 range
+                    invoice.minusAmount = Math.max(0, Math.min(100, Math.round(discountPercent * 100) / 100));
+                }
+                return invoice;
+            });
+
             return {
-                invoices,
+                invoices: normalizedInvoices,
                 total,
                 page,
                 limit,
@@ -381,10 +473,10 @@ export class InvoiceService {
         }
     }
 
-    // Preview invoice với minusAmount trước khi thanh toán
+    // Preview invoice với discount calculation trước khi thanh toán
     async previewInvoiceForServiceRecord(serviceRecordId: string, totalAmount: number): Promise<{
         originalAmount: number;
-        minusAmount: number;
+        discountAmount: number;
         finalAmount: number;
         hasSubscription: boolean;
         subscriptionInfo?: {
@@ -420,7 +512,7 @@ export class InvoiceService {
 
             return {
                 originalAmount: totalAmount,
-                minusAmount: discountInfo.discount,
+                discountAmount: discountInfo.discount,
                 finalAmount: discountInfo.finalAmount,
                 hasSubscription: discountInfo.hasSubscription,
                 subscriptionInfo: discountInfo.hasSubscription ? {
