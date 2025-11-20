@@ -32,6 +32,7 @@ import forecastRoutes from './routes/forecast.routes';
 import slotRoutes from './routes/slot.routes';
 import warrantyRoutes from './routes/warranty.routes';
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
+import { initWorkShiftDailyJob } from './services/workshiftScheduler.service';
 import { startAnalysisWorker } from "./ai/services/analysisWorker.service";
 import { startAnalysisScheduler } from "./ai/services/analysisScheduler.service";
 import http from "http";
@@ -132,6 +133,8 @@ chatSocketService.initializeSocket(httpServer);
 httpServer.listen(PORT, () => {
     console.log(`App listening on port ${PORT}`);
     console.log(`WebSocket server initialized`);
+    // Initialize daily cron for workshift completion
+    initWorkShiftDailyJob();
 });
 
 export default app;
