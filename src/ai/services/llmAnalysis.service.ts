@@ -13,7 +13,16 @@ async function analyzePart(part_id: string, center_id: string) {
     // Build aggregated payload
     const payload = await partDataAggregator.buildPartForecastPayload({ part_id, center_id, horizon_days: 30 });
 
-    const prompt = `You are an inventory analyst. Given the following payload, produce a JSON with fields: riskLevel (LOW|MEDIUM|HIGH), title, content (short analysis <=300 tokens),suggestedOrderQty (int).\nPAYLOAD:\n${JSON.stringify(payload)}`;
+    const prompt = `You are an inventory analyst. Given the following payload, produce a JSON with fields: riskLevel (LOW|MEDIUM|HIGH), title, content (short analysis <=300 tokens),suggestedOrderQty (int).
+
+IMPORTANT - Determine riskLevel based on the comparison between current_stock and recommended_min_stock:
+- If current_stock < recommended_min_stock * 0.5: riskLevel = HIGH (critically low stock)
+- If recommended_min_stock * 0.5 <= current_stock < recommended_min_stock: riskLevel = MEDIUM (stock is below recommended minimum)
+- If current_stock >= recommended_min_stock: riskLevel = LOW (stock is sufficient)
+
+Also consider the usage history and trends in your analysis.
+
+PAYLOAD:\n${JSON.stringify(payload)}`;
 
     const resp = await openai.chat.completions.create({
         model: OPENAI_MODEL,

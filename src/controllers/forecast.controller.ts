@@ -97,6 +97,7 @@ export async function getUrgentParts(req: Request, res: Response) {
     // #swagger.summary = 'Get urgent (HIGH risk) parts for a center.'
     /* #swagger.security = [{ "bearerAuth": [] }] */
     // #swagger.description = 'Get list of parts with HIGH risk level that need immediate attention and ordering.'
+    // #swagger.parameters['riskLevel'] = { in: 'query', description: 'Risk level filter (LOW|MEDIUM|HIGH). Default is HIGH.', type: 'string' }
     // #swagger.parameters['limit'] = { in: 'query', description: 'Maximum number of urgent parts to return. Default is 50.', type: 'integer' }
     // #swagger.parameters['page'] = { in: 'query', description: 'Page number for pagination.', type: 'integer' }
     try {
@@ -117,9 +118,14 @@ export async function getUrgentParts(req: Request, res: Response) {
             skip = (pageNum - 1) * limit;
         }
 
+        const riskLevel = (req.query.riskLevel as string || 'HIGH').toUpperCase();
+        if (!['LOW', 'MEDIUM', 'HIGH'].includes(riskLevel)) {
+            return res.status(400).json({ success: false, message: 'Invalid riskLevel. Must be LOW, MEDIUM, or HIGH' });
+        }
+
         const filter: any = {
             center_id: centerId,
-            'analysis.riskLevel': 'HIGH'
+            'analysis.riskLevel': riskLevel
         };
 
         const query = partAnalysisModel
