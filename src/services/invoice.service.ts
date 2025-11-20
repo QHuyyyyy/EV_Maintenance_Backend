@@ -56,25 +56,19 @@ export class InvoiceService {
                 }
             }
 
-            // If minusAmount is explicitly provided, validate and convert if necessary
-            // IMPORTANT: Always store discount as percentage (0-100) in database, never as money amount
+            // If minusAmount is explicitly provided, always convert from money amount to percentage
+        
             if (invoiceData.minusAmount !== undefined && invoiceData.minusAmount >= 0) {
-                if (invoiceData.minusAmount <= 100) {
-                    // Already in percentage format (0-100) - use directly
-                    discountPercent = invoiceData.minusAmount;
+                if (invoiceData.totalAmount > 0) {
+                    // Convert money amount to percentage: (minusAmount / totalAmount) * 100
+                    discountPercent = (invoiceData.minusAmount / invoiceData.totalAmount) * 100;
+                    // Ensure it doesn't exceed 100%
+                    discountPercent = Math.min(100, discountPercent);
+                    // Round to 2 decimal places for precision
+                    discountPercent = Math.round(discountPercent * 100) / 100;
                 } else {
-                    // Value > 100 means it's in money format - convert to percentage
-                    // Convert to percentage: (minusAmount / totalAmount) * 100
-                    if (invoiceData.totalAmount > 0) {
-                        discountPercent = (invoiceData.minusAmount / invoiceData.totalAmount) * 100;
-                        // Ensure it doesn't exceed 100%
-                        discountPercent = Math.min(100, discountPercent);
-                        // Round to 2 decimal places for precision
-                        discountPercent = Math.round(discountPercent * 100) / 100;
-                    } else {
-                        // Cannot convert without totalAmount
-                        throw new Error('Invalid minusAmount: cannot convert to percentage without totalAmount');
-                    }
+                    // Cannot convert without totalAmount
+                    throw new Error('Invalid minusAmount: cannot convert to percentage without totalAmount');
                 }
             }
             discountPercent = Math.max(0, Math.min(100, discountPercent));
