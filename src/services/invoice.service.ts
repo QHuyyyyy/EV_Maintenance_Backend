@@ -74,12 +74,14 @@ export class InvoiceService {
             discountPercent = Math.max(0, Math.min(100, discountPercent));
 
             // Create invoice with discount percentage (ALWAYS 0-100, never money amount)
+            // Since payment is already paid, set status to 'issued'
             const { payment_id, invoiceType, totalAmount } = invoiceData;
             const invoice = new Invoice({
                 payment_id,
                 invoiceType,
                 minusAmount: discountPercent,
-                totalAmount
+                totalAmount,
+                status: 'issued' // Payment is already paid, so invoice should be issued
             });
 
             await invoice.save();
@@ -99,13 +101,22 @@ export class InvoiceService {
     async getInvoiceById(invoiceId: string): Promise<IInvoice | null> {
         try {
             const invoice = await Invoice.findById(invoiceId)
+                .populate('payment_id');
+            
+            if (!invoice) {
+                return null;
+            }
+            
+            // Sync invoice status with payment status
+            const payment = invoice.payment_id as any;
+            if (payment && payment.status === 'paid' && invoice.status === 'pending') {
+                invoice.status = 'issued';
+                await invoice.save();
+            }
+            
+            return await Invoice.findById(invoiceId)
                 .populate('payment_id')
                 .lean() as any;
-            
-            // minusAmount is already calculated and stored as discount % (0-100) at creation time
-            // No need to recalculate here
-            
-            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -117,13 +128,22 @@ export class InvoiceService {
     async getInvoiceByPaymentId(paymentId: string): Promise<IInvoice | null> {
         try {
             const invoice = await Invoice.findOne({ payment_id: paymentId })
+                .populate('payment_id');
+            
+            if (!invoice) {
+                return null;
+            }
+            
+            // Sync invoice status with payment status
+            const payment = invoice.payment_id as any;
+            if (payment && payment.status === 'paid' && invoice.status === 'pending') {
+                invoice.status = 'issued';
+                await invoice.save();
+            }
+            
+            return await Invoice.findById(invoice._id)
                 .populate('payment_id')
                 .lean() as any;
-            
-            // minusAmount is already calculated and stored as discount % (0-100) at creation time
-            // No need to recalculate here
-            
-            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
