@@ -52,7 +52,7 @@ export async function checkAndApplyWarranty(
             warranty_status: 'active'
         });
 
-        console.log(`📊 Found ${activeWarranties.length} active warranties`);
+        console.log(`📊 Found ${activeWarranties.length} active warranty items`);
 
         let unitPrice: number;
         let description: string;
@@ -78,6 +78,7 @@ export async function checkAndApplyWarranty(
             }
 
             console.log(`✅ Found warranty!`);
+            console.log(`   - Warranty items available: ${activeWarranties.length}`);
             console.log(`   - Warranty: ${warrantyQty}/${quantity} (0 đ)`);
             console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái)`);
             console.log(`   - Total: ${paidQty * unitPrice} đ`);
@@ -105,8 +106,6 @@ export async function checkAndApplyWarranty(
         throw error;
     }
 }
-
-
 export default {
     checkAndApplyWarranty
 };
