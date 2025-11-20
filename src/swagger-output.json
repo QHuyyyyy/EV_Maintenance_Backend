@@ -11932,7 +11932,7 @@
           },
           "minusAmount": {
             "type": "number",
-            "example": 0
+            "example": 10
           },
           "totalAmount": {
             "type": "number",
@@ -11968,7 +11968,7 @@
           },
           "minusAmount": {
             "type": "number",
-            "example": 0
+            "example": 10
           },
           "totalAmount": {
             "type": "number",
@@ -11988,7 +11988,7 @@
           },
           "minusAmount": {
             "type": "number",
-            "example": 5000
+            "example": 15
           },
           "totalAmount": {
             "type": "number",
