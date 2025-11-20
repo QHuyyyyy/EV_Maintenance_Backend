@@ -222,19 +222,7 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
         let user = await getUserByPhone(normalizedPhone);
 
         if (!user) {
-            console.log('[OTP Login] User not found, creating new customer...');
-            // Create new user account for customer
-            user = await createUser({
-                phone: normalizedPhone,
-                role: "CUSTOMER",
-                isDeleted: false
-            });
-
-            // Create customer profile
-            await customerService.createEmptyCustomer(user._id.toString());
-            console.log('[OTP Login] New customer created:', user._id);
-        } else {
-            console.log('[OTP Login] Existing user found:', user._id);
+            throw new Error("The account does not exist");
         }
 
         if (user.isDeleted) {
