@@ -102,15 +102,15 @@ export class ConversationService {
 
         await conversation.save();
 
-        // Send system message
-        const systemMessage = await Message.create({
-            conversationId: convId,
-            senderId: stfId,
-            senderRole: MessageSenderRole.SYSTEM,
-            content: `Staff has taken this chat`,
-            systemMessageType: 'staff_assigned',
-            isRead: false,
-        });
+        // // Send system message
+        // const systemMessage = await Message.create({
+        //     conversationId: convId,
+        //     senderId: stfId,
+        //     senderRole: MessageSenderRole.SYSTEM,
+        //     content: `Staff has taken this chat`,
+        //     systemMessageType: 'staff_assigned',
+        //     isRead: false,
+        // });
 
         // Get staff info
         const staff = await SystemUser.findById(stfId);
@@ -118,10 +118,10 @@ export class ConversationService {
         // Emit socket events
         chatSocketService.emitStaffAssigned(conversationId, stfId.toString(), staff?.name);
         chatSocketService.emitChatAssigned(conversationId, stfId.toString());
-        chatSocketService.emitSystemMessage(conversationId, {
-            ...systemMessage.toObject(),
-            senderRole: MessageSenderRole.SYSTEM,
-        });
+        // chatSocketService.emitSystemMessage(conversationId, {
+        //     ...systemMessage.toObject(),
+        //     senderRole: MessageSenderRole.SYSTEM,
+        // });
 
         return conversation;
     }
