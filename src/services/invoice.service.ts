@@ -74,9 +74,6 @@ export class InvoiceService {
             // Ensure discountPercent is within valid range (0-100)
             discountPercent = Math.max(0, Math.min(100, discountPercent));
 
-            // Ensure discountPercent is within valid range (0-100)
-            discountPercent = Math.max(0, Math.min(100, discountPercent));
-
             // Create invoice with discount percentage
             const { payment_id, invoiceType, totalAmount } = invoiceData;
             const invoice = new Invoice({
