@@ -18,14 +18,14 @@ export async function checkAndApplyWarranty(
     warranties: any[];             // Danh sách bảo hành được sử dụng
 }> {
     try {
-        console.log(`🔍 Kiểm tra bảo hành cho linh kiện: ${centerpartId}, Qty: ${quantity}`);
+        console.log(`🔍 Checking warranty for part: ${centerpartId}, Qty: ${quantity}`);
 
         const serviceRecord = await ServiceRecord.findById(recordId).populate({
             path: 'appointment_id',
             populate: { path: 'vehicle_id' }
         });
         if (!serviceRecord) {
-            throw new Error(`ServiceRecord không tìm thấy: ${recordId}`);
+            throw new Error(`ServiceRecord not found: ${recordId}`);
         }
         const appointment = serviceRecord.appointment_id as any;
         const vehicleId = appointment.vehicle_id._id;
@@ -34,20 +34,17 @@ export async function checkAndApplyWarranty(
         const centerPart = await CenterAutoPart.findById(centerpartId).populate('part_id');
 
         if (!centerPart) {
-            throw new Error(`CenterAutoPart không tìm thấy: ${centerpartId}`);
+            throw new Error(`CenterAutoPart not found: ${centerpartId}`);
         }
 
         const autoPart = centerPart.part_id as any;
         const masterPartId = autoPart._id;
 
-        console.log(`📦 Linh kiện: ${autoPart.name}`);
+        console.log(`📦 Part: ${autoPart.name}`);
 
         const today = nowVN();
         today.setHours(0, 0, 0, 0);
 
-        console.log(`📅 Ngày hôm nay: ${today.toLocaleDateString()}`);
-
-        // 🔑 BƯỚC QUAN TRỌNG: Tìm TẤT CẢ bảo hành còn hạn (không chỉ 1 cái)
         const activeWarranties = await PartWarranty.find({
             vehicle_id: vehicleId,
             part_id: masterPartId,
@@ -55,7 +52,7 @@ export async function checkAndApplyWarranty(
             warranty_status: 'active'
         });
 
-        console.log(`📊 Tìm thấy ${activeWarranties.length} bảo hành còn hạn`);
+        console.log(`📊 Found ${activeWarranties.length} active warranties`);
 
         let unitPrice: number;
         let description: string;
@@ -70,29 +67,29 @@ export async function checkAndApplyWarranty(
             unitPrice = autoPart.selling_price; // Giá cho phần tính tiền
 
             if (paidQty === 0) {
-                // Tất cả đều bảo hành
-                description = `Bảo hành ${warrantyQty}/${quantity} (Miễn phí, hết hạn: ${activeWarranties[0].end_date.toLocaleDateString()})`;
+                // All covered by warranty
+                description = `Warranty ${warrantyQty}/${quantity} (Free, expires: ${activeWarranties[0].end_date.toLocaleDateString()})`;
             } else if (warrantyQty === 0) {
-                // Không có bảo hành nào (không lẽ xảy ra)
-                description = `Bán mới ${quantity}`;
+                // No warranty (should not happen)
+                description = `New Sale ${quantity}`;
             } else {
-                // Vừa bảo hành vừa bán mới
-                description = `Bảo hành ${warrantyQty} (Miễn phí) + Bán mới ${paidQty}`;
+                // Partially covered by warranty and partially paid
+                description = `Warranty ${warrantyQty} (Free) + New Sale ${paidQty}`;
             }
 
-            console.log(`✅ Tìm thấy bảo hành!`);
-            console.log(`   - Bảo hành: ${warrantyQty}/${quantity} (0 đ)`);
-            console.log(`   - Bán mới: ${paidQty}/${quantity} (${unitPrice} đ/cái)`);
-            console.log(`   - Tổng tiền: ${paidQty * unitPrice} đ`);
+            console.log(`✅ Found warranty!`);
+            console.log(`   - Warranty: ${warrantyQty}/${quantity} (0 đ)`);
+            console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái)`);
+            console.log(`   - Total: ${paidQty * unitPrice} đ`);
 
         } else {
             unitPrice = autoPart.selling_price;
             warrantyQty = 0;
             paidQty = quantity;
-            description = `Bán mới ${quantity} (không có bảo hành)`;
+            description = `New Sale ${quantity} (no active warranty)`;
 
-            console.log(`❌ Không tìm thấy bảo hành còn hạn`);
-            console.log(`   - Mua bình thường: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
+            console.log(`❌ No active warranty found`);
+            console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
         }
 
         return {
@@ -104,7 +101,7 @@ export async function checkAndApplyWarranty(
         };
 
     } catch (error) {
-        console.error('❌ Lỗi trong checkAndApplyWarranty:', error);
+        console.error('❌ Error in checkAndApplyWarranty:', error);
         throw error;
     }
 }

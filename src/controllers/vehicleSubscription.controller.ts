@@ -6,9 +6,12 @@ export class VehicleSubscriptionController {
 
     async getAllSubscriptions(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicle Subscriptions']
-        // #swagger.summary = 'Get all vehicle subscriptions'
-        // #swagger.description = 'API to get all vehicle maintenance subscriptions'
+        // #swagger.summary = 'Get all vehicle subscriptions with pagination and filters'
+        // #swagger.description = 'API to get all vehicle maintenance subscriptions with optional status filter and pagination'
         // #swagger.security = [{ "bearerAuth": [] }]
+        // #swagger.parameters['status'] = { in: 'query', description: 'Filter by status (ACTIVE, EXPIRED, PENDING)', required: false, type: 'string' }
+        // #swagger.parameters['page'] = { in: 'query', description: 'Page number', required: false, type: 'integer', default: 1 }
+        // #swagger.parameters['limit'] = { in: 'query', description: 'Items per page', required: false, type: 'integer', default: 10 }
         /* #swagger.responses[200] = {
             description: 'Successfully retrieved subscriptions',
             schema: {
@@ -32,14 +35,27 @@ export class VehicleSubscriptionController {
                     start_date: "2023-01-01T00:00:00.000Z",
                     end_date: "2024-01-01T00:00:00.000Z",
                     status: "ACTIVE"
-                }]
+                }],
+                total: "number",
+                page: "number",
+                limit: "number",
+                totalPages: "number"
             }
         } */
         try {
-            const subscriptions = await this.vehicleSubscriptionService.getAllSubscriptions();
+            const filters = {
+                status: req.query.status as string,
+                page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
+            };
+            const result = await this.vehicleSubscriptionService.getAllSubscriptions(filters);
             res.status(200).json({
                 success: true,
-                data: subscriptions
+                data: result.data,
+                total: result.total,
+                page: result.page,
+                limit: result.limit,
+                totalPages: result.totalPages
             });
         } catch (error: any) {
             res.status(500).json({

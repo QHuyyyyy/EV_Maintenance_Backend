@@ -1,18 +1,49 @@
+import mongoose from 'mongoose';
 import ServiceDetail from '../models/serviceDetail.model';
+import CenterAutoPart from '../models/centerAutoPart.model';
 import { CreateServiceDetailRequest, UpdateServiceDetailRequest, IServiceDetail } from '../types/serviceDetail.type';
 import moment from 'moment-timezone';
 import { VIETNAM_TIMEZONE } from '../utils/time';
 
 export class ServiceDetailService {
     async createServiceDetail(detailData: CreateServiceDetailRequest): Promise<IServiceDetail> {
+        const session = await mongoose.startSession();
         try {
-            const detail = new ServiceDetail(detailData);
-            return await detail.save() as any;
+            await session.withTransaction(async () => {
+                const qty = detailData.quantity || 0;
+                if (qty < 0) {
+                    throw new Error('Quantity cannot be negative');
+                }
+
+                if (qty > 0) {
+                    const updated = await CenterAutoPart.findOneAndUpdate(
+                        { _id: detailData.centerpart_id, quantity: { $gte: qty } },
+                        { $inc: { quantity: -qty } },
+                        { session, new: true }
+                    );
+                    if (!updated) {
+                        throw new Error('Insufficient stock for the selected center part');
+                    }
+                }
+
+                const detail = new ServiceDetail(detailData);
+                await detail.save({ session });
+            });
+
+            // Re-fetch created doc without session to return populated structure if needed by callers later
+            // Keep original lean-less behavior to mirror previous return type
+            const created = await ServiceDetail.findOne({
+                record_id: detailData.record_id,
+                centerpart_id: detailData.centerpart_id
+            }) as any;
+            return created as any;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to create service detail: ${error.message}`);
             }
             throw new Error('Failed to create service detail: Unknown error');
+        } finally {
+            session.endSession();
         }
     }
 
@@ -102,13 +133,37 @@ export class ServiceDetailService {
     }
 
     async deleteServiceDetail(id: string): Promise<IServiceDetail | null> {
+        const session = await mongoose.startSession();
         try {
-            return await ServiceDetail.findByIdAndDelete(id).lean() as any;
+            let deleted: any = null;
+            await session.withTransaction(async () => {
+                const existing = await ServiceDetail.findById(id).session(session);
+                if (!existing) {
+                    deleted = null;
+                    return;
+                }
+                const centerPartId = existing.centerpart_id.toString();
+                const qty = existing.quantity || 0;
+
+                if (qty > 0) {
+                    await CenterAutoPart.findByIdAndUpdate(
+                        centerPartId,
+                        { $inc: { quantity: qty } },
+                        { session }
+                    );
+                }
+
+                deleted = await ServiceDetail.findByIdAndDelete(id, { session });
+            });
+
+            return deleted ? (deleted.toObject ? deleted.toObject() : deleted) : null;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to delete service detail: ${error.message}`);
             }
             throw new Error('Failed to delete service detail: Unknown error');
+        } finally {
+            session.endSession();
         }
     }
 
