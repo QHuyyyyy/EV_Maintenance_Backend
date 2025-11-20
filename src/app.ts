@@ -54,7 +54,7 @@ maintenanceScheduler.startScheduler();
 // Start analysis scheduler and worker
 // startAnalysisScheduler();
 // startAnalysisWorker();
-
+initWorkShiftDailyJob();
 const app = express();
 
 app.use(cors())
@@ -133,8 +133,7 @@ chatSocketService.initializeSocket(httpServer);
 httpServer.listen(PORT, () => {
     console.log(`App listening on port ${PORT}`);
     console.log(`WebSocket server initialized`);
-    // Initialize daily cron for workshift completion
-    initWorkShiftDailyJob();
+
 });
 
 export default app;
