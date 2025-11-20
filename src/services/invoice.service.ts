@@ -27,36 +27,62 @@ export class InvoiceService {
                 throw new Error('Cannot create invoice for unpaid payment');
             }
 
-            // Transaction ID check is optional - webhook will have it, manual creation might not
-            // if (!payment.transaction_id) {
-            //     throw new Error('Payment does not have a transaction ID yet');
-            // }
+            // Calculate discount percentage from package
+            let discountPercent = 0;
 
-            // Tự động tính minusAmount nếu là service_record payment
-            let minusAmount = invoiceData.minusAmount || 0;
-
+            // For service_record payments, always try to get discount % from subscription package
             if (payment.payment_type === 'service_record' && payment.service_record_id) {
                 const serviceRecord = payment.service_record_id as any;
-
                 if (serviceRecord?.appointment_id?.vehicle_id) {
                     const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
-                    const paymentAmount = payment.amount;
 
-                    // Tính discount dựa vào subscription
-                    const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
+                    // Try to get active subscription (similar to getPackageByServiceRecord)
+                    const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                    const activeSubscription = await VehicleSubscription.findOne({
                         vehicleId,
-                        paymentAmount
-                    );
+                        status: 'ACTIVE'
+                    }).populate('package_id', 'discount_percent');
 
-                    if (discountInfo.hasSubscription) {
-                        minusAmount = discountInfo.discount;
+                    if (activeSubscription) {
+                        const packageData = activeSubscription.package_id as any;
+                        discountPercent = packageData?.discount_percent || 0;
+                    } else {
+                        // Fallback to calculateSubscriptionDiscount if direct query fails
+                        const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
+                            vehicleId,
+                            payment.amount
+                        );
+                        if (discountInfo.hasSubscription) {
+                            discountPercent = discountInfo.discountPercent;
+                        }
                     }
+                }
+            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                // For subscription payments, get discount % from subscription
+                const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                    .populate('package_id', 'discount_percent');
+                if (subscription) {
+                    const packageData = subscription.package_id as any;
+                    discountPercent = packageData?.discount_percent || 0;
                 }
             }
 
+            // If minusAmount is explicitly provided and valid, use it (override calculated value)
+            if (invoiceData.minusAmount !== undefined && invoiceData.minusAmount >= 0 && invoiceData.minusAmount <= 100) {
+                discountPercent = invoiceData.minusAmount;
+            }
+
+            // Ensure discountPercent is within valid range (0-100)
+            discountPercent = Math.max(0, Math.min(100, discountPercent));
+
+            // Create invoice with discount percentage
+            const { payment_id, invoiceType, totalAmount } = invoiceData;
             const invoice = new Invoice({
-                ...invoiceData,
-                minusAmount: minusAmount
+                payment_id,
+                invoiceType,
+                minusAmount: discountPercent, // Store discount percentage (0-100)
+                totalAmount
             });
 
             await invoice.save();
@@ -72,7 +98,7 @@ export class InvoiceService {
         }
     }
 
-    async getInvoiceById(invoiceId: string): Promise<{ invoiceId: string; paymentId: string; data: any } | null> {
+    async getInvoiceById(invoiceId: string): Promise<(IInvoice & { data?: any }) | null> {
         try {
             // First fetch the invoice with payment to check payment_type
             const invoice = await Invoice.findById(invoiceId)
@@ -85,11 +111,7 @@ export class InvoiceService {
 
             const payment = invoice.payment_id;
             if (!payment) {
-                return {
-                    invoiceId: invoice._id.toString(),
-                    paymentId: invoice.payment_id?.toString() || '',
-                    data: null
-                };
+                return invoice;
             }
 
             // Based on payment_type, populate additional details
@@ -109,8 +131,7 @@ export class InvoiceService {
                     .lean() as any;
 
                 return {
-                    invoiceId: invoice._id.toString(),
-                    paymentId: payment._id.toString(),
+                    ...invoice,
                     data: details || []
                 };
             } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
@@ -123,17 +144,12 @@ export class InvoiceService {
                     .lean() as any;
 
                 return {
-                    invoiceId: invoice._id.toString(),
-                    paymentId: payment._id.toString(),
+                    ...invoice,
                     data: subscription
                 };
             }
 
-            return {
-                invoiceId: invoice._id.toString(),
-                paymentId: payment._id.toString(),
-                data: null
-            };
+            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -144,9 +160,71 @@ export class InvoiceService {
 
     async getInvoiceByPaymentId(paymentId: string): Promise<IInvoice | null> {
         try {
-            return await Invoice.findOne({ payment_id: paymentId })
+            const invoice = await Invoice.findOne({ payment_id: paymentId })
                 .populate('payment_id')
                 .lean() as any;
+
+            // Recalculate minusAmount (discount %) from package if it's invalid (> 100) and update database
+            if (invoice && invoice.minusAmount > 100) {
+                const payment = invoice.payment_id as any;
+                let newDiscountPercent = 0;
+
+                if (payment) {
+                    try {
+                        if (payment.payment_type === 'service_record' && payment.service_record_id) {
+                            const ServiceRecord = require('../models/serviceRecord.model').default;
+                            const serviceRecord = await ServiceRecord.findById(payment.service_record_id)
+                                .populate({
+                                    path: 'appointment_id',
+                                    populate: { path: 'vehicle_id' }
+                                });
+                            if (serviceRecord?.appointment_id?.vehicle_id) {
+                                const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
+                                // Try direct query first (faster)
+                                const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                                const activeSubscription = await VehicleSubscription.findOne({
+                                    vehicleId,
+                                    status: 'ACTIVE'
+                                }).populate('package_id', 'discount_percent');
+
+                                if (activeSubscription) {
+                                    const packageData = activeSubscription.package_id as any;
+                                    newDiscountPercent = packageData?.discount_percent || 0;
+                                } else {
+                                    // Fallback to calculateSubscriptionDiscount
+                                    const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
+                                        vehicleId,
+                                        payment.amount
+                                    );
+                                    newDiscountPercent = discountInfo.hasSubscription ? discountInfo.discountPercent : 0;
+                                }
+                            }
+                        } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                            const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                            const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                                .populate('package_id', 'discount_percent');
+                            if (subscription) {
+                                const packageData = subscription.package_id as any;
+                                newDiscountPercent = packageData?.discount_percent || 0;
+                            }
+                        }
+                    } catch (error) {
+                        // If recalculation fails, keep 0
+                        newDiscountPercent = 0;
+                    }
+                }
+
+                // Update database with corrected discount percentage
+                if (newDiscountPercent !== invoice.minusAmount) {
+                    await Invoice.findOneAndUpdate(
+                        { payment_id: paymentId },
+                        { minusAmount: newDiscountPercent }
+                    );
+                    invoice.minusAmount = newDiscountPercent;
+                }
+            }
+
+            return invoice;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -188,8 +266,68 @@ export class InvoiceService {
                 Invoice.countDocuments(query)
             ]);
 
+            // Recalculate minusAmount (discount %) from package for old invoices with invalid values (> 100) and update database
+            const normalizedInvoices = await Promise.all(invoices.map(async (invoice: any) => {
+                if (invoice.minusAmount > 100) {
+                    const payment = invoice.payment_id as any;
+                    let newDiscountPercent = 0;
+
+                    if (payment) {
+                        try {
+                            if (payment.payment_type === 'service_record' && payment.service_record_id) {
+                                const ServiceRecord = require('../models/serviceRecord.model').default;
+                                const serviceRecord = await ServiceRecord.findById(payment.service_record_id)
+                                    .populate({
+                                        path: 'appointment_id',
+                                        populate: { path: 'vehicle_id' }
+                                    });
+                                if (serviceRecord?.appointment_id?.vehicle_id) {
+                                    const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
+                                    // Try direct query first (faster)
+                                    const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                                    const activeSubscription = await VehicleSubscription.findOne({
+                                        vehicleId,
+                                        status: 'ACTIVE'
+                                    }).populate('package_id', 'discount_percent');
+
+                                    if (activeSubscription) {
+                                        const packageData = activeSubscription.package_id as any;
+                                        newDiscountPercent = packageData?.discount_percent || 0;
+                                    } else {
+                                        // Fallback to calculateSubscriptionDiscount
+                                        const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
+                                            vehicleId,
+                                            payment.amount
+                                        );
+                                        newDiscountPercent = discountInfo.hasSubscription ? discountInfo.discountPercent : 0;
+                                    }
+                                }
+                            } else if (payment.payment_type === 'subscription' && payment.subscription_id) {
+                                const { VehicleSubscription } = require('../models/vehicleSubcription.model');
+                                const subscription = await VehicleSubscription.findById(payment.subscription_id)
+                                    .populate('package_id', 'discount_percent');
+                                if (subscription) {
+                                    const packageData = subscription.package_id as any;
+                                    newDiscountPercent = packageData?.discount_percent || 0;
+                                }
+                            }
+                        } catch (error) {
+                            // If recalculation fails, keep 0
+                            newDiscountPercent = 0;
+                        }
+                    }
+
+                    // Update database with corrected discount percentage
+                    if (newDiscountPercent !== invoice.minusAmount) {
+                        await Invoice.findByIdAndUpdate(invoice._id, { minusAmount: newDiscountPercent });
+                        invoice.minusAmount = newDiscountPercent;
+                    }
+                }
+                return invoice;
+            }));
+
             return {
-                invoices,
+                invoices: normalizedInvoices,
                 total,
                 page,
                 limit,
@@ -440,10 +578,10 @@ export class InvoiceService {
         }
     }
 
-    // Preview invoice với minusAmount trước khi thanh toán
+    // Preview invoice với discount calculation trước khi thanh toán
     async previewInvoiceForServiceRecord(serviceRecordId: string, totalAmount: number): Promise<{
         originalAmount: number;
-        minusAmount: number;
+        discountAmount: number;
         finalAmount: number;
         hasSubscription: boolean;
         subscriptionInfo?: {
@@ -479,7 +617,7 @@ export class InvoiceService {
 
             return {
                 originalAmount: totalAmount,
-                minusAmount: discountInfo.discount,
+                discountAmount: discountInfo.discount,
                 finalAmount: discountInfo.finalAmount,
                 hasSubscription: discountInfo.hasSubscription,
                 subscriptionInfo: discountInfo.hasSubscription ? {
