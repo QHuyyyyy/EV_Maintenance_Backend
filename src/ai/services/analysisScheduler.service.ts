@@ -26,12 +26,18 @@ export function startAnalysisScheduler() {
 export async function triggerAnalysisNow() {
   let page = 1;
   const limit = 50;
+  const enqueuedCenters = new Set<string>(); // Deduplicate centers
+
   while (true) {
     const resp = await centerAutoPartService.getAllCenterAutoParts({ page, limit });
     const items = (resp as any).items || [];
     for (const it of items) {
       const centerId = it.center_id?._id?.toString?.() ?? it.center_id?.toString?.();
-      if (centerId) await enqueueCenterJob(centerId);
+      // Only enqueue each center once
+      if (centerId && !enqueuedCenters.has(centerId)) {
+        enqueuedCenters.add(centerId);
+        await enqueueCenterJob(centerId);
+      }
     }
     if (items.length < limit) break;
     page++;
