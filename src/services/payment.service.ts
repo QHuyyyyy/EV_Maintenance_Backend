@@ -330,14 +330,13 @@ export class PaymentService {
                         const invoiceService = require('./invoice.service').default;
                         const paymentId = (payment._id as any).toString();
                         
-                        // Create invoice with auto-calculated minusAmount
+                        // Create invoice
                         const invoice = await invoiceService.createInvoice({
                             payment_id: paymentId,
                             invoiceType: payment.payment_type === 'subscription' 
                                 ? 'Subscription Package' 
                                 : 'Service Completion',
-                            totalAmount: payment.amount,
-                            status: 'issued'
+                            totalAmount: payment.amount
                         });
                         
                         console.log(`  ✓ Invoice created: ${invoice._id}`);

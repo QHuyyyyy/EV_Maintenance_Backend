@@ -4,6 +4,16 @@ import { CreateInvoiceRequest, IInvoice, UpdateInvoiceRequest } from '../types/i
 import vehicleSubscriptionService from './vehicleSubcription.service';
 import ServiceRecord from '../models/serviceRecord.model';
 
+// Helper function to remove minusAmount from invoice objects
+const removeMinusAmount = (invoice: any): any => {
+    if (!invoice) return invoice;
+    if (Array.isArray(invoice)) {
+        return invoice.map(removeMinusAmount);
+    }
+    const { minusAmount, ...invoiceWithoutMinusAmount } = invoice;
+    return invoiceWithoutMinusAmount;
+};
+
 export class InvoiceService {
     async createInvoice(invoiceData: CreateInvoiceRequest): Promise<IInvoice> {
         try {
@@ -30,38 +40,21 @@ export class InvoiceService {
             //     throw new Error('Payment does not have a transaction ID yet');
             // }
 
-            // Tự động tính minusAmount nếu là service_record payment
-            let minusAmount = invoiceData.minusAmount || 0;
-
-            if (payment.payment_type === 'service_record' && payment.service_record_id) {
-                const serviceRecord = payment.service_record_id as any;
-
-                if (serviceRecord?.appointment_id?.vehicle_id) {
-                    const vehicleId = serviceRecord.appointment_id.vehicle_id._id.toString();
-                    const paymentAmount = payment.amount;
-
-                    // Tính discount dựa vào subscription
-                    const discountInfo = await vehicleSubscriptionService.calculateSubscriptionDiscount(
-                        vehicleId,
-                        paymentAmount
-                    );
-
-                    if (discountInfo.hasSubscription) {
-                        minusAmount = discountInfo.discount;
-                    }
-                }
-            }
-
+            // Explicitly create invoice with only allowed fields (exclude minusAmount if present)
+            const { payment_id, invoiceType, totalAmount } = invoiceData;
             const invoice = new Invoice({
-                ...invoiceData,
-                minusAmount: minusAmount
+                payment_id,
+                invoiceType,
+                totalAmount
             });
 
             await invoice.save();
 
-            return await Invoice.findById(invoice._id)
+            const savedInvoice = await Invoice.findById(invoice._id)
                 .populate('payment_id')
                 .lean() as any;
+            
+            return removeMinusAmount(savedInvoice);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to create invoice: ${error.message}`);
@@ -72,9 +65,10 @@ export class InvoiceService {
 
     async getInvoiceById(invoiceId: string): Promise<IInvoice | null> {
         try {
-            return await Invoice.findById(invoiceId)
+            const invoice = await Invoice.findById(invoiceId)
                 .populate('payment_id')
                 .lean() as any;
+            return removeMinusAmount(invoice);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -85,9 +79,10 @@ export class InvoiceService {
 
     async getInvoiceByPaymentId(paymentId: string): Promise<IInvoice | null> {
         try {
-            return await Invoice.findOne({ payment_id: paymentId })
+            const invoice = await Invoice.findOne({ payment_id: paymentId })
                 .populate('payment_id')
                 .lean() as any;
+            return removeMinusAmount(invoice);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get invoice: ${error.message}`);
@@ -130,7 +125,7 @@ export class InvoiceService {
             ]);
 
             return {
-                invoices,
+                invoices: removeMinusAmount(invoices),
                 total,
                 page,
                 limit,
@@ -146,13 +141,14 @@ export class InvoiceService {
 
     async updateInvoice(invoiceId: string, updateData: UpdateInvoiceRequest): Promise<IInvoice | null> {
         try {
-            return await Invoice.findByIdAndUpdate(
+            const invoice = await Invoice.findByIdAndUpdate(
                 invoiceId,
                 updateData,
                 { new: true }
             )
                 .populate('payment_id')
                 .lean() as any;
+            return removeMinusAmount(invoice);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to update invoice: ${error.message}`);
@@ -163,8 +159,9 @@ export class InvoiceService {
 
     async deleteInvoice(invoiceId: string): Promise<IInvoice | null> {
         try {
-            return await Invoice.findByIdAndDelete(invoiceId)
+            const invoice = await Invoice.findByIdAndDelete(invoiceId)
                 .lean() as any;
+            return removeMinusAmount(invoice);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to delete invoice: ${error.message}`);
@@ -381,10 +378,10 @@ export class InvoiceService {
         }
     }
 
-    // Preview invoice với minusAmount trước khi thanh toán
+    // Preview invoice với discount calculation trước khi thanh toán
     async previewInvoiceForServiceRecord(serviceRecordId: string, totalAmount: number): Promise<{
         originalAmount: number;
-        minusAmount: number;
+        discountAmount: number;
         finalAmount: number;
         hasSubscription: boolean;
         subscriptionInfo?: {
@@ -420,7 +417,7 @@ export class InvoiceService {
 
             return {
                 originalAmount: totalAmount,
-                minusAmount: discountInfo.discount,
+                discountAmount: discountInfo.discount,
                 finalAmount: discountInfo.finalAmount,
                 hasSubscription: discountInfo.hasSubscription,
                 subscriptionInfo: discountInfo.hasSubscription ? {

@@ -5,7 +5,6 @@ export type InvoiceType = 'Subscription Package' | 'Service Completion';
 export interface IInvoice extends Document {
     payment_id: mongoose.Types.ObjectId;
     invoiceType: InvoiceType;
-    minusAmount: number;
     totalAmount: number;
     status: 'pending' | 'issued' | 'cancelled';
     createdAt: Date;
@@ -24,11 +23,6 @@ const invoiceSchema = new Schema<IInvoice>(
             enum: ['Subscription Package', 'Service Completion'],
             required: true
         },
-        minusAmount: {
-            type: Number,
-            required: true,
-            default: 0
-        },
         totalAmount: {
             type: Number,
             required: true
@@ -40,7 +34,8 @@ const invoiceSchema = new Schema<IInvoice>(
         }
     },
     {
-        timestamps: true
+        timestamps: true,
+        strict: true // Ensure only defined fields are saved
     }
 );
 
