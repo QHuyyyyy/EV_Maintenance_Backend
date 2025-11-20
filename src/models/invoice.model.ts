@@ -5,6 +5,7 @@ export type InvoiceType = 'Subscription Package' | 'Service Completion';
 export interface IInvoice extends Document {
     payment_id: mongoose.Types.ObjectId;
     invoiceType: InvoiceType;
+    minusAmount: number; // Discount percentage from package (0-100)
     totalAmount: number;
     status: 'pending' | 'issued' | 'cancelled';
     createdAt: Date;
@@ -22,6 +23,13 @@ const invoiceSchema = new Schema<IInvoice>(
             type: String,
             enum: ['Subscription Package', 'Service Completion'],
             required: true
+        },
+        minusAmount: {
+            type: Number,
+            required: true,
+            default: 0,
+            min: 0,
+            max: 100 // Discount percentage (0-100)
         },
         totalAmount: {
             type: Number,

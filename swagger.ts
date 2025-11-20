@@ -431,6 +431,7 @@ const doc = {
             _id: '60f1b2b3c4e5f6g7h8i9j0k1',
             payment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             invoiceType: 'VAT',
+            minusAmount: 10,
             totalAmount: 250000,
             status: 'issued',
             createdAt: '2025-09-21T10:00:00.000Z',
@@ -439,10 +440,12 @@ const doc = {
         CreateInvoice: {
             payment_id: '60f1b2b3c4e5f6g7h8i9j0k2',
             invoiceType: 'VAT',
+            minusAmount: 10,
             totalAmount: 250000
         },
         UpdateInvoice: {
             status: 'issued',
+            minusAmount: 15,
             totalAmount: 245000
         },
         StaffAppointment: {

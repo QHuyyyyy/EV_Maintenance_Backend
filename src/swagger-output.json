@@ -11930,6 +11930,10 @@
             "type": "string",
             "example": "VAT"
           },
+          "minusAmount": {
+            "type": "number",
+            "example": 10
+          },
           "totalAmount": {
             "type": "number",
             "example": 250000
@@ -11962,6 +11966,10 @@
             "type": "string",
             "example": "VAT"
           },
+          "minusAmount": {
+            "type": "number",
+            "example": 10
+          },
           "totalAmount": {
             "type": "number",
             "example": 250000
@@ -11977,6 +11985,10 @@
           "status": {
             "type": "string",
             "example": "issued"
+          },
+          "minusAmount": {
+            "type": "number",
+            "example": 15
           },
           "totalAmount": {
             "type": "number",
