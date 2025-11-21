@@ -3,7 +3,6 @@ import centerAutoPartService from '../../services/centerAutoPart.service';
 import { enqueueCenterJob } from '../services/analysisJob.service';
 
 export function startAnalysisScheduler() {
-  // Schedule weekly at 04:00 AM (Sunday)
   cron.schedule(
     '0 4 * * 0',
     async () => {
@@ -22,7 +21,7 @@ export function startAnalysisScheduler() {
   );
 }
 
-// Manual trigger: enqueue analysis for all centers immediately
+
 export async function triggerAnalysisNow() {
   let page = 1;
   const limit = 50;
