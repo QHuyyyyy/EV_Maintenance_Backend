@@ -16,6 +16,7 @@ export interface Payload {
     email?: string;
     phone?: string;
     centerId?: string;
+    role?: string; // User role (CUSTOMER, ADMIN, STAFF, TECHNICIAN)
     originalIssuedAt?: number; // Thời gian đăng nhập ban đầu
 }
 
