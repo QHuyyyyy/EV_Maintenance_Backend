@@ -106,7 +106,6 @@ app.use('/api/shift-assignments', shiftAssignmentRoutes);
 app.use('/api/forecast', forecastRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/warranties', warrantyRoutes);
-// Notifications route removed: we emit via websocket only
 
 // Root route redirect to API docs
 

@@ -186,18 +186,27 @@ export class ConversationService {
      * - Send a system message notifying other staff
      */
     async handleStaffOffline(staffId: string, reason: 'offline' | 'logout' = 'offline') {
-        const stfId = new Types.ObjectId(staffId);
+
+        const systemUser = await SystemUser.findOne({ userId: staffId });
+
+        if (!systemUser) {
+            console.log(`[handleStaffOffline] No SystemUser found for userId ${staffId}`);
+            return;
+        }
+
+        const systemUserId = systemUser._id;
+        console.log(`[handleStaffOffline] Found SystemUser ${systemUserId} for userId ${staffId}`);
 
         // Find all active conversations assigned to this staff
         const conversations = await Conversation.find({
-            assignedStaffId: stfId,
+            assignedStaffId: systemUserId,
             status: ConversationStatus.ACTIVE,
         });
 
         for (const conversation of conversations) {
             // Mark as unassigned in assignment history
             const lastAssignment = conversation.assignmentHistory[conversation.assignmentHistory.length - 1];
-            if (lastAssignment && lastAssignment.staffId.equals(stfId)) {
+            if (lastAssignment && lastAssignment.staffId.equals(systemUserId)) {
                 lastAssignment.unassignedAt = nowVN();
                 lastAssignment.unassignReason = reason === 'logout' ? 'staff_logout' : 'staff_offline';
             }
@@ -208,6 +217,7 @@ export class ConversationService {
 
             await conversation.save();
 
+
             // Send system message
             await Message.create({
                 conversationId: conversation._id,
@@ -215,6 +225,15 @@ export class ConversationService {
                 content: `Staff member went ${reason}. This chat is now available for other staff.`,
                 systemMessageType: 'staff_offline',
                 isRead: false,
+            });
+
+            // Emit socket event to notify about conversation status change
+            const conversationId = (conversation._id as any).toString();
+            chatSocketService.emitConversationUpdate(conversationId, {
+                conversationId,
+                status: ConversationStatus.WAITING,
+                assignedStaffId: null,
+                staffWentOffline: true,
             });
         }
     }
