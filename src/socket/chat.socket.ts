@@ -9,8 +9,8 @@ const VIETNAM_TIMEZONE = 'Asia/Ho_Chi_Minh';
 const nowVN = () => moment().tz(VIETNAM_TIMEZONE).toDate();
 
 interface SocketUser {
-    userId: string;
-    staffId?: string;
+    userId: string;  // User._id from JWT token
+    systemUserId?: string;  // SystemUser._id (for staff only)
     socketId: string;
     role: string;
 }
@@ -54,6 +54,7 @@ class ChatSocketService {
         try {
             const token = socket.handshake.auth.token;
             if (!token) {
+                console.error('[AUTH] Token missing');
                 return next(new Error('Authentication token missing'));
             }
 
@@ -61,8 +62,11 @@ class ChatSocketService {
             const decoded: any = jwt.verify(token, SECRET_KEY);
             socket.data.userId = decoded.sub;
             socket.data.role = decoded.role;
+
+            console.log(`[AUTH SUCCESS] User ${decoded.sub} authenticated with role: ${decoded.role}`);
             next();
-        } catch (error) {
+        } catch (error: any) {
+            console.error('[AUTH ERROR]', error.message);
             next(new Error('Invalid token'));
         }
     }
@@ -84,8 +88,10 @@ class ChatSocketService {
         };
         this.connectedUsers.set(socket.id, socketUser);
 
-        // If staff, mark as online
+        // If staff, mark as online and find their SystemUser ID
         if (['ADMIN', 'STAFF', 'TECHNICIAN'].includes(role)) {
+            // Note: staffOnlineStatus still uses userId for backward compatibility
+            // The actual SystemUser lookup happens when needed (e.g., in handleStaffOffline)
             this.staffOnlineStatus.set(userId, true);
             this.io?.emit('staff:online', { staffId: userId, isOnline: true });
             console.log(`Staff ${userId} is now online`);
@@ -203,13 +209,19 @@ class ChatSocketService {
 
         this.connectedUsers.delete(socket.id);
 
+        console.log(`[DISCONNECT] User ${userId} (role: ${role}) disconnected. Socket: ${socket.id}`);
+
         // If staff, mark as offline
         if (['ADMIN', 'STAFF', 'TECHNICIAN'].includes(role)) {
             this.staffOnlineStatus.set(userId, false);
             this.io?.emit('staff:online', { staffId: userId, isOnline: false });
-            console.log(`Staff ${userId} is now offline`);
+            console.log(`[STAFF OFFLINE] Staff ${userId} is now offline`);
             // Auto unassign conversations and notify
-            ConversationService.handleStaffOffline(userId, 'offline');
+            ConversationService.handleStaffOffline(userId, 'offline').catch((err) => {
+                console.error('[ERROR] Error handling staff offline:', err);
+            });
+        } else {
+            console.log(`[CUSTOMER DISCONNECT] User ${userId} is a customer (role: ${role}), not handling staff offline`);
         }
 
         // Leave all conversation rooms
@@ -223,7 +235,7 @@ class ChatSocketService {
             this.userToConversation.delete(userId);
         }
 
-        console.log(`User ${userId} disconnected`);
+        console.log(`[DISCONNECT COMPLETE] User ${userId} disconnected`);
     }
 
     /**
@@ -260,6 +272,8 @@ class ChatSocketService {
 
     /**
      * Notify staff of chat assignment
+     * @param conversationId - Conversation ID
+     * @param staffId - SystemUser._id (NOT User._id)
      */
     emitChatAssigned(conversationId: string, staffId: string) {
         this.io?.to(`staff:${staffId}`).emit('chat:assigned', {
@@ -270,6 +284,8 @@ class ChatSocketService {
 
     /**
      * Notify user of staff assignment
+     * @param conversationId - Conversation ID
+     * @param staffId - SystemUser._id (NOT User._id)
      */
     emitStaffAssigned(conversationId: string, staffId: string, staffName?: string) {
         this.io?.to(`conversation:${conversationId}`).emit('staff:assigned', {
@@ -282,6 +298,9 @@ class ChatSocketService {
 
     /**
      * Notify of staff transfer
+     * @param conversationId - Conversation ID
+     * @param oldStaffId - Old SystemUser._id (NOT User._id)
+     * @param newStaffId - New SystemUser._id (NOT User._id)
      */
     emitChatTransferred(conversationId: string, oldStaffId: string, newStaffId: string) {
         this.io?.to(`conversation:${conversationId}`).emit('chat:transferred', {
@@ -372,6 +391,7 @@ class ChatSocketService {
 
     /**
      * Notify when staff goes offline
+     * @param staffId - User._id (from User model, used to track staff online status)
      */
     notifyStaffOffline(staffId: string) {
         this.io?.emit('staff:offline', {
@@ -385,6 +405,7 @@ class ChatSocketService {
 
     /**
      * Notify when staff comes online
+     * @param staffId - User._id (from User model, used to track staff online status)
      */
     notifyStaffOnline(staffId: string) {
         this.io?.emit('staff:online', {

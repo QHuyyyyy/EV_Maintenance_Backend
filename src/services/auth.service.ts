@@ -121,6 +121,7 @@ export async function refreshAccessToken(refreshTokenDto: RefreshTokenDto): Prom
         const newPayload: Payload = {
             sub: user._id.toString(),
             email: user.email || undefined,
+            role: user.role,
             originalIssuedAt: payload.originalIssuedAt || Date.now()
         };
 
@@ -236,6 +237,7 @@ export async function loginWithFirebaseOTP(idToken: string, phone: string) {
         const payload: Payload = {
             sub: user._id.toString(),
             phone: user.phone || undefined,
+            role: user.role,
             originalIssuedAt: Date.now()
         };
 
@@ -413,6 +415,7 @@ export async function loginByPassword(identifier: string, password: string) {
             sub: user._id.toString(),
             email: user.email || undefined,
             phone: user.phone || undefined,
+            role: user.role,
             originalIssuedAt: Date.now()
         };
 

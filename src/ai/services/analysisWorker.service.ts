@@ -23,8 +23,7 @@ async function processCenterAnalysis(job: any) {
     if (!items || items.length === 0) break;
     for (const cp of items) {
       try {
-        // cp.part_id may be a populated object (AutoPart) or a plain id string/ObjectId.
-        // If it's an object, use its _id; otherwise use the value directly.
+
         const partId = typeof cp.part_id === 'string'
           ? cp.part_id
           : (cp.part_id && (cp.part_id._id ?? cp.part_id.id))
@@ -50,7 +49,7 @@ async function processCenterAnalysis(job: any) {
 }
 
 export function startAnalysisWorker() {
-  // Worker will pick jobs from 'analysis' queue and process them with controlled concurrency
+
   const worker = new Worker('analysis', async (job) => {
     return await processCenterAnalysis(job);
   }, { connection: { url: REDIS_URL }, concurrency: 2 });
@@ -59,7 +58,7 @@ export function startAnalysisWorker() {
     console.log('Analysis job completed', job.id, returnvalue);
     const center_id = job?.data?.centerId;
     const totalResults = (returnvalue && returnvalue.totalResults) || 0;
-    // Only emit via socket (no persistence)
+
     chatSocketService.emitForecastBatchComplete({ center_id, totalResults });
   });
 
