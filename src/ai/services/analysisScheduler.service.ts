@@ -25,7 +25,7 @@ export function startAnalysisScheduler() {
 export async function triggerAnalysisNow() {
   let page = 1;
   const limit = 50;
-  const enqueuedCenters = new Set<string>(); // Deduplicate centers
+  const enqueuedCenters = new Set<string>();
 
   while (true) {
     const resp = await centerAutoPartService.getAllCenterAutoParts({ page, limit });
