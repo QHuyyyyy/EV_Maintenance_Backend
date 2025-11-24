@@ -74,7 +74,7 @@ export class RecordChecklistService {
                 .populate({ path: 'checklist_id' })
                 .populate({
                     path: 'suggest.part_id',
-                    populate: { path: 'part_id' }
+                    populate: { path: '_id' }
                 })
                 .sort({ createdAt: 1 })
                 .lean() as any;

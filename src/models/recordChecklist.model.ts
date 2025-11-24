@@ -19,7 +19,7 @@ export interface IRecordChecklist extends Document {
 
 const SuggestItemSchema = new Schema<ISuggestItem>(
     {
-        part_id: { type: Schema.Types.ObjectId, ref: 'CenterAutoPart', required: true },
+        part_id: { type: Schema.Types.ObjectId, ref: 'AutoPart', required: true },
         quantity: { type: Number, min: 1, default: 1 }
     },
     { _id: false }
