@@ -63,7 +63,8 @@ export class InventoryTicketController {
             required: true,
             content: {
                 'application/json': {
-                    schema: { $ref: '#/components/schemas/CreateInventoryTicket' }
+                    schema: { $ref: '#/components/schemas/CreateInventoryTicket' },
+                    description: 'Create ticket with flow information (source_type/source_id for IN type, destination_type/destination_id for OUT type)'
                 }
             }
         } */
@@ -91,7 +92,8 @@ export class InventoryTicketController {
             required: true,
             content: {
                 'application/json': {
-                    schema: { $ref: '#/components/schemas/UpdateInventoryTicket' }
+                    schema: { $ref: '#/components/schemas/UpdateInventoryTicket' },
+                    description: 'Update ticket status and/or flow information. When status becomes COMPLETED, transaction is auto-created with stock adjustment'
                 }
             }
         } */

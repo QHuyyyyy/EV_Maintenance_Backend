@@ -11742,7 +11742,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/vehicle-auto-parts/vehicle/{vehicleId}/quantity-by-category": {
@@ -12072,7 +12077,8 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateInventoryTicket"
-              }
+              },
+              "description": "Create ticket with flow information (source_type/source_id for IN type, destination_type/destination_id for OUT type)"
             }
           }
         }
@@ -12155,7 +12161,8 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateInventoryTicket"
-              }
+              },
+              "description": "Update ticket status and/or flow information. When status becomes COMPLETED, transaction is auto-created with stock adjustment"
             }
           }
         }
@@ -14541,6 +14548,22 @@
             "type": "string",
             "example": "Phiếu nhập hàng từ supplier"
           },
+          "source_type": {
+            "type": "string",
+            "example": "SUPPLIER"
+          },
+          "source_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0s1"
+          },
+          "destination_type": {
+            "type": "string",
+            "example": "CENTER"
+          },
+          "destination_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0c1"
+          },
           "items": {
             "type": "array",
             "items": {
@@ -14576,6 +14599,22 @@
           "notes": {
             "type": "string",
             "example": "Duyệt phiếu nhập"
+          },
+          "source_type": {
+            "type": "string",
+            "example": "SUPPLIER"
+          },
+          "source_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0s1"
+          },
+          "destination_type": {
+            "type": "string",
+            "example": "CENTER"
+          },
+          "destination_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0c1"
           }
         },
         "xml": {
