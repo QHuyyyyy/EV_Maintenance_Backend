@@ -31,6 +31,11 @@ import shift from './routes/workshift.routes';
 import forecastRoutes from './routes/forecast.routes';
 import slotRoutes from './routes/slot.routes';
 import warrantyRoutes from './routes/warranty.routes';
+import vehicleAutoPartRoutes from './routes/vehicleAutoPart.routes';
+import inventoryTicketRoutes from './routes/inventoryTicket.routes';
+import importRequestRoutes from './routes/importRequest.routes';
+import inventoryTransactionRoutes from './routes/inventoryTransaction.routes';
+import serviceOrderRoutes from './routes/serviceOrder.routes';
 import { maintenanceScheduler } from "./services/maintenanceScheduler.service";
 import { initWorkShiftDailyJob } from './services/workshiftScheduler.service';
 import { startAnalysisWorker } from "./ai/services/analysisWorker.service";
@@ -106,8 +111,79 @@ app.use('/api/shift-assignments', shiftAssignmentRoutes);
 app.use('/api/forecast', forecastRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/warranties', warrantyRoutes);
+app.use('/api/vehicle-auto-parts', vehicleAutoPartRoutes);
+app.use('/api/inventory-tickets', inventoryTicketRoutes);
+app.use('/api/inventory-transactions', inventoryTransactionRoutes);
+app.use('/api/service-orders', serviceOrderRoutes);
+app.use('/api/import-requests', importRequestRoutes);
+app.get('/api/import-requests', (req, res) => {
+    // #swagger.tags = ['Import Requests']
+    // #swagger.summary = 'Get all import requests'
+    // #swagger.description = 'Retrieve paginated list of import requests with optional filters'
+    // #swagger.parameters['center_id'] = { description: 'Center ID to filter', required: false, type: 'string', in: 'query' }
+    // #swagger.parameters['status'] = { description: 'Status filter', required: false, type: 'string', in: 'query' }
+    // #swagger.parameters['page'] = { description: 'Page number', required: false, type: 'number', in: 'query' }
+    // #swagger.parameters['limit'] = { description: 'Page size', required: false, type: 'number', in: 'query' }
+    // #swagger.security = [{ "bearerAuth": [] }]
+    // #swagger.responses[200] = { description: 'Success', schema: { success: true, data: {} } }
+});
 
-// Root route redirect to API docs
+app.get('/api/import-requests/:id', (req, res) => {
+    // #swagger.tags = ['Import Requests']
+    // #swagger.summary = 'Get import request by ID'
+    // #swagger.parameters['id'] = { description: 'ImportRequest ID', required: true, type: 'string', in: 'path' }
+    // #swagger.security = [{ "bearerAuth": [] }]
+    // #swagger.responses[200] = { description: 'Success', schema: { success: true, data: {} } }
+    // #swagger.responses[404] = { description: 'Not found' }
+});
+
+app.post('/api/import-requests', (req, res) => {
+    // #swagger.tags = ['Import Requests']
+    // #swagger.summary = 'Create import request'
+    // #swagger.description = 'Create a new import request'
+    // #swagger.security = [{ "bearerAuth": [] }]
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/CreateImportRequest' }
+            }
+        }
+    } */
+    // #swagger.responses[201] = { description: 'Created', schema: { success: true, message: 'Import request created successfully', data: {} } }
+});
+
+app.put('/api/import-requests/:id', (req, res) => {
+    // #swagger.tags = ['Import Requests']
+    // #swagger.summary = 'Update import request'
+    // #swagger.parameters['id'] = { description: 'ImportRequest ID', required: true, type: 'string', in: 'path' }
+    // #swagger.security = [{ "bearerAuth": [] }]
+    /* #swagger.requestBody = {
+        required: true,
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateImportRequest' }
+            }
+        }
+    } */
+    // #swagger.responses[200] = { description: 'Updated', schema: { success: true, message: 'Import request updated successfully', data: {} } }
+});
+
+app.delete('/api/import-requests/:id', (req, res) => {
+    // #swagger.tags = ['Import Requests']
+    // #swagger.summary = 'Delete import request'
+    // #swagger.parameters['id'] = { description: 'ImportRequest ID', required: true, type: 'string', in: 'path' }
+    // #swagger.security = [{ "bearerAuth": [] }]
+    // #swagger.responses[200] = { description: 'Deleted', schema: { success: true, message: 'Import request deleted successfully', data: {} } }
+});
+
+app.get('/api/import-requests/:request_id/items', (req, res) => {
+    // #swagger.tags = ['Import Requests']
+    // #swagger.summary = 'Get items of an import request'
+    // #swagger.parameters['request_id'] = { description: 'ImportRequest ID', required: true, type: 'string', in: 'path' }
+    // #swagger.security = [{ "bearerAuth": [] }]
+    // #swagger.responses[200] = { description: 'Success', schema: { success: true, data: [] } }
+});
 
 app.get('/', (req, res) => {
     // #swagger.ignore = true

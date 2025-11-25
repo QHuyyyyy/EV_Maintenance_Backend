@@ -4,6 +4,7 @@ export interface IAutoPartDocument extends Document {
     name: string;
     cost_price: number;
     selling_price: number;
+    category: 'TIRE' | 'BATTERY' | 'BRAKE' | 'FLUID' | 'SUSPENSION' | 'ACCESSORY' | 'ELECTRICAL';
     warranty_time?: number; // in months
     image?: string;
     createdAt: Date;
@@ -23,6 +24,11 @@ const AutoPartSchema: Schema = new Schema(
         selling_price: {
             type: Number,
             required: [true, 'Selling price is required']
+        },
+        category: {
+            type: String,
+            enum: ['TIRE', 'BATTERY', 'BRAKE', 'FLUID', 'SUSPENSION', 'ACCESSORY', 'ELECTRICAL'],
+            required: [true, 'Category is required']
         },
         warranty_time: {
             type: Number,

@@ -78,9 +78,480 @@
     {
       "name": "Slots",
       "description": "Time slot management endpoints"
+    },
+    {
+      "name": "Service Orders",
+      "description": "Service order management - intermediate table for customer-approved repairs"
     }
   ],
   "paths": {
+    "/api/import-requests": {
+      "get": {
+        "tags": [
+          "Import Requests"
+        ],
+        "summary": "Get all import requests",
+        "description": "Retrieve paginated list of import requests with optional filters",
+        "parameters": [
+          {
+            "name": "center_id",
+            "description": "Center ID to filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "description": "Status filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Page size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Import Requests"
+        ],
+        "summary": "Create import request",
+        "description": "Create a new import request",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Import request created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Import request created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateImportRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/import-requests/{id}": {
+      "get": {
+        "tags": [
+          "Import Requests"
+        ],
+        "summary": "Get import request by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ImportRequest ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Import Requests"
+        ],
+        "summary": "Update import request",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ImportRequest ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Import request updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Import request updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateImportRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Import Requests"
+        ],
+        "summary": "Delete import request",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ImportRequest ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Import request deleted successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Import request deleted successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/import-requests/{request_id}/items": {
+      "get": {
+        "tags": [
+          "Import Requests"
+        ],
+        "summary": "Get items of an import request",
+        "description": "",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ImportRequest ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "example": [],
+                      "items": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "example": [],
+                      "items": {}
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/auth/login-otp": {
       "post": {
         "tags": [
@@ -7013,6 +7484,263 @@
         ]
       }
     },
+    "/api/record-checklists/{recordChecklistId}/defects": {
+      "post": {
+        "tags": [
+          "Record Checklists"
+        ],
+        "summary": "Create Checklist Defect",
+        "description": "Create a new defect record for a checklist item",
+        "parameters": [
+          {
+            "name": "recordChecklistId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record Checklist ID"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChecklistDefect"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Record Checklists"
+        ],
+        "summary": "Get Defects by Record Checklist",
+        "description": "Get all defects for a specific record checklist",
+        "parameters": [
+          {
+            "name": "recordChecklistId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record Checklist ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/record-checklists/{recordChecklistId}/defects/bulk": {
+      "post": {
+        "tags": [
+          "Record Checklists"
+        ],
+        "summary": "Create Multiple Checklist Defects",
+        "description": "Create multiple defect records at once",
+        "parameters": [
+          {
+            "name": "recordChecklistId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Record Checklist ID"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "defects": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CreateChecklistDefect"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/record-checklists/defects/{defectId}": {
+      "get": {
+        "tags": [
+          "Record Checklists"
+        ],
+        "summary": "Get Checklist Defect by ID",
+        "description": "Get a specific checklist defect by ID",
+        "parameters": [
+          {
+            "name": "defectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Checklist Defect ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Record Checklists"
+        ],
+        "summary": "Update Checklist Defect",
+        "description": "Update a checklist defect",
+        "parameters": [
+          {
+            "name": "defectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Checklist Defect ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChecklistDefect"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Record Checklists"
+        ],
+        "summary": "Delete Checklist Defect",
+        "description": "Delete a checklist defect",
+        "parameters": [
+          {
+            "name": "defectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Checklist Defect ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/auto-parts": {
       "post": {
         "tags": [
@@ -10691,6 +11419,1186 @@
           }
         ]
       }
+    },
+    "/api/vehicle-auto-parts/vehicle/{vehicleId}": {
+      "get": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Get all auto parts of a vehicle",
+        "description": "Get all auto parts (linh kiện) currently attached to a vehicle, used by technicians to check available parts",
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved vehicle auto parts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "serial_number": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicle_id": {
+                            "type": "string",
+                            "example": "object"
+                          },
+                          "autopart_id": {
+                            "type": "string",
+                            "example": "object"
+                          },
+                          "quantity": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "isPlaced": {
+                            "type": "string",
+                            "example": "boolean"
+                          },
+                          "placed_date": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "isWarranty": {
+                            "type": "string",
+                            "example": "boolean"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "serial_number": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicle_id": {
+                            "type": "string",
+                            "example": "object"
+                          },
+                          "autopart_id": {
+                            "type": "string",
+                            "example": "object"
+                          },
+                          "quantity": {
+                            "type": "string",
+                            "example": "number"
+                          },
+                          "isPlaced": {
+                            "type": "string",
+                            "example": "boolean"
+                          },
+                          "placed_date": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "isWarranty": {
+                            "type": "string",
+                            "example": "boolean"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Vehicle not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle not found"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-auto-parts/record/{recordId}": {
+      "get": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Get vehicle auto parts by service record",
+        "description": "Fetch vehicle auto parts for the vehicle referenced by a given service record",
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/vehicle-auto-parts/vehicle/{vehicleId}/quantity-by-category": {
+      "get": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Get total quantity by category",
+        "description": "Get total quantity of parts in a specific category for a vehicle",
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Vehicle ID"
+          },
+          {
+            "name": "category",
+            "description": "Part category (TIRE, BATTERY, BRAKE, etc)",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-auto-parts/{id}": {
+      "get": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Get vehicle auto part by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "VehicleAutoPart ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Update vehicle auto part",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "VehicleAutoPart ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Delete vehicle auto part",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "VehicleAutoPart ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehicle-auto-parts": {
+      "post": {
+        "tags": [
+          "Vehicle Auto Parts"
+        ],
+        "summary": "Create vehicle auto part",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "vehicle_id",
+                  "autopart_id",
+                  "quantity",
+                  "isWarranty"
+                ],
+                "properties": {
+                  "vehicle_id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "autopart_id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439012"
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "example": 2
+                  },
+                  "isPlaced": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "placed_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "isWarranty": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/inventory-tickets": {
+      "get": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Get all inventory tickets",
+        "description": "",
+        "parameters": [
+          {
+            "name": "center_id",
+            "description": "Filter by center ID",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticket_type",
+            "description": "Filter by ticket type (IN, OUT, ADJUSTMENT)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "description": "Filter by status (DRAFT, APPROVED, COMPLETED)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Limit per page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Create inventory ticket",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInventoryTicket"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/inventory-tickets/{id}": {
+      "get": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Get inventory ticket by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "InventoryTicket ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Update inventory ticket",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "InventoryTicket ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInventoryTicket"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Delete inventory ticket",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "InventoryTicket ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/inventory-tickets/{id}/items": {
+      "post": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Add item(s) to inventory ticket",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "InventoryTicket ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddInventoryTicketItems"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/inventory-tickets/{id}/items/{itemId}": {
+      "delete": {
+        "tags": [
+          "Inventory Tickets"
+        ],
+        "summary": "Remove item from inventory ticket",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "InventoryTicket ID"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Item ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/inventory-transactions": {
+      "get": {
+        "tags": [
+          "Inventory Transactions"
+        ],
+        "summary": "Get all inventory transactions",
+        "description": "",
+        "parameters": [
+          {
+            "name": "center_id",
+            "description": "Filter by center ID",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transaction_type",
+            "description": "Filter by type (IN, OUT, ADJUSTMENT)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "description": "Filter by status (PENDING, COMPLETED, CANCELLED)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reference_type",
+            "description": "Filter by reference type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Limit per page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-orders": {
+      "post": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Create Service Order",
+        "description": "Create a new service order (customer chooses to fix something)",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceOrder"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/service-orders/bulk": {
+      "post": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Create Multiple Service Orders",
+        "description": "Create multiple service orders at once (customer confirms repair list)",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMultipleServiceOrders"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/service-orders/lacking-parts": {
+      "post": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Get Lacking Parts for Shift",
+        "description": "Get total lacking parts quantity for a specific shift (and optional slot)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLackingPartsForShiftRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/service-orders/record/{recordId}": {
+      "get": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Get Service Orders by Record",
+        "description": "Get all service orders for a specific service record",
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-orders/record/{recordId}/status/{status}": {
+      "get": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Get Service Orders by Status",
+        "description": "Get service orders filtered by stock status (SUFFICIENT or LACKING)",
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Record ID"
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stock status (SUFFICIENT or LACKING)",
+            "enum": [
+              "SUFFICIENT",
+              "LACKING"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-orders/{id}": {
+      "get": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Get Service Order by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Order ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Delete Service Order",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Order ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/service-orders/{id}/status": {
+      "put": {
+        "tags": [
+          "Service Orders"
+        ],
+        "summary": "Update Service Order Status",
+        "description": "Update stock status of a service order (e.g., when new stock arrives)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Service Order ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceOrderStatus"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12177,22 +14085,6 @@
             "type": "string",
             "example": "Optional note for this checklist item on the record"
           },
-          "suggest": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "centerpart_id": {
-                  "type": "string",
-                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
-                },
-                "quantity": {
-                  "type": "number",
-                  "example": 1
-                }
-              }
-            }
-          },
           "createdAt": {
             "type": "string",
             "example": "2025-09-21T10:00:00.000Z"
@@ -12230,22 +14122,6 @@
           "note": {
             "type": "string",
             "example": "Optional note for this checklist item on the record"
-          },
-          "suggest": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "part_id": {
-                  "type": "string",
-                  "example": "60f1b2b3c4e5f6g7h8i9j0p1"
-                },
-                "quantity": {
-                  "type": "number",
-                  "example": 3
-                }
-              }
-            }
           }
         },
         "xml": {
@@ -12262,31 +14138,196 @@
           "note": {
             "type": "string",
             "example": "Inspected and completed"
+          }
+        },
+        "xml": {
+          "name": "UpdateRecordChecklist"
+        }
+      },
+      "ChecklistDefect": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
           },
-          "suggest_add": {
+          "record_checklist_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "vehicle_part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "suggested_part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "failure_type": {
+            "type": "string",
+            "example": "wear"
+          },
+          "description": {
+            "type": "string",
+            "example": "Brake pads showing significant wear"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "ChecklistDefect"
+        }
+      },
+      "CreateChecklistDefect": {
+        "type": "object",
+        "properties": {
+          "vehicle_part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "suggested_part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "failure_type": {
+            "type": "string",
+            "example": "wear"
+          },
+          "description": {
+            "type": "string",
+            "example": "Brake pads showing significant wear"
+          }
+        },
+        "xml": {
+          "name": "CreateChecklistDefect"
+        }
+      },
+      "UpdateChecklistDefect": {
+        "type": "object",
+        "properties": {
+          "vehicle_part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "suggested_part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k4"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 3
+          },
+          "failure_type": {
+            "type": "string",
+            "example": "wear"
+          },
+          "description": {
+            "type": "string",
+            "example": "Updated description for the defect"
+          }
+        },
+        "xml": {
+          "name": "UpdateChecklistDefect"
+        }
+      },
+      "ImportRequest": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "staff_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "source_type": {
+            "type": "string",
+            "example": "supplier"
+          },
+          "source_center_id": {},
+          "notes": {
+            "type": "string",
+            "example": "Import request from supplier"
+          },
+          "items": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "centerpart_id": {
+                "_id": {
                   "type": "string",
-                  "example": "60f1b2b3c4e5f6g7h8i9j0p3"
+                  "example": "60f1b2b3c4e5f6g7h8i9j0i1"
+                },
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p1"
                 },
                 "quantity": {
                   "type": "number",
-                  "example": 2
+                  "example": 10
                 }
               }
             }
           },
-          "suggest_update_qty": {
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "ImportRequest"
+        }
+      },
+      "CreateImportRequest": {
+        "type": "object",
+        "properties": {
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "staff_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Import request from supplier"
+          },
+          "items": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "centerpart_id": {
+                "part_id": {
                   "type": "string",
-                  "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
                 },
                 "quantity": {
                   "type": "number",
@@ -12294,19 +14335,424 @@
                 }
               }
             }
+          }
+        },
+        "xml": {
+          "name": "CreateImportRequest"
+        }
+      },
+      "UpdateImportRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "approved"
           },
-          "suggest_remove": {
+          "notes": {
+            "type": "string",
+            "example": "Approved import request"
+          },
+          "items": {
             "type": "array",
-            "example": [
-              "60f1b2b3c4e5f6g7h8i9j0p2"
-            ],
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 5
+                }
+              }
             }
           }
         },
         "xml": {
-          "name": "UpdateRecordChecklist"
+          "name": "UpdateImportRequest"
+        }
+      },
+      "InventoryTicket": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k1"
+          },
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "ticket_type": {
+            "type": "string",
+            "example": "IN"
+          },
+          "status": {
+            "type": "string",
+            "example": "DRAFT"
+          },
+          "created_by": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Phiếu nhập hàng từ supplier"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0i1"
+                },
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 10
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "Phiếu nhập lốp xe"
+                }
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "InventoryTicket"
+        }
+      },
+      "CreateInventoryTicket": {
+        "type": "object",
+        "properties": {
+          "center_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k2"
+          },
+          "ticket_type": {
+            "type": "string",
+            "example": "IN"
+          },
+          "created_by": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0k3"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Phiếu nhập hàng từ supplier"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 5
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "Phiếu nhập pin"
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "CreateInventoryTicket"
+        }
+      },
+      "UpdateInventoryTicket": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "APPROVED"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Duyệt phiếu nhập"
+          }
+        },
+        "xml": {
+          "name": "UpdateInventoryTicket"
+        }
+      },
+      "AddInventoryTicketItem": {
+        "type": "object",
+        "properties": {
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 10
+          },
+          "notes": {
+            "type": "string",
+            "example": "Phiếu nhập lốp xe"
+          }
+        },
+        "xml": {
+          "name": "AddInventoryTicketItem"
+        }
+      },
+      "AddInventoryTicketItems": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p3"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 20
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "Phiếu nhập nhớt"
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "AddInventoryTicketItems"
+        }
+      },
+      "ServiceOrder": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0o1"
+          },
+          "service_record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0r1"
+          },
+          "checklist_defect_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0d1"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "stock_status": {
+            "type": "string",
+            "example": "SUFFICIENT"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2025-09-21T10:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "ServiceOrder"
+        }
+      },
+      "CreateServiceOrder": {
+        "type": "object",
+        "properties": {
+          "service_record_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0r1"
+          },
+          "checklist_defect_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0d1"
+          },
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "xml": {
+          "name": "CreateServiceOrder"
+        }
+      },
+      "CreateMultipleServiceOrders": {
+        "type": "object",
+        "properties": {
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "service_record_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0r1"
+                },
+                "checklist_defect_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0d2"
+                },
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "CreateMultipleServiceOrders"
+        }
+      },
+      "UpdateServiceOrderStatus": {
+        "type": "object",
+        "properties": {
+          "stock_status": {
+            "type": "string",
+            "example": "SUFFICIENT"
+          }
+        },
+        "xml": {
+          "name": "UpdateServiceOrderStatus"
+        }
+      },
+      "LackingPartItem": {
+        "type": "object",
+        "properties": {
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+          },
+          "totalQuantity": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "xml": {
+          "name": "LackingPartItem"
+        }
+      },
+      "GetLackingPartsForShiftRequest": {
+        "type": "object",
+        "properties": {
+          "shift_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0s1"
+          },
+          "slot_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0sl1"
+          }
+        },
+        "xml": {
+          "name": "GetLackingPartsForShiftRequest"
+        }
+      },
+      "AllocateImportedStockRequest": {
+        "type": "object",
+        "properties": {
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "xml": {
+          "name": "AllocateImportedStockRequest"
+        }
+      },
+      "AllocateMultipleImportedStocksRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "example": "60f1b2b3c4e5f6g7h8i9j0p2"
+                },
+                "quantity": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "AllocateMultipleImportedStocksRequest"
+        }
+      },
+      "AllocationResult": {
+        "type": "object",
+        "properties": {
+          "part_id": {
+            "type": "string",
+            "example": "60f1b2b3c4e5f6g7h8i9j0p1"
+          },
+          "updatedOrders": {
+            "type": "array",
+            "example": [
+              "60f1b2b3c4e5f6g7h8i9j0o1",
+              "60f1b2b3c4e5f6g7h8i9j0o2"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "remainingQuantity": {
+            "type": "number",
+            "example": 0
+          },
+          "totalAvailable": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "xml": {
+          "name": "AllocationResult"
         }
       }
     },

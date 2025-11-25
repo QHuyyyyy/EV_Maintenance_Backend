@@ -4,6 +4,9 @@ import { CreatePaymentRequest, IPayment, PaymentWebhookData } from '../types/pay
 import { VehicleSubscription } from '../models/vehicleSubcription.model';
 import { createWarrantiesForServiceRecord } from './warranty.service';
 import Invoice from '../models/invoice.model';
+import ServiceOrder from '../models/serviceOrder.model';
+import VehicleAutoPart from '../models/vehicleAutoPart.model';
+import ServiceRecord from '../models/serviceRecord.model';
 
 export class PaymentService {
 
@@ -222,22 +225,22 @@ export class PaymentService {
     async handlePaymentWebhook(webhookData: any): Promise<IPayment | null> {
         try {
             console.log('🔍 Processing webhook data:', JSON.stringify(webhookData, null, 2));
-            
+
             // Check if webhookData is empty or null
             if (!webhookData || Object.keys(webhookData).length === 0) {
                 console.log('⚠️  Empty webhook data - PayOS test webhook');
                 return null; // Accept empty test webhook
             }
-            
+
             // PayOS webhook format có thể là:
             // { code: "00", desc: "success", data: { orderCode, amount, ... } }
             // hoặc trực tiếp { order_code, status, ... }
-            
+
             let orderCode: number | undefined;
             let isPaid = false;
             let transactionId: string | undefined;
             let paymentMethod: string | undefined;
-            
+
             // Check format từ PayOS webhook documentation
             if (webhookData.code !== undefined && webhookData.data) {
                 // Format mới: { code: "00", data: { orderCode, ... } }
@@ -245,7 +248,7 @@ export class PaymentService {
                 isPaid = webhookData.code === "00" && webhookData.desc === "success";
                 transactionId = webhookData.data.reference || webhookData.data.transactionDateTime;
                 paymentMethod = webhookData.data.counterAccountBankName || 'Bank Transfer';
-                
+
                 console.log(`  Format: PayOS webhook v2 (code: ${webhookData.code})`);
             } else if (webhookData.order_code || webhookData.orderCode) {
                 // Format cũ: { order_code, status, ... }
@@ -253,7 +256,7 @@ export class PaymentService {
                 isPaid = webhookData.status === 'PAID';
                 transactionId = webhookData.transaction_id;
                 paymentMethod = webhookData.payment_method;
-                
+
                 console.log(`  Format: Direct webhook (status: ${webhookData.status})`);
             } else {
                 // PayOS test webhook hoặc invalid format
@@ -280,7 +283,7 @@ export class PaymentService {
 
             // Update payment status based on webhook
             payment.status = isPaid ? 'paid' : 'cancelled';
-            
+
             if (transactionId) {
                 payment.transaction_id = transactionId;
             }
@@ -290,7 +293,7 @@ export class PaymentService {
 
             if (isPaid) {
                 payment.paid_at = new Date();
-                
+
                 console.log(`💰 Payment marked as PAID for order: ${orderCode}`);
             } else {
                 console.log(`❌ Payment marked as CANCELLED for order: ${orderCode}`);
@@ -317,35 +320,44 @@ export class PaymentService {
                     } catch (warrantyError) {
                         console.error(`  ✗ Error creating warranties:`, warrantyError);
                     }
+
+                    // Update vehicle parts from service orders
+                    try {
+                        console.log(`  ✓ Updating vehicle parts from service orders...`);
+                        await this.updateVehiclePartsFromServiceOrders(String(payment.service_record_id));
+                        console.log(`  ✓ Vehicle parts updated successfully`);
+                    } catch (partError) {
+                        console.error(`  ✗ Error updating vehicle parts:`, partError);
+                    }
                 }
 
                 // Auto-create invoice after successful payment
                 try {
                     console.log(`  ✓ Creating invoice...`);
-                    
+
                     // Check if invoice already exists
                     let invoice = await Invoice.findOne({ payment_id: payment._id });
-                    
+
                     if (!invoice) {
                         const invoiceService = require('./invoice.service').default;
                         const paymentId = (payment._id as any).toString();
-                        
+
                         // Create invoice (returns lean object, so we need to fetch it again)
                         const createdInvoice = await invoiceService.createInvoice({
                             payment_id: paymentId,
-                            invoiceType: payment.payment_type === 'subscription' 
-                                ? 'Subscription Package' 
+                            invoiceType: payment.payment_type === 'subscription'
+                                ? 'Subscription Package'
                                 : 'Service Completion',
                             totalAmount: payment.amount
                         });
-                        
+
                         // Fetch invoice as Mongoose document to update status
                         invoice = await Invoice.findById(createdInvoice._id);
-                        
+
                     } else {
                         console.log(`  ℹ Invoice already exists`);
                     }
-                    
+
                     // Update invoice status to 'issued' since payment is completed
                     if (invoice && invoice.status !== 'issued') {
                         invoice.status = 'issued';
@@ -441,6 +453,94 @@ export class PaymentService {
                 throw new Error(`Failed to simulate payment: ${error.message}`);
             }
             throw new Error('Failed to simulate payment: Unknown error');
+        }
+    }
+
+    // Cập nhật VehicleAutoPart dựa trên ServiceOrder khi payment thành công
+    async updateVehiclePartsFromServiceOrders(serviceRecordId: string): Promise<any> {
+        try {
+            console.log(`🔧 Updating vehicle parts for service record: ${serviceRecordId}`);
+
+            // Lấy service record để biết vehicle_id
+            const serviceRecord = await ServiceRecord.findById(serviceRecordId).populate('vehicle_id');
+            if (!serviceRecord) {
+                throw new Error('Service record not found');
+            }
+
+            const vehicleId = (serviceRecord as any).vehicle_id?._id || (serviceRecord as any).vehicle_id;
+
+            // Lấy tất cả SUFFICIENT service orders của record này
+            const serviceOrders = await ServiceOrder.find({
+                service_record_id: serviceRecordId,
+                stock_status: 'SUFFICIENT'
+            }).populate('checklist_defect_id').lean();
+
+            if (serviceOrders.length === 0) {
+                console.log(`  ℹ No sufficient service orders found`);
+                return { updated: [], created: [] };
+            }
+
+            const updatedParts: string[] = [];
+            const createdParts: string[] = [];
+
+            for (const order of serviceOrders) {
+                const partId = order.part_id;
+                const quantity = order.quantity;
+                const checklistDefect = order.checklist_defect_id as any;
+
+                // vehicle_part_id từ checklist defect (part gốc bị lỗi)
+                const vehiclePartId = checklistDefect?.vehicle_part_id;
+
+                // Case 1: part_id === vehicle_part_id -> Trừ VehicleAutoPart
+                if (vehiclePartId && vehiclePartId.toString() === partId.toString()) {
+                    console.log(`  📉 Reducing vehicle part (same part): ${vehiclePartId}, qty: -${quantity}`);
+
+                    const updated = await VehicleAutoPart.findByIdAndUpdate(
+                        vehiclePartId,
+                        { $inc: { quantity: -quantity } },
+                        { new: true }
+                    );
+
+                    if (updated) {
+                        updatedParts.push(vehiclePartId.toString());
+                    }
+                }
+                // Case 2: part_id !== vehicle_part_id -> Tạo VehicleAutoPart mới cho part_id thay thế
+                else {
+                    console.log(`  📝 Creating new vehicle part (replacement): ${partId}, qty: ${quantity}`);
+
+                    // Chỉ tạo nếu chưa tồn tại, không cộng thêm
+                    const existingPart = await VehicleAutoPart.findOne({
+                        vehicle_id: vehicleId,
+                        part_id: partId
+                    });
+
+                    if (!existingPart) {
+                        const vehicleAutoPart = await VehicleAutoPart.create({
+                            vehicle_id: vehicleId,
+                            part_id: partId,
+                            quantity: quantity,
+                            installation_date: new Date()
+                        });
+
+                        if (vehicleAutoPart) {
+                            createdParts.push(partId.toString());
+                        }
+                    } else {
+                        console.log(`  ℹ Vehicle part already exists: ${partId}, skipping creation`);
+                    }
+                }
+            }
+
+            console.log(`  ✓ Vehicle parts updated: ${updatedParts.length}, created: ${createdParts.length}`);
+
+            return { updated: updatedParts, created: createdParts };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(`  ✗ Error updating vehicle parts: ${error.message}`);
+                throw new Error(`Failed to update vehicle parts: ${error.message}`);
+            }
+            throw new Error('Failed to update vehicle parts: Unknown error');
         }
     }
 }

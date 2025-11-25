@@ -89,6 +89,10 @@ const doc = {
         {
             name: 'Slots',
             description: 'Time slot management endpoints'
+        },
+        {
+            name: 'Service Orders',
+            description: 'Service order management - intermediate table for customer-approved repairs'
         }
     ],
     definitions: {
@@ -461,10 +465,6 @@ const doc = {
             record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             status: 'pending',
             note: 'Optional note for this checklist item on the record',
-            suggest: [
-                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p1', quantity: 2 },
-                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p2', quantity: 1 }
-            ], // CenterAutoPart with quantities
             createdAt: '2025-09-21T10:00:00.000Z',
             updatedAt: '2025-09-21T10:00:00.000Z'
         },
@@ -472,22 +472,215 @@ const doc = {
             checklist_ids: ['60f1b2b3c4e5f6g7h8i9j0k2', '60f1b2b3c4e5f6g7h8i9j0k4'],
             record_id: '60f1b2b3c4e5f6g7h8i9j0k3',
             status: 'pending',
-            note: 'Optional note for this checklist item on the record',
-            suggest: [
-                // You can also send plain IDs for quantity=1
-                { part_id: '60f1b2b3c4e5f6g7h8i9j0p1', quantity: 3 }
-            ]
+            note: 'Optional note for this checklist item on the record'
         },
         UpdateRecordChecklist: {
             status: 'completed',
-            note: 'Inspected and completed',
-            suggest_add: [
-                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p3', quantity: 2 }
+            note: 'Inspected and completed'
+        },
+        ChecklistDefect: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            record_checklist_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            vehicle_part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            suggested_part_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            quantity: 2,
+            failure_type: 'wear',
+            description: 'Brake pads showing significant wear',
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateChecklistDefect: {
+            vehicle_part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            suggested_part_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            quantity: 2,
+            failure_type: 'wear',
+            description: 'Brake pads showing significant wear'
+        },
+        UpdateChecklistDefect: {
+            vehicle_part_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            suggested_part_id: '60f1b2b3c4e5f6g7h8i9j0k4',
+            quantity: 3,
+            failure_type: 'wear',
+            description: 'Updated description for the defect'
+        },
+        ImportRequest: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            staff_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            status: 'pending',
+            source_type: 'supplier',
+            source_center_id: null,
+            notes: 'Import request from supplier',
+            items: [
+                {
+                    _id: '60f1b2b3c4e5f6g7h8i9j0i1',
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 10
+                }
             ],
-            suggest_update_qty: [
-                { centerpart_id: '60f1b2b3c4e5f6g7h8i9j0p1', quantity: 5 }
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateImportRequest: {
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            staff_id: '60f1b2b3c4e5f6g7h8i9j0k3',
+            notes: 'Import request from supplier',
+            items: [
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 10
+                },
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p2',
+                    quantity: 5
+                }
+            ]
+        },
+        UpdateImportRequest: {
+            status: 'approved',
+            notes: 'Approved import request',
+            items: [
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 10
+                },
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p2',
+                    quantity: 5
+                }
+            ]
+        },
+        InventoryTicket: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0k1',
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            ticket_type: 'IN',
+            status: 'DRAFT',
+            created_by: '60f1b2b3c4e5f6g7h8i9j0k3',
+            notes: 'Phiếu nhập hàng từ supplier',
+            items: [
+                {
+                    _id: '60f1b2b3c4e5f6g7h8i9j0i1',
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 10,
+                    notes: 'Phiếu nhập lốp xe'
+                }
             ],
-            suggest_remove: ['60f1b2b3c4e5f6g7h8i9j0p2']
+            createdAt: '2025-09-21T10:00:00.000Z',
+            updatedAt: '2025-09-21T10:00:00.000Z'
+        },
+        CreateInventoryTicket: {
+            center_id: '60f1b2b3c4e5f6g7h8i9j0k2',
+            ticket_type: 'IN',
+            created_by: '60f1b2b3c4e5f6g7h8i9j0k3',
+            notes: 'Phiếu nhập hàng từ supplier',
+            items: [
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 10,
+                    notes: 'Phiếu nhập lốp xe'
+                },
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p2',
+                    quantity: 5,
+                    notes: 'Phiếu nhập pin'
+                }
+            ]
+        },
+        UpdateInventoryTicket: {
+            status: 'APPROVED',
+            notes: 'Duyệt phiếu nhập'
+        },
+        AddInventoryTicketItem: {
+            part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+            quantity: 10,
+            notes: 'Phiếu nhập lốp xe'
+        },
+        AddInventoryTicketItems: {
+            items: [
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 10,
+                    notes: 'Phiếu nhập lốp xe'
+                },
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p2',
+                    quantity: 5,
+                    notes: 'Phiếu nhập pin'
+                },
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p3',
+                    quantity: 20,
+                    notes: 'Phiếu nhập nhớt'
+                }
+            ]
+        },
+        ServiceOrder: {
+            _id: '60f1b2b3c4e5f6g7h8i9j0o1',
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0r1',
+            checklist_defect_id: '60f1b2b3c4e5f6g7h8i9j0d1',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+            quantity: 2,
+            stock_status: 'SUFFICIENT',
+            created_at: '2025-09-21T10:00:00.000Z',
+            updated_at: '2025-09-21T10:00:00.000Z'
+        },
+        CreateServiceOrder: {
+            service_record_id: '60f1b2b3c4e5f6g7h8i9j0r1',
+            checklist_defect_id: '60f1b2b3c4e5f6g7h8i9j0d1',
+            part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+            quantity: 2
+        },
+        CreateMultipleServiceOrders: {
+            orders: [
+                {
+                    service_record_id: '60f1b2b3c4e5f6g7h8i9j0r1',
+                    checklist_defect_id: '60f1b2b3c4e5f6g7h8i9j0d1',
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 2
+                },
+                {
+                    service_record_id: '60f1b2b3c4e5f6g7h8i9j0r1',
+                    checklist_defect_id: '60f1b2b3c4e5f6g7h8i9j0d2',
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p2',
+                    quantity: 3
+                }
+            ]
+        },
+        UpdateServiceOrderStatus: {
+            stock_status: 'SUFFICIENT'
+        },
+        LackingPartItem: {
+            part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+            totalQuantity: 5
+        },
+        GetLackingPartsForShiftRequest: {
+            shift_id: '60f1b2b3c4e5f6g7h8i9j0s1',
+            slot_id: '60f1b2b3c4e5f6g7h8i9j0sl1'
+        },
+        AllocateImportedStockRequest: {
+            part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+            quantity: 5
+        },
+        AllocateMultipleImportedStocksRequest: {
+            items: [
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+                    quantity: 5
+                },
+                {
+                    part_id: '60f1b2b3c4e5f6g7h8i9j0p2',
+                    quantity: 3
+                }
+            ]
+        },
+        AllocationResult: {
+            part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
+            updatedOrders: [
+                '60f1b2b3c4e5f6g7h8i9j0o1',
+                '60f1b2b3c4e5f6g7h8i9j0o2'
+            ],
+            remainingQuantity: 0,
+            totalAvailable: 5
         }
     },
     securityDefinitions: {
@@ -501,7 +694,7 @@ const doc = {
 
 const outputFile = './src/swagger-output.json';
 const endpointsFiles = [
-    './src/app.ts'
+    './src/app.ts',
 ];
 
 swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {

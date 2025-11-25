@@ -3,6 +3,7 @@ import ServiceDetail from '../models/serviceDetail.model';
 import CenterAutoPart from '../models/centerAutoPart.model';
 import AutoPart from '../models/autoPart.model';
 import ServiceRecord from '../models/serviceRecord.model';
+import VehicleAutoPart from '../models/vehicleAutoPart.model';
 import { nowVN } from '../utils/time';
 
 
@@ -16,6 +17,7 @@ export async function checkAndApplyWarranty(
     warrantyQty: number;           // Số linh kiện được bảo hành (0 đ)
     paidQty: number;               // Số linh kiện cần mua (tính tiền)
     warranties: any[];             // Danh sách bảo hành được sử dụng
+    isVehicleInWarranty: boolean;  // Xe còn trong vehicle_warranty_time?
 }> {
     try {
         console.log(`🔍 Checking warranty for part: ${centerpartId}, Qty: ${quantity}`);
@@ -28,7 +30,8 @@ export async function checkAndApplyWarranty(
             throw new Error(`ServiceRecord not found: ${recordId}`);
         }
         const appointment = serviceRecord.appointment_id as any;
-        const vehicleId = appointment.vehicle_id._id;
+        const vehicle = appointment.vehicle_id as any;
+        const vehicleId = vehicle._id;
         console.log(`📍 Xe ID: ${vehicleId}`);
 
         const centerPart = await CenterAutoPart.findById(centerpartId).populate('part_id');
@@ -42,64 +45,147 @@ export async function checkAndApplyWarranty(
 
         console.log(`📦 Part: ${autoPart.name}`);
 
-        const today = nowVN();
-        today.setHours(0, 0, 0, 0);
-
-        const activeWarranties = await PartWarranty.find({
-            vehicle_id: vehicleId,
-            part_id: masterPartId,
-            end_date: { $gte: today },
-            warranty_status: 'active'
-        });
-
-        console.log(`📊 Found ${activeWarranties.length} active warranty items`);
-
         let unitPrice: number;
         let description: string;
         let warrantyQty = 0;
         let paidQty = quantity;
+        let warranties: any[] = [];
 
-        // 4. Quyết định giá dựa trên số lượng bảo hành
-        if (activeWarranties.length > 0) {
-            warrantyQty = Math.min(activeWarranties.length, quantity); // Dùng tối đa bảo hành có sẵn
-            paidQty = quantity - warrantyQty; // Phần còn lại tính tiền
+        // 1️⃣ KIỂM TRA VEHICLE CÒN TRONG BẢO HÀNH XE KHÔNG
+        const now = new Date();
+        const isVehicleInWarrantyPeriod = vehicle.vehicle_warranty_start_time &&
+            vehicle.vehicle_warranty_end_time &&
+            now >= vehicle.vehicle_warranty_start_time &&
+            now <= vehicle.vehicle_warranty_end_time;
 
-            unitPrice = autoPart.selling_price; // Giá cho phần tính tiền
+        console.log(`🚗 Vehicle warranty period: ${isVehicleInWarrantyPeriod ? '✅ Còn bảo hành' : '❌ Hết bảo hành'}`);
 
-            if (paidQty === 0) {
-                // All covered by warranty
-                description = `Warranty ${warrantyQty}/${quantity} (Free, expires: ${activeWarranties[0].end_date.toLocaleDateString()})`;
-            } else if (warrantyQty === 0) {
-                // No warranty (should not happen)
-                description = `New Sale ${quantity}`;
-            } else {
-                // Partially covered by warranty and partially paid
-                description = `Warranty ${warrantyQty} (Free) + New Sale ${paidQty}`;
+        if (isVehicleInWarrantyPeriod) {
+            // 2️⃣ NẾU XE CÒN BẢO HÀNH → DÙng logic VehicleAutoPart
+            console.log(`📋 Sử dụng logic VehicleAutoPart (Vehicle Warranty Period)`);
+
+            const vehicleWarrantyParts = await VehicleAutoPart.find({
+                vehicle_id: vehicleId,
+                isWarranty: true
+            }).populate('autopart_id');
+
+            // Kiểm tra cùng part_id
+            const samePartWarranty = vehicleWarrantyParts.find(
+                vap => (vap.autopart_id as any)._id.toString() === masterPartId.toString()
+            );
+
+            if (samePartWarranty && samePartWarranty.quantity > 0) {
+                // Cùng part_id → free
+                warrantyQty = Math.min(samePartWarranty.quantity, quantity);
+                paidQty = quantity - warrantyQty;
+                unitPrice = autoPart.selling_price;
+
+                description = `Vehicle Warranty (Same Part) ${warrantyQty}/${quantity} (Free)`;
+                console.log(`✅ Found same part warranty!`);
+                console.log(`   - Warranty: ${warrantyQty}/${quantity} (0 đ)`);
+                console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái)`);
+                console.log(`   - Total: ${paidQty * unitPrice} đ`);
+
+                return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
             }
 
-            console.log(`✅ Found warranty!`);
-            console.log(`   - Warranty items available: ${activeWarranties.length}`);
-            console.log(`   - Warranty: ${warrantyQty}/${quantity} (0 đ)`);
-            console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái)`);
-            console.log(`   - Total: ${paidQty * unitPrice} đ`);
+            // Kiểm tra cùng category
+            const categoryMatch = vehicleWarrantyParts.find(vap => {
+                const part = vap.autopart_id as any;
+                return part.category === autoPart.category;
+            });
 
-        } else {
+            if (categoryMatch) {
+                const categoryPart = categoryMatch.autopart_id as any;
+                const categoryPartPrice = categoryPart.selling_price || 0;
+                const currentPartPrice = autoPart.selling_price || 0;
+
+                if (categoryPartPrice <= currentPartPrice) {
+                    // 📌 Warranty part giá <= current part → FREE
+                    warrantyQty = Math.min(categoryMatch.quantity, quantity);
+                    paidQty = quantity - warrantyQty;
+                    unitPrice = autoPart.selling_price;
+
+                    description = `Vehicle Warranty (Same Category) ${warrantyQty}/${quantity} (Free) + New Sale ${paidQty}`;
+                    console.log(`✅ Found same category warranty (Price: warranty ${categoryPartPrice}đ <= current ${currentPartPrice}đ)`);
+                    console.log(`   - Warranty: ${warrantyQty}/${quantity} (0 đ)`);
+                    console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái)`);
+                    console.log(`   - Total: ${paidQty * unitPrice} đ`);
+
+                    return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
+                } else {
+                    // 📌 Warranty part giá > current part → KHÁCH TRẢ CHÊNH LỆCH
+                    const priceDifference = categoryPartPrice - currentPartPrice;
+                    warrantyQty = Math.min(categoryMatch.quantity, quantity);
+                    paidQty = quantity - warrantyQty;
+                    unitPrice = priceDifference;  // Khách chỉ trả chênh lệch
+
+                    const totalWarrantyValue = priceDifference * warrantyQty;
+                    description = `Vehicle Warranty (Same Category) ${warrantyQty}/${quantity} (Price: ${categoryPartPrice}đ → ${currentPartPrice}đ, Chênh lệch ${priceDifference}đ/cái) + New Sale ${paidQty}`;
+
+                    console.log(`✅ Found same category warranty (Price: warranty ${categoryPartPrice}đ > current ${currentPartPrice}đ)`);
+                    console.log(`   - Warranty: ${warrantyQty}/${quantity} chênh lệch ${priceDifference}đ/cái = ${totalWarrantyValue}đ`);
+                    console.log(`   - New Sale: ${paidQty}/${quantity} (${autoPart.selling_price} đ/cái)`);
+                    console.log(`   - Total: ${totalWarrantyValue + (paidQty * autoPart.selling_price)} đ`);
+
+                    return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
+                }
+            }
+
+            // Xe còn bảo hành nhưng không có linh kiện phù hợp
             unitPrice = autoPart.selling_price;
             warrantyQty = 0;
             paidQty = quantity;
-            description = `New Sale ${quantity} (no active warranty)`;
+            description = `New Sale ${quantity} (Vehicle in warranty but no matching warranty parts)`;
 
-            console.log(`❌ No active warranty found`);
+            console.log(`❌ No matching warranty parts found`);
             console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
+
+            return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
         }
 
-        return {
-            unitPrice,
-            description,
-            warrantyQty,
-            paidQty,
-            warranties: activeWarranties || []
-        };
+        // 3️⃣ NẾU XE HẾT BẢO HÀNH → KIỂM TRA PartWarranty TỪ LẦN BÁN TRƯỚC
+        console.log(`📋 Vehicle hết bảo hành → Kiểm tra PartWarranty từ lần bán trước`);
+
+        // Kiểm tra xem có PartWarranty active cho linh kiện này không (từ lần bán lần trước)
+        const activePartWarranties = await PartWarranty.find({
+            vehicle_id: vehicleId,
+            part_id: masterPartId,
+            end_date: { $gte: now },
+            warranty_status: 'active'
+        });
+
+        console.log(`📊 Found ${activePartWarranties.length} active PartWarranties from previous sale`);
+
+        if (activePartWarranties.length > 0) {
+            // 4️⃣ CÓ PartWarranty CÒN ACTIVE → DÙNG
+            warrantyQty = Math.min(activePartWarranties.length, quantity);
+            paidQty = quantity - warrantyQty;
+            unitPrice = autoPart.selling_price;
+
+            description = warrantyQty > 0
+                ? `Previous Warranty ${warrantyQty}/${quantity} (Free) + New Sale ${paidQty}`
+                : `New Sale ${quantity}`;
+
+            console.log(`✅ Found active PartWarranty from previous sale!`);
+            console.log(`   - Warranty: ${warrantyQty}/${quantity} (0 đ) [Expires: ${activePartWarranties[0].end_date.toLocaleDateString()}]`);
+            console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái) - WILL CREATE NEW PartWarranty`);
+            console.log(`   - Total: ${paidQty * unitPrice} đ`);
+
+            return { unitPrice, description, warrantyQty, paidQty, warranties: activePartWarranties, isVehicleInWarranty: false };
+        }
+
+        // 5️⃣ KO CÓ PartWarranty → BÁN MỚI
+        console.log(`🆕 No active PartWarranty found → Regular new sale`);
+        unitPrice = autoPart.selling_price;
+        warrantyQty = 0;
+        paidQty = quantity;
+        description = `New Sale ${quantity} (no warranty)`;
+
+        console.log(`✅ Regular purchase (will create new PartWarranty)`);
+        console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
+
+        return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: false };
 
     } catch (error) {
         console.error('❌ Error in checkAndApplyWarranty:', error);
