@@ -146,16 +146,14 @@ export async function checkAndApplyWarranty(
             console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
             return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
         } else if (isVehicleInWarrantyPeriod && !isManufacturerDefect) {
-            console.log(`❌ Vehicle in warranty period nhưng defect type KO PHẢI MANUFACTURER_DEFECT → Bán mới`);
-            unitPrice = autoPart.selling_price;
-            warrantyQty = 0;
-            paidQty = quantity;
-            description = `New Sale ${quantity} (Defect type: ${checklistDefect?.failure_type || 'UNKNOWN'} - NOT covered by vehicle warranty)`;
-            console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
-            return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: false };
+            console.log(`❌ Vehicle in warranty period nhưng defect type KO PHẢI MANUFACTURER_DEFECT`);
+            console.log(`📋 Sẽ check PartWarranty từ lần bán trước`);
+        } else {
+            console.log(`📋 Vehicle hết bảo hành → Kiểm tra PartWarranty từ lần bán trước`);
         }
 
-        console.log(`📋 Vehicle hết bảo hành → Kiểm tra PartWarranty từ lần bán trước`);
+        // Check PartWarranty in ALL cases (except isManufacturerDefect within vehicle warranty period)
+        console.log(`📋 Checking PartWarranty từ lần bán trước`);
 
         const activePartWarranties = await PartWarranty.find({
             vehicle_id: vehicleId,
@@ -171,6 +169,9 @@ export async function checkAndApplyWarranty(
             paidQty = quantity - warrantyQty;
             unitPrice = autoPart.selling_price;
 
+            // Determine if we're in vehicle warranty period with non-manufacturer defect
+            const inVehicleWarrantyButNotManufacturerDefect = isVehicleInWarrantyPeriod && !isManufacturerDefect;
+
             description = warrantyQty > 0
                 ? `Previous Warranty ${warrantyQty}/${quantity} (Free) + New Sale ${paidQty}`
                 : `New Sale ${quantity}`;
@@ -180,6 +181,11 @@ export async function checkAndApplyWarranty(
             console.log(`   - New Sale: ${paidQty}/${quantity} (${unitPrice} đ/cái) - WILL CREATE NEW PartWarranty`);
             console.log(`   - Total: ${paidQty * unitPrice} đ`);
 
+            if (inVehicleWarrantyButNotManufacturerDefect) {
+                console.log(`   ℹ️ Note: Vehicle still in warranty period but defect type is not MANUFACTURER_DEFECT`);
+                console.log(`   → PartWarranty is still applied from previous sale`);
+            }
+
             return { unitPrice, description, warrantyQty, paidQty, warranties: activePartWarranties, isVehicleInWarranty: false };
         }
 
@@ -187,7 +193,14 @@ export async function checkAndApplyWarranty(
         unitPrice = autoPart.selling_price;
         warrantyQty = 0;
         paidQty = quantity;
-        description = `New Sale ${quantity} (no warranty)`;
+
+        // Check if vehicle is still in warranty but defect not manufacturer defect
+        if (isVehicleInWarrantyPeriod && !isManufacturerDefect) {
+            description = `New Sale ${quantity} (Vehicle in warranty period but defect type: ${checklistDefect?.failure_type || 'UNKNOWN'} - NOT MANUFACTURER_DEFECT)`;
+            console.log(`⚠️ Vehicle in warranty period but defect not covered`);
+        } else {
+            description = `New Sale ${quantity} (no warranty)`;
+        }
 
         console.log(`✅ Regular purchase (will create new PartWarranty)`);
         console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
