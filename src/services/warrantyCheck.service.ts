@@ -5,6 +5,8 @@ import AutoPart from '../models/autoPart.model';
 import ServiceRecord from '../models/serviceRecord.model';
 import VehicleAutoPart from '../models/vehicleAutoPart.model';
 import { nowVN } from '../utils/time';
+import ChecklistDefect from '../models/checklistDefect.model';
+import RecordChecklist from '../models/recordChecklist.model';
 
 
 export async function checkAndApplyWarranty(
@@ -14,10 +16,10 @@ export async function checkAndApplyWarranty(
 ): Promise<{
     unitPrice: number;
     description: string;
-    warrantyQty: number;           // Số linh kiện được bảo hành (0 đ)
-    paidQty: number;               // Số linh kiện cần mua (tính tiền)
-    warranties: any[];             // Danh sách bảo hành được sử dụng
-    isVehicleInWarranty: boolean;  // Xe còn trong vehicle_warranty_time?
+    warrantyQty: number;
+    paidQty: number;
+    warranties: any[];
+    isVehicleInWarranty: boolean;
 }> {
     try {
         console.log(`🔍 Checking warranty for part: ${centerpartId}, Qty: ${quantity}`);
@@ -51,18 +53,23 @@ export async function checkAndApplyWarranty(
         let paidQty = quantity;
         let warranties: any[] = [];
 
-        // 1️⃣ KIỂM TRA VEHICLE CÒN TRONG BẢO HÀNH XE KHÔNG
-        const now = new Date();
+        const recordChecklists = await RecordChecklist.find({
+            record_id: serviceRecord._id
+        });
+
+        const checklistDefect = await ChecklistDefect.findOne({
+            record_checklist_id: { $in: recordChecklists.map(rc => rc._id) },
+            suggested_part_id: autoPart._id,
+        });
+
+        const isManufacturerDefect = checklistDefect && checklistDefect.failure_type === 'MANUFACTURER_DEFECT';
+        const now = nowVN();
         const isVehicleInWarrantyPeriod = vehicle.vehicle_warranty_start_time &&
             vehicle.vehicle_warranty_end_time &&
             now >= vehicle.vehicle_warranty_start_time &&
             now <= vehicle.vehicle_warranty_end_time;
 
-        console.log(`🚗 Vehicle warranty period: ${isVehicleInWarrantyPeriod ? '✅ Còn bảo hành' : '❌ Hết bảo hành'}`);
-
-        if (isVehicleInWarrantyPeriod) {
-            // 2️⃣ NẾU XE CÒN BẢO HÀNH → DÙng logic VehicleAutoPart
-            console.log(`📋 Sử dụng logic VehicleAutoPart (Vehicle Warranty Period)`);
+        if (isVehicleInWarrantyPeriod && isManufacturerDefect) {
 
             const vehicleWarrantyParts = await VehicleAutoPart.find({
                 vehicle_id: vehicleId,
@@ -131,23 +138,25 @@ export async function checkAndApplyWarranty(
                     return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
                 }
             }
-
-            // Xe còn bảo hành nhưng không có linh kiện phù hợp
             unitPrice = autoPart.selling_price;
             warrantyQty = 0;
             paidQty = quantity;
             description = `New Sale ${quantity} (Vehicle in warranty but no matching warranty parts)`;
-
             console.log(`❌ No matching warranty parts found`);
             console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
-
             return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: true };
+        } else if (isVehicleInWarrantyPeriod && !isManufacturerDefect) {
+            console.log(`❌ Vehicle in warranty period nhưng defect type KO PHẢI MANUFACTURER_DEFECT → Bán mới`);
+            unitPrice = autoPart.selling_price;
+            warrantyQty = 0;
+            paidQty = quantity;
+            description = `New Sale ${quantity} (Defect type: ${checklistDefect?.failure_type || 'UNKNOWN'} - NOT covered by vehicle warranty)`;
+            console.log(`   - Regular purchase: ${quantity} x ${unitPrice} = ${quantity * unitPrice} đ`);
+            return { unitPrice, description, warrantyQty, paidQty, warranties, isVehicleInWarranty: false };
         }
 
-        // 3️⃣ NẾU XE HẾT BẢO HÀNH → KIỂM TRA PartWarranty TỪ LẦN BÁN TRƯỚC
         console.log(`📋 Vehicle hết bảo hành → Kiểm tra PartWarranty từ lần bán trước`);
 
-        // Kiểm tra xem có PartWarranty active cho linh kiện này không (từ lần bán lần trước)
         const activePartWarranties = await PartWarranty.find({
             vehicle_id: vehicleId,
             part_id: masterPartId,
@@ -158,7 +167,6 @@ export async function checkAndApplyWarranty(
         console.log(`📊 Found ${activePartWarranties.length} active PartWarranties from previous sale`);
 
         if (activePartWarranties.length > 0) {
-            // 4️⃣ CÓ PartWarranty CÒN ACTIVE → DÙNG
             warrantyQty = Math.min(activePartWarranties.length, quantity);
             paidQty = quantity - warrantyQty;
             unitPrice = autoPart.selling_price;
@@ -175,7 +183,6 @@ export async function checkAndApplyWarranty(
             return { unitPrice, description, warrantyQty, paidQty, warranties: activePartWarranties, isVehicleInWarranty: false };
         }
 
-        // 5️⃣ KO CÓ PartWarranty → BÁN MỚI
         console.log(`🆕 No active PartWarranty found → Regular new sale`);
         unitPrice = autoPart.selling_price;
         warrantyQty = 0;
