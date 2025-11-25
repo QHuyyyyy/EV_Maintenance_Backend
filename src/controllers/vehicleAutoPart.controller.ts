@@ -219,6 +219,7 @@ export class VehicleAutoPartController {
     async getVehicleAutoPartsByRecordId(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicle Auto Parts']
         // #swagger.summary = 'Get vehicle auto parts by service record'
+        // #swagger.security = [{ "bearerAuth": [] }]
         // #swagger.description = 'Fetch vehicle auto parts for the vehicle referenced by a given service record'
         // #swagger.parameters['recordId'] = { description: 'Service record ID', required: true, type: 'string', in: 'path' }
         try {

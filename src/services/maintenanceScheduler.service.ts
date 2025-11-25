@@ -4,6 +4,7 @@ import { VehicleSubscription } from '../models/vehicleSubcription.model';
 import { ServicePackage } from '../models/servicePackage';
 import { Alert } from '../models/alert.model';
 import Customer from '../models/customer.model';
+import PartWarranty from '../models/partWarranty.model';
 import { differenceInDays } from 'date-fns';
 import { firebaseNotificationService } from '../firebase/fcm.service';
 import { nowVN } from '../utils/time';
@@ -20,6 +21,7 @@ interface AlertPayload {
 export class MaintenanceSchedulerService {
     private cronJob: any;
     private subscriptionExpiryCron: any; // cron job for subscription expiry
+    private partWarrantyExpiryCron: any; // cron job for part warranty expiry
     startScheduler() {
         console.log('🚀 Starting Maintenance Scheduler...');
 
@@ -52,6 +54,21 @@ export class MaintenanceSchedulerService {
             timezone: 'Asia/Ho_Chi_Minh'
         });
 
+        // Part warranty expiry daily at 00:20 VN time
+        // Marks ACTIVE part warranties whose end_date < now as EXPIRED
+        this.partWarrantyExpiryCron = cron.schedule('20 0 * * *', async () => {
+            console.log(`[${nowVN()}] Part warranty expiry cron running...`);
+            try {
+                const result = await this.expirePartWarranties();
+                console.log(`✅ Part warranty expiry processed: matched=${result.matchedCount || result.modifiedCount || 'n/a'} modified=${result.modifiedCount || 'n/a'}`);
+            } catch (error) {
+                console.error('❌ Error expiring part warranties:', error);
+            }
+        }, {
+            scheduled: true,
+            timezone: 'Asia/Ho_Chi_Minh'
+        });
+
         console.log('✅ Maintenance Scheduler started');
     }
 
@@ -66,6 +83,10 @@ export class MaintenanceSchedulerService {
         if (this.subscriptionExpiryCron) {
             this.subscriptionExpiryCron.stop();
             console.log('🛑 Subscription Expiry Cron stopped');
+        }
+        if (this.partWarrantyExpiryCron) {
+            this.partWarrantyExpiryCron.stop();
+            console.log('🛑 Part Warranty Expiry Cron stopped');
         }
     }
 
@@ -461,6 +482,34 @@ export class MaintenanceSchedulerService {
             return res;
         } catch (error) {
             console.error('Error in expireVehicleSubscriptions:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 🔧 Expire part warranties whose end_date < now and warranty_status still 'active'.
+     * 
+     * Logic:
+     * - Finds all PartWarranty with:
+     *   - warranty_status: 'active' (still valid)
+     *   - end_date < now (past expiry date)
+     * - Updates warranty_status to 'expired'
+     * - Idempotent: running multiple times only affects remaining ACTIVE past-due warranties
+     * 
+     * ℹ️ Runs daily at 00:20 VN time
+     */
+    private async expirePartWarranties() {
+        try {
+            const res = await PartWarranty.updateMany(
+                {
+                    warranty_status: 'active',
+                    end_date: { $lt: new Date() }
+                },
+                { $set: { warranty_status: 'expired' } }
+            );
+            return res;
+        } catch (error) {
+            console.error('Error in expirePartWarranties:', error);
             throw error;
         }
     }
