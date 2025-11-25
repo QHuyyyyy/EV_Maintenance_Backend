@@ -11,10 +11,20 @@ import {
 export class ServiceOrderService {
     // Tạo order đơn lẻ với kiểm tra stock tự động
     async createServiceOrder(
-        data: CreateServiceOrderRequest,
-        center_id: string
+        data: CreateServiceOrderRequest
     ): Promise<ServiceOrderDTO> {
         try {
+            // Lấy service record để get center_id
+            const serviceRecord = await ServiceRecord.findById(data.service_record_id)
+                .populate('appointment_id')
+                .lean() as any;
+
+            if (!serviceRecord) {
+                throw new Error('Service record not found');
+            }
+
+            const center_id = serviceRecord.appointment_id.center_id;
+
             // Kiểm tra stock status từ CenterAutoPart
             const centerPart = await CenterAutoPart.findOne({
                 center_id: center_id,
@@ -48,11 +58,21 @@ export class ServiceOrderService {
 
     // Tạo nhiều orders cùng lúc (khách chốt danh sách)
     async createMultipleServiceOrders(
-        orders: CreateServiceOrderRequest[],
-        center_id: string
+        orders: CreateServiceOrderRequest[]
     ): Promise<ServiceOrderDTO[]> {
         try {
             if (orders.length === 0) return [];
+
+            // Lấy service record đầu tiên để get center_id (tất cả orders cùng record)
+            const serviceRecord = await ServiceRecord.findById(orders[0].service_record_id)
+                .populate('appointment_id')
+                .lean() as any;
+
+            if (!serviceRecord) {
+                throw new Error('Service record not found');
+            }
+
+            const center_id = serviceRecord.appointment_id.center_id;
 
             // Lấy tất cả center parts cần thiết
             const partIds = orders.map(o => o.part_id);
@@ -266,18 +286,15 @@ export class ServiceOrderService {
     async allocateImportedStock(
         part_id: string,
         importedQuantity: number,
-        center_id?: string
+        center_id: string
     ): Promise<{ updatedOrders: string[]; remainingQuantity: number; totalAvailable: number }> {
         try {
-            // Lấy số lượng tồn kho hiện tại (nếu có center_id)
-            let existingStock = 0;
-            if (center_id) {
-                const centerPart = await CenterAutoPart.findOne({
-                    center_id: center_id,
-                    part_id: part_id
-                }).lean();
-                existingStock = centerPart?.quantity || 0;
-            }
+            // Lấy số lượng tồn kho hiện tại
+            const centerPart = await CenterAutoPart.findOne({
+                center_id: center_id,
+                part_id: part_id
+            }).lean();
+            const existingStock = centerPart?.quantity || 0;
 
             // Tổng hàng khả dụng = tồn kho + nhập mới
             let currentStock = existingStock + importedQuantity;
@@ -333,7 +350,7 @@ export class ServiceOrderService {
     // Phân bổ cho nhiều parts cùng lúc (khi import request có nhiều items)
     async allocateMultipleImportedStocks(
         items: Array<{ part_id: string; quantity: number }>,
-        center_id?: string
+        center_id: string
     ): Promise<Array<{ part_id: string; updatedOrders: string[]; remainingQuantity: number; totalAvailable: number }>> {
         try {
             const results = [];
