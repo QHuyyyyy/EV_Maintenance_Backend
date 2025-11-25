@@ -6,7 +6,7 @@ export interface IServiceRecord extends Document {
     start_time: Date;
     end_time: Date;
     description: string;
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'waiting-for-parts';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -40,7 +40,7 @@ const ServiceRecordSchema: Schema = new Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'in-progress', 'completed', 'cancelled'],
+            enum: ['pending', 'in-progress', 'completed', 'cancelled', 'waiting-for-parts'],
             default: 'pending'
         }
     },

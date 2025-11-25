@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import recordChecklistService from '../services/recordChecklist.service';
+import checklistDefectService from '../services/checklistDefect.service';
 
 export class RecordChecklistController {
     async createRecordChecklist(req: Request, res: Response) {
@@ -107,6 +108,207 @@ export class RecordChecklistController {
                 res.status(400).json({ success: false, message: error.message });
             } else {
                 res.status(400).json({ success: false, message: 'Failed to delete record checklist' });
+            }
+        }
+    }
+
+    // Checklist Defect endpoints
+    async createChecklistDefect(req: Request, res: Response) {
+        /* #swagger.tags = ['Record Checklists']
+           #swagger.summary = 'Create Checklist Defect'
+           #swagger.description = 'Create a new defect record for a checklist item'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['recordChecklistId'] = {
+               in: 'path',
+               description: 'Record Checklist ID',
+               required: true,
+               type: 'string'
+           }
+           #swagger.requestBody = {
+               required: true,
+               content: {
+                   'application/json': {
+                       schema: { $ref: '#/components/schemas/CreateChecklistDefect' }
+                   }
+               }
+           }
+        */
+        try {
+            const { recordChecklistId } = req.params;
+            const defect = await checklistDefectService.createChecklistDefect({
+                ...req.body,
+                record_checklist_id: recordChecklistId
+            });
+            res.status(201).json({ success: true, message: 'Checklist defect created', data: defect });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to create checklist defect' });
+            }
+        }
+    }
+
+    async createMultipleDefects(req: Request, res: Response) {
+        /* #swagger.tags = ['Record Checklists']
+           #swagger.summary = 'Create Multiple Checklist Defects'
+           #swagger.description = 'Create multiple defect records at once'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['recordChecklistId'] = {
+               in: 'path',
+               description: 'Record Checklist ID',
+               required: true,
+               type: 'string'
+           }
+           #swagger.requestBody = {
+               required: true,
+               content: {
+                   'application/json': {
+                       schema: { 
+                           type: 'object',
+                           properties: {
+                               defects: { type: 'array', items: { $ref: '#/components/schemas/CreateChecklistDefect' } }
+                           }
+                       }
+                   }
+               }
+           }
+        */
+        try {
+            const { recordChecklistId } = req.params;
+            const { defects } = req.body;
+            if (!Array.isArray(defects)) {
+                return res.status(400).json({ success: false, message: 'defects must be an array' });
+            }
+            // Add record_checklist_id to each defect
+            const defectsWithChecklistId = defects.map(defect => ({
+                ...defect,
+                record_checklist_id: recordChecklistId
+            }));
+            const created = await checklistDefectService.createMultiple(defectsWithChecklistId);
+            res.status(201).json({ success: true, message: 'Checklist defects created', data: created });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to create checklist defects' });
+            }
+        }
+    }
+
+    async getDefectsByRecordChecklist(req: Request, res: Response) {
+        /* #swagger.tags = ['Record Checklists']
+           #swagger.summary = 'Get Defects by Record Checklist'
+           #swagger.description = 'Get all defects for a specific record checklist'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['recordChecklistId'] = {
+               in: 'path',
+               description: 'Record Checklist ID',
+               required: true,
+               type: 'string'
+           }
+        */
+        try {
+            const { recordChecklistId } = req.params;
+            const defects = await checklistDefectService.getDefectsByRecordChecklist(recordChecklistId);
+            res.status(200).json({ success: true, data: defects });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to get checklist defects' });
+            }
+        }
+    }
+
+    async getChecklistDefectById(req: Request, res: Response) {
+        /* #swagger.tags = ['Record Checklists']
+           #swagger.summary = 'Get Checklist Defect by ID'
+           #swagger.description = 'Get a specific checklist defect by ID'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['defectId'] = {
+               in: 'path',
+               description: 'Checklist Defect ID',
+               required: true,
+               type: 'string'
+           }
+        */
+        try {
+            const { defectId } = req.params;
+            const defect = await checklistDefectService.getChecklistDefectById(defectId);
+            if (!defect) {
+                return res.status(404).json({ success: false, message: 'Checklist defect not found' });
+            }
+            res.status(200).json({ success: true, data: defect });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to get checklist defect' });
+            }
+        }
+    }
+
+    async updateChecklistDefect(req: Request, res: Response) {
+        /* #swagger.tags = ['Record Checklists']
+           #swagger.summary = 'Update Checklist Defect'
+           #swagger.description = 'Update a checklist defect'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['defectId'] = {
+               in: 'path',
+               description: 'Checklist Defect ID',
+               required: true,
+               type: 'string'
+           }
+           #swagger.requestBody = {
+               required: true,
+               content: {
+                   'application/json': {
+                       schema: { $ref: '#/components/schemas/UpdateChecklistDefect' }
+                   }
+               }
+           }
+        */
+        try {
+            const { defectId } = req.params;
+            const defect = await checklistDefectService.updateChecklistDefect(defectId, req.body);
+            if (!defect) {
+                return res.status(404).json({ success: false, message: 'Checklist defect not found' });
+            }
+            res.status(200).json({ success: true, message: 'Checklist defect updated', data: defect });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to update checklist defect' });
+            }
+        }
+    }
+
+    async deleteChecklistDefect(req: Request, res: Response) {
+        /* #swagger.tags = ['Record Checklists']
+           #swagger.summary = 'Delete Checklist Defect'
+           #swagger.description = 'Delete a checklist defect'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['defectId'] = {
+               in: 'path',
+               description: 'Checklist Defect ID',
+               required: true,
+               type: 'string'
+           }
+        */
+        try {
+            const { defectId } = req.params;
+            const defect = await checklistDefectService.deleteChecklistDefect(defectId);
+            if (!defect) {
+                return res.status(404).json({ success: false, message: 'Checklist defect not found' });
+            }
+            res.status(200).json({ success: true, message: 'Checklist defect deleted', data: defect });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ success: false, message: error.message });
+            } else {
+                res.status(400).json({ success: false, message: 'Failed to delete checklist defect' });
             }
         }
     }

@@ -12,16 +12,30 @@ export async function createWarrantiesForServiceRecord(serviceRecordId: string):
         console.log(`🔄 Bắt đầu tạo bảo hành cho ServiceRecord: ${serviceRecordId}`);
 
         // 1. Lấy ServiceRecord và populate appointment để có vehicle_id
-        const serviceRecord = await ServiceRecord.findById(serviceRecordId).populate('appointment_id');
+        const serviceRecord = await ServiceRecord.findById(serviceRecordId)
+            .populate({
+                path: 'appointment_id',
+                populate: { path: 'vehicle_id' }
+            });
 
         if (!serviceRecord) {
             throw new Error(`ServiceRecord không tìm thấy: ${serviceRecordId}`);
         }
 
         const appointment = serviceRecord.appointment_id as any;
-        const vehicleId = appointment.vehicle_id;
+        const vehicle = appointment.vehicle_id;
+        const vehicleId = vehicle._id;
 
         console.log(`📍 Xe ID: ${vehicleId}`);
+
+        // 🔴 KIỂM TRA VEHICLE CÒN TRONG BẢO HÀNH KHÔNG
+        const now = new Date();
+        const isVehicleInWarrantyPeriod = vehicle.vehicle_warranty_start_time &&
+            vehicle.vehicle_warranty_end_time &&
+            now >= vehicle.vehicle_warranty_start_time &&
+            now <= vehicle.vehicle_warranty_end_time;
+
+        console.log(`🚗 Vehicle warranty period: ${isVehicleInWarrantyPeriod ? '✅ Còn bảo hành' : '❌ Hết bảo hành'}`);
 
         const serviceDetails = await ServiceDetail.find({ record_id: serviceRecordId });
 
@@ -44,16 +58,24 @@ export async function createWarrantiesForServiceRecord(serviceRecordId: string):
                 const autoPart = centerPart.part_id as any;
 
                 const warrantyDays = autoPart.warranty_time || 0;
-                const quantity = detail.paid_qty || 0;
+                const paidQty = detail.paid_qty || 0;  // Số lượng bán mới (trả tiền)
+                const warrantyQty = detail.warranty_qty || 0;  // Số lượng dùng bảo hành (free)
 
-                console.log(`   📝 Linh kiện: ${autoPart.name}, Số lượng: ${quantity}, Bảo hành: ${warrantyDays} ngày`);
+                console.log(`   📝 Linh kiện: ${autoPart.name}, Bảo hành: ${warrantyQty}, Bán mới: ${paidQty}, Bảo hành: ${warrantyDays} ngày`);
 
-                if (warrantyDays > 0 && quantity > 0) {
+                // 🔴 CHỈ TẠO PartWarranty NẾU XE HẾT BẢO HÀNH (isVehicleInWarrantyPeriod = false)
+                if (isVehicleInWarrantyPeriod) {
+                    console.log(`   ⏭️  Xe còn bảo hành → KO tạo PartWarranty (dùng VehicleAutoPart logic)`);
+                    continue;
+                }
+
+                // ✅ CHỈ TẠO PartWarranty CHO paidQty (BÁN MỚI), KHÔNG TẠO CHO warrantyQty (DÙNG BẢO HÀNH CŨ)
+                if (warrantyDays > 0 && paidQty > 0) {
                     const startDate = new Date();
                     const endDate = new Date();
                     endDate.setDate(startDate.getDate() + warrantyDays);
 
-                    for (let i = 0; i < quantity; i++) {
+                    for (let i = 0; i < paidQty; i++) {
                         const warranty = await PartWarranty.create({
                             detail_id: detail._id,
                             centerpart_id: detail.centerpart_id,
@@ -65,18 +87,23 @@ export async function createWarrantiesForServiceRecord(serviceRecordId: string):
                         });
                     }
 
-                    console.log(` Bảo hành tạo thành công (${quantity} cái)`);
-                    console.log(` Ngày bắt đầu: ${startDate.toLocaleDateString()}`);
-                    console.log(`  Ngày hết hạn: ${endDate.toLocaleDateString()}`);
+                    console.log(`✅ Bảo hành tạo thành công cho paidQty (${paidQty} cái mới)`);
+                    console.log(`   - Warranty: ${warrantyQty} cái từ lần trước (KO tạo)`);
+                    console.log(`   - New Sale: ${paidQty} cái (TẠO PartWarranty mới)`);
+                    console.log(`   - Ngày bắt đầu: ${startDate.toLocaleDateString()}`);
+                    console.log(`   - Ngày hết hạn: ${endDate.toLocaleDateString()}`);
+                } else if (warrantyQty > 0 && paidQty === 0) {
+                    // Toàn bộ dùng bảo hành cũ
+                    console.log(`✅ Toàn bộ dùng bảo hành cũ (${warrantyQty} cái) - KO tạo PartWarranty mới`);
                 } else {
-                    console.log(` Linh kiện này không có bảo hành hoặc số lượng 0, bỏ qua`);
+                    console.log(`   ⏭️  Linh kiện này không có bảo hành hoặc không có bán mới, bỏ qua tạo PartWarranty`);
                 }
             } catch (error) {
-                console.error(`Lỗi xử lý chi tiết linh kiện:`, error);
+                console.error(`❌ Lỗi xử lý chi tiết linh kiện:`, error);
             }
         }
 
-        console.log(`Hoàn tất tạo bảo hành cho ServiceRecord: ${serviceRecordId}`);
+        console.log(`✅ Hoàn tất tạo bảo hành cho ServiceRecord: ${serviceRecordId}`);
 
     } catch (error) {
         console.error('Lỗi trong createWarrantiesForServiceRecord:', error);

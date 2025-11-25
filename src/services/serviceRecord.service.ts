@@ -4,6 +4,7 @@ import vehicleSubscriptionService from './vehicleSubcription.service';
 import vehicleService from './vehicle.service';
 import Appointment from '../models/appointment.model';
 import RecordChecklist from '../models/recordChecklist.model';
+import ChecklistDefect from '../models/checklistDefect.model';
 import serviceDetailModel from '../models/serviceDetail.model';
 import recordChecklistModel from '../models/recordChecklist.model';
 import CenterAutoPart from '../models/centerAutoPart.model';
@@ -19,6 +20,51 @@ export class ServiceRecordService {
                 throw new Error(`Failed to create service record: ${error.message}`);
             }
             throw new Error('Failed to create service record: Unknown error');
+        }
+    }
+
+    // Kiểm tra technician có đang in-progress record nào không
+    async checkTechnicianActiveRecord(technicianId: string): Promise<boolean> {
+        try {
+            const activeRecord = await ServiceRecord.findOne({
+                technician_id: technicianId,
+                status: 'in-progress'
+            });
+            return !!activeRecord;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to check technician active record: ${error.message}`);
+            }
+            throw new Error('Failed to check technician active record: Unknown error');
+        }
+    }
+
+    // Lấy in-progress record của technician
+    async getTechnicianActiveRecord(technicianId: string): Promise<IServiceRecord | null> {
+        try {
+            return await ServiceRecord.findOne({
+                technician_id: technicianId,
+                status: 'in-progress'
+            })
+                .populate({
+                    path: 'appointment_id',
+                    populate: [
+                        { path: 'customer_id', select: 'customerName dateOfBirth address' },
+                        { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
+                        { path: 'center_id', select: 'center_id name address phone' }
+                    ]
+                })
+                .populate({
+                    path: 'technician_id',
+                    select: 'name userId centerId isOnline certificates',
+                    populate: { path: 'userId', select: 'email' }
+                })
+                .lean() as any;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get technician active record: ${error.message}`);
+            }
+            throw new Error('Failed to get technician active record: Unknown error');
         }
     }
 
@@ -126,6 +172,22 @@ export class ServiceRecordService {
 
     async updateServiceRecord(recordId: string, updateData: UpdateServiceRecordRequest): Promise<IServiceRecord | null> {
         try {
+            // Nếu status chuyển sang 'in-progress', kiểm tra technician không có in-progress record khác
+            if (updateData.status === 'in-progress') {
+                const currentRecord = await ServiceRecord.findById(recordId).select('technician_id').lean();
+                if (currentRecord && currentRecord.technician_id) {
+                    const existingActiveRecord = await ServiceRecord.findOne({
+                        technician_id: currentRecord.technician_id,
+                        status: 'in-progress',
+                        _id: { $ne: recordId }
+                    });
+
+                    if (existingActiveRecord) {
+                        throw new Error(`Kỹ thuật viên này đang có 1 service record đang in-progress khác. Không thể có 2 service record in-progress cùng lúc.`);
+                    }
+                }
+            }
+
             const updatedRecord = await ServiceRecord.findByIdAndUpdate(
                 recordId,
                 updateData,
@@ -186,87 +248,61 @@ export class ServiceRecordService {
             throw new Error('Failed to delete service record: Unknown error');
         }
     }
-
-    // Lấy tất cả suggested parts từ record checklist (bao gồm tổng số lượng)
+    // Lấy tất cả suggested parts từ checklist defects (bao gồm tổng số lượng)
     async getAllSuggestedParts(recordId: string): Promise<any[]> {
         try {
             const record = await ServiceRecord.findById(recordId);
             if (!record) throw new Error('Service record not found');
-            // Populate center auto part and nested auto part (name, selling_price)
-            const checklistItems = await RecordChecklist.find({ record_id: recordId })
+
+            // Get all record checklists for this service record
+            const recordChecklists = await RecordChecklist.find({ record_id: recordId }).lean();
+            const checklistIds = recordChecklists.map(rc => rc._id);
+
+            if (checklistIds.length === 0) return [];
+
+            // Get all defects for these checklists and populate suggested_part_id
+            const defects = await ChecklistDefect.find({ record_checklist_id: { $in: checklistIds } })
                 .populate({
-                    path: 'suggest.part_id',
-                    populate: { path: 'part_id', select: 'name selling_price warranty_time image' }
+                    path: 'suggested_part_id',
+                    select: '_id name cost_price selling_price warranty_time image'
                 })
                 .lean();
 
             interface AggItem {
-                center_auto_part_id: any; // CenterAutoPart _id
                 auto_part_id: any; // AutoPart _id
                 name: string; // AutoPart name
+                cost_price: number; // AutoPart cost price
                 selling_price: number; // AutoPart selling price
-                center_stock: number; // CenterAutoPart.quantity (stock tại center)
                 total_suggested_quantity: number; // tổng quantity được gợi ý
                 warranty_time?: number;
                 image?: string;
             }
 
             const aggMap = new Map<string, AggItem>();
-            const rawCenterAutoPartIds: any[] = []; // backward compat ids chưa populate
 
-            checklistItems.forEach((item: any) => {
-                const suggestions = Array.isArray(item.suggest) ? item.suggest : [];
-                suggestions.forEach((s: any) => {
-                    const quantity = s.quantity && s.quantity > 0 ? s.quantity : 1;
-                    const centerAutoPartDoc = s.part_id && s.part_id._id ? s.part_id : null; // nếu đã populate CenterAutoPart
-                    if (!centerAutoPartDoc) {
-                        // backward compat: có thể suggest là ObjectId hoặc object cũ
-                        const rawId = (s.part_id || s);
-                        if (rawId) rawCenterAutoPartIds.push(rawId.toString());
-                        return;
-                    }
-                    const autoPartDoc = centerAutoPartDoc.part_id && centerAutoPartDoc.part_id._id ? centerAutoPartDoc.part_id : null;
-                    const key = centerAutoPartDoc._id.toString();
-                    const existing = aggMap.get(key);
-                    if (existing) {
-                        existing.total_suggested_quantity += quantity;
-                    } else {
-                        aggMap.set(key, {
-                            center_auto_part_id: centerAutoPartDoc._id,
-                            auto_part_id: autoPartDoc ? autoPartDoc._id : undefined,
-                            name: autoPartDoc ? autoPartDoc.name : '',
-                            selling_price: autoPartDoc ? autoPartDoc.selling_price : 0,
-                            center_stock: centerAutoPartDoc.quantity || 0,
-                            total_suggested_quantity: quantity,
-                            warranty_time: autoPartDoc ? autoPartDoc.warranty_time : undefined,
-                            image: autoPartDoc ? autoPartDoc.image : undefined
-                        });
-                    }
-                });
+            defects.forEach((defect: any) => {
+                const autoPartDoc = defect.suggested_part_id;
+
+                if (!autoPartDoc || !autoPartDoc._id) return;
+
+                const quantity = defect.quantity && defect.quantity > 0 ? defect.quantity : 1;
+                const key = autoPartDoc._id.toString();
+                const existing = aggMap.get(key);
+
+                if (existing) {
+                    existing.total_suggested_quantity += quantity;
+                } else {
+                    aggMap.set(key, {
+                        auto_part_id: autoPartDoc._id,
+                        name: autoPartDoc.name || '',
+                        cost_price: autoPartDoc.cost_price || 0,
+                        selling_price: autoPartDoc.selling_price || 0,
+                        total_suggested_quantity: quantity,
+                        warranty_time: autoPartDoc.warranty_time,
+                        image: autoPartDoc.image
+                    });
+                }
             });
-
-            // Handle backward compatibility: fetch missing center auto parts and include them
-            if (rawCenterAutoPartIds.length) {
-                const uniqueIds = Array.from(new Set(rawCenterAutoPartIds));
-                const legacyParts = await CenterAutoPart.find({ _id: { $in: uniqueIds } })
-                    .populate({ path: 'part_id', select: 'name selling_price warranty_time image' })
-                    .lean();
-                legacyParts.forEach((cap: any) => {
-                    const key = cap._id.toString();
-                    if (!aggMap.has(key)) {
-                        aggMap.set(key, {
-                            center_auto_part_id: cap._id,
-                            auto_part_id: cap.part_id?._id,
-                            name: cap.part_id?.name || '',
-                            selling_price: cap.part_id?.selling_price || 0,
-                            center_stock: cap.quantity || 0,
-                            total_suggested_quantity: 0, // không có quantity thông tin từ raw entries (mặc định 0)
-                            warranty_time: cap.part_id?.warranty_time,
-                            image: cap.part_id?.image
-                        });
-                    }
-                });
-            }
 
             return Array.from(aggMap.values());
         } catch (error) {
