@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { FailureType } from '../types/checklistDefect.type';
 
 export interface IChecklistDefect extends Document {
     record_checklist_id: mongoose.Types.ObjectId;
     vehicle_part_id: mongoose.Types.ObjectId;
     suggested_part_id?: mongoose.Types.ObjectId;
     quantity: number;
-    failure_type: string;
+    failure_type: FailureType | string;
     description?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -36,6 +37,7 @@ const ChecklistDefectSchema: Schema = new Schema(
         },
         failure_type: {
             type: String,
+            enum: Object.values(FailureType),
             required: true
         },
         description: {
