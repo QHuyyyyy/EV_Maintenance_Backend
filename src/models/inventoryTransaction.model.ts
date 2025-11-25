@@ -11,7 +11,7 @@ export interface IInventoryTransactionDocument extends Document {
     ticket_id: mongoose.Types.ObjectId;
     transaction_type: 'IN' | 'OUT' | 'ADJUSTMENT';
     reference_type?: 'IMPORT_REQUEST' | 'SERVICE_USAGE' | 'INTERNAL_TRANSFER' | 'ADJUSTMENT';
-    reference_id?: string;
+    reference_id?: mongoose.Types.ObjectId;
     items: IInventoryTransactionItem[];
     created_by: mongoose.Types.ObjectId;
     notes?: string;
@@ -62,7 +62,7 @@ const InventoryTransactionSchema: Schema = new Schema(
             default: null
         },
         reference_id: {
-            type: String,
+            type: Schema.Types.ObjectId,
             default: null
         },
         items: [InventoryTransactionItemSchema],
