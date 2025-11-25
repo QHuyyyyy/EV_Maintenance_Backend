@@ -13,9 +13,12 @@ export interface IInventoryTicketDocument extends Document {
     status: 'PENDING' | 'IN-PROGRESS' | 'COMPLETED';
     items: IInventoryTicketItem[];
     created_by: mongoose.Types.ObjectId;
-    approved_by?: mongoose.Types.ObjectId;
     completed_date?: Date;
     notes?: string;
+    source_type?: 'SUPPLIER' | 'CENTER' | 'ADJUSTMENT' | null;
+    source_id?: mongoose.Types.ObjectId | null;
+    destination_type?: 'CUSTOMER' | 'CENTER' | 'ADJUSTMENT' | null;
+    destination_id?: mongoose.Types.ObjectId | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -32,10 +35,6 @@ const InventoryTicketItemSchema: Schema = new Schema(
             required: [true, 'Quantity is required'],
             min: [1, 'Quantity must be at least 1']
         },
-        notes: {
-            type: String,
-            default: ''
-        }
     },
     { _id: false }
 );
@@ -59,8 +58,8 @@ const InventoryTicketSchema: Schema = new Schema(
         },
         status: {
             type: String,
-            enum: ['DRAFT', 'APPROVED', 'COMPLETED'],
-            default: 'DRAFT'
+            enum: ['PENDING', 'IN-PROGRESS', 'COMPLETED'],
+            default: 'PENDING'
         },
         items: [InventoryTicketItemSchema],
         created_by: {
@@ -75,6 +74,24 @@ const InventoryTicketSchema: Schema = new Schema(
         notes: {
             type: String,
             default: ''
+        },
+        source_type: {
+            type: String,
+            enum: ['SUPPLIER', 'CENTER', 'ADJUSTMENT'],
+            default: null
+        },
+        source_id: {
+            type: Schema.Types.ObjectId,
+            default: null
+        },
+        destination_type: {
+            type: String,
+            enum: ['CUSTOMER', 'CENTER', 'ADJUSTMENT'],
+            default: null
+        },
+        destination_id: {
+            type: Schema.Types.ObjectId,
+            default: null
         }
     },
     {

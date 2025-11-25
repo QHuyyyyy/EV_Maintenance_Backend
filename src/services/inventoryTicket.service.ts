@@ -134,6 +134,8 @@ export class InventoryTicketService {
                     center_id: updated.center_id,
                     ticket_id: updated._id,
                     transaction_type: updated.ticket_type,
+                    reference_type: 'INTERNAL_TRANSFER',
+                    reference_id: updated._id,
                     items: transactionItems,
                     created_by: (updated.created_by as any) || null,
                     notes: updated.notes || ''

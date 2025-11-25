@@ -573,6 +573,10 @@ const doc = {
             ticket_type: 'IN',
             created_by: '60f1b2b3c4e5f6g7h8i9j0k3',
             notes: 'Phiếu nhập hàng từ supplier',
+            source_type: 'SUPPLIER',
+            source_id: '60f1b2b3c4e5f6g7h8i9j0s1',
+            destination_type: 'CENTER',
+            destination_id: '60f1b2b3c4e5f6g7h8i9j0c1',
             items: [
                 {
                     part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
@@ -588,7 +592,11 @@ const doc = {
         },
         UpdateInventoryTicket: {
             status: 'APPROVED',
-            notes: 'Duyệt phiếu nhập'
+            notes: 'Duyệt phiếu nhập',
+            source_type: 'SUPPLIER',
+            source_id: '60f1b2b3c4e5f6g7h8i9j0s1',
+            destination_type: 'CENTER',
+            destination_id: '60f1b2b3c4e5f6g7h8i9j0c1'
         },
         AddInventoryTicketItem: {
             part_id: '60f1b2b3c4e5f6g7h8i9j0p1',
