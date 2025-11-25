@@ -17,8 +17,7 @@ export class ServiceOrderController {
            }
         */
         try {
-            const center_id = (req as any).user?.center_id || '';
-            const order = await serviceOrderService.createServiceOrder(req.body, center_id);
+            const order = await serviceOrderService.createServiceOrder(req.body);
             res.status(201).json({ success: true, message: 'Service order created', data: order });
         } catch (error) {
             if (error instanceof Error) {
@@ -44,12 +43,11 @@ export class ServiceOrderController {
            }
         */
         try {
-            const center_id = (req as any).user?.center_id || '';
             const { orders } = req.body;
             if (!Array.isArray(orders) || orders.length === 0) {
                 return res.status(400).json({ success: false, message: 'orders must be a non-empty array' });
             }
-            const created = await serviceOrderService.createMultipleServiceOrders(orders, center_id);
+            const created = await serviceOrderService.createMultipleServiceOrders(orders);
             res.status(201).json({ success: true, message: 'Service orders created', data: created });
         } catch (error) {
             if (error instanceof Error) {
