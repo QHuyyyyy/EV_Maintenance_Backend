@@ -10,8 +10,6 @@ import { nowVN } from '../utils/time';
 export async function createWarrantiesForServiceRecord(serviceRecordId: string): Promise<void> {
     try {
         console.log(`🔄 Bắt đầu tạo bảo hành cho ServiceRecord: ${serviceRecordId}`);
-
-        // 1. Lấy ServiceRecord và populate appointment để có vehicle_id
         const serviceRecord = await ServiceRecord.findById(serviceRecordId)
             .populate({
                 path: 'appointment_id',
@@ -25,17 +23,11 @@ export async function createWarrantiesForServiceRecord(serviceRecordId: string):
         const appointment = serviceRecord.appointment_id as any;
         const vehicle = appointment.vehicle_id;
         const vehicleId = vehicle._id;
-
-        console.log(`📍 Xe ID: ${vehicleId}`);
-
-        // 🔴 KIỂM TRA VEHICLE CÒN TRONG BẢO HÀNH KHÔNG
-        const now = new Date();
-        const isVehicleInWarrantyPeriod = vehicle.vehicle_warranty_start_time &&
-            vehicle.vehicle_warranty_end_time &&
-            now >= vehicle.vehicle_warranty_start_time &&
-            now <= vehicle.vehicle_warranty_end_time;
-
-        console.log(`🚗 Vehicle warranty period: ${isVehicleInWarrantyPeriod ? '✅ Còn bảo hành' : '❌ Hết bảo hành'}`);
+        // const now = nowVN();
+        // const isVehicleInWarrantyPeriod = vehicle.vehicle_warranty_start_time &&
+        //     vehicle.vehicle_warranty_end_time &&
+        //     now >= vehicle.vehicle_warranty_start_time &&
+        //     now <= vehicle.vehicle_warranty_end_time;
 
         const serviceDetails = await ServiceDetail.find({ record_id: serviceRecordId });
 
@@ -58,18 +50,9 @@ export async function createWarrantiesForServiceRecord(serviceRecordId: string):
                 const autoPart = centerPart.part_id as any;
 
                 const warrantyDays = autoPart.warranty_time || 0;
-                const paidQty = detail.paid_qty || 0;  // Số lượng bán mới (trả tiền)
-                const warrantyQty = detail.warranty_qty || 0;  // Số lượng dùng bảo hành (free)
-
+                const paidQty = detail.paid_qty || 0;
+                const warrantyQty = detail.warranty_qty || 0;
                 console.log(`   📝 Linh kiện: ${autoPart.name}, Bảo hành: ${warrantyQty}, Bán mới: ${paidQty}, Bảo hành: ${warrantyDays} ngày`);
-
-                // 🔴 CHỈ TẠO PartWarranty NẾU XE HẾT BẢO HÀNH (isVehicleInWarrantyPeriod = false)
-                if (isVehicleInWarrantyPeriod) {
-                    console.log(`   ⏭️  Xe còn bảo hành → KO tạo PartWarranty (dùng VehicleAutoPart logic)`);
-                    continue;
-                }
-
-                // ✅ CHỈ TẠO PartWarranty CHO paidQty (BÁN MỚI), KHÔNG TẠO CHO warrantyQty (DÙNG BẢO HÀNH CŨ)
                 if (warrantyDays > 0 && paidQty > 0) {
                     const startDate = new Date();
                     const endDate = new Date();
