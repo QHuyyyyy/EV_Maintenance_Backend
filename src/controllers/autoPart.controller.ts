@@ -19,11 +19,12 @@ export class AutoPartController {
                    'multipart/form-data': {
                        schema: {
                            type: 'object',
-                           required: ['name','cost_price','selling_price'],
+                           required: ['name','cost_price','selling_price','category'],
                            properties: {
                                name: { type: 'string', example: 'Brake Pad' },
                                cost_price: { type: 'number', example: 50 },
                                selling_price: { type: 'number', example: 80 },
+                               category: { type: 'string', enum: ['TIRE', 'BATTERY', 'BRAKE', 'FLUID', 'SUSPENSION', 'ACCESSORY', 'ELECTRICAL'], example: 'BRAKE' },
                                warranty_time: { type: 'number', example: 12 },
                                image: { type: 'string', format: 'binary', description: 'Auto part image' }
                            }
@@ -115,6 +116,12 @@ export class AutoPartController {
                required: false,
                type: 'string'
            }
+           #swagger.parameters['category'] = {
+               in: 'query',
+               description: 'Filter by category (TIRE, BATTERY, BRAKE, FLUID, SUSPENSION, ACCESSORY, ELECTRICAL)',
+               required: false,
+               type: 'string'
+           }
            // Inventory-level filters are provided by center scoped endpoints (CenterAutoPart)
            #swagger.parameters['page'] = {
                in: 'query',
@@ -134,6 +141,7 @@ export class AutoPartController {
         try {
             const filters = {
                 name: req.query.name as string,
+                category: req.query.category as string,
                 page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
                 limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
             };
@@ -178,6 +186,7 @@ export class AutoPartController {
                                name: { type: 'string' },
                                cost_price: { type: 'number' },
                                selling_price: { type: 'number' },
+                               category: { type: 'string', enum: ['TIRE', 'BATTERY', 'BRAKE', 'FLUID', 'SUSPENSION', 'ACCESSORY', 'ELECTRICAL'] },
                                warranty_time: { type: 'number' },
                                image: { type: 'string', format: 'binary', description: 'Auto part image' }
                            }

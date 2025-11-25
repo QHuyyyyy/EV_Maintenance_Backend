@@ -3268,6 +3268,14 @@
                             "type": "string",
                             "example": "object"
                           },
+                          "vehicle_warranty_start_time": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicle_warranty_end_time": {
+                            "type": "string",
+                            "example": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "example": "string"
@@ -3341,6 +3349,14 @@
                           "customerId": {
                             "type": "string",
                             "example": "object"
+                          },
+                          "vehicle_warranty_start_time": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "vehicle_warranty_end_time": {
+                            "type": "string",
+                            "example": "string"
                           },
                           "createdAt": {
                             "type": "string",
@@ -3447,6 +3463,14 @@
                           "type": "string",
                           "example": "object"
                         },
+                        "vehicle_warranty_start_time": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "vehicle_warranty_end_time": {
+                          "type": "string",
+                          "example": "string"
+                        },
                         "createdAt": {
                           "type": "string",
                           "example": "string"
@@ -3525,6 +3549,14 @@
                         "customerId": {
                           "type": "string",
                           "example": "object"
+                        },
+                        "vehicle_warranty_start_time": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "vehicle_warranty_end_time": {
+                          "type": "string",
+                          "example": "string"
                         },
                         "createdAt": {
                           "type": "string",
@@ -3608,6 +3640,16 @@
                   "customerId": {
                     "type": "string",
                     "description": "Customer ID - leave empty if vehicle has no owner"
+                  },
+                  "vehicle_warranty_start_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-10-01T00:00:00.000Z"
+                  },
+                  "vehicle_warranty_end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-10-01T00:00:00.000Z"
                   },
                   "image": {
                     "type": "string",
@@ -3825,6 +3867,14 @@
                   },
                   "last_alert_mileage": {
                     "type": "number"
+                  },
+                  "vehicle_warranty_start_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "vehicle_warranty_end_time": {
+                    "type": "string",
+                    "format": "date-time"
                   },
                   "VIN": {
                     "type": "string"
@@ -7773,7 +7823,8 @@
                 "required": [
                   "name",
                   "cost_price",
-                  "selling_price"
+                  "selling_price",
+                  "category"
                 ],
                 "properties": {
                   "name": {
@@ -7787,6 +7838,19 @@
                   "selling_price": {
                     "type": "number",
                     "example": 80
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "TIRE",
+                      "BATTERY",
+                      "BRAKE",
+                      "FLUID",
+                      "SUSPENSION",
+                      "ACCESSORY",
+                      "ELECTRICAL"
+                    ],
+                    "example": "BRAKE"
                   },
                   "warranty_time": {
                     "type": "number",
@@ -7814,6 +7878,15 @@
             "name": "name",
             "in": "query",
             "description": "Filter by part name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by category (TIRE, BATTERY, BRAKE, FLUID, SUSPENSION, ACCESSORY, ELECTRICAL)",
             "required": false,
             "schema": {
               "type": "string"
@@ -7947,6 +8020,18 @@
                   },
                   "selling_price": {
                     "type": "number"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "TIRE",
+                      "BATTERY",
+                      "BRAKE",
+                      "FLUID",
+                      "SUSPENSION",
+                      "ACCESSORY",
+                      "ELECTRICAL"
+                    ]
                   },
                   "warranty_time": {
                     "type": "number"

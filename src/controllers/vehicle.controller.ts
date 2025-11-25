@@ -41,6 +41,8 @@ export class VehicleController {
                     last_service_date: "string",
                     image: "string",
                     customerId: "object",
+                    vehicle_warranty_start_time: "string",
+                    vehicle_warranty_end_time: "string",
                     createdAt: "string",
                     updatedAt: "string"
                 }]
@@ -162,6 +164,8 @@ export class VehicleController {
                             VIN: { type: "string", example: "1HGBH41JXMN109186" },
                             price: { type: "number", example: 50000 },
                             customerId: { type: "string", description: "Customer ID - leave empty if vehicle has no owner" },
+                            vehicle_warranty_start_time: { type: "string", format: "date-time", example: "2023-10-01T00:00:00.000Z" },
+                            vehicle_warranty_end_time: { type: "string", format: "date-time", example: "2025-10-01T00:00:00.000Z" },
                             image: { type: "string", format: "binary", description: "Vehicle image" }
                         }
                     }
@@ -186,6 +190,8 @@ export class VehicleController {
                     last_alert_mileage: "number",
                     image: "string",
                     customerId: "object",
+                    vehicle_warranty_start_time: "string",
+                    vehicle_warranty_end_time: "string",
                     createdAt: "string",
                     updatedAt: "string"
                 }
@@ -239,6 +245,8 @@ export class VehicleController {
                             plateNumber: { type: "string" },
                             last_service_date: { type: "string" },
                             last_alert_mileage: { type: "number" },
+                            vehicle_warranty_start_time: { type: "string", format: "date-time" },
+                            vehicle_warranty_end_time: { type: "string", format: "date-time" },
                             VIN: { type: "string" },
                             price: { type: "number" },
                             image: { type: "string", format: "binary", description: "Vehicle image" }

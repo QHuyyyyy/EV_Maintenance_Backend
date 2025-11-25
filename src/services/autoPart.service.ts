@@ -27,6 +27,7 @@ export class AutoPartService {
 
     async getAllAutoParts(filters?: {
         name?: string;
+        category?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -44,6 +45,9 @@ export class AutoPartService {
             const query: any = {};
             if (filters?.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
+            }
+            if (filters?.category) {
+                query.category = filters.category;
             }
             // lowStock is now handled at CenterAutoPart level (per center)
 
