@@ -1,5 +1,6 @@
 import { Vehicle } from '../models/vehicle.model';
 import Customer from '../models/customer.model';
+import VehicleAutoPart from '../models/vehicleAutoPart.model';
 import FirebaseStorageService from '../firebase/storage.service';
 
 export class VehicleService {
@@ -149,6 +150,29 @@ export class VehicleService {
             }
             const vehicle = new Vehicle(vehicleData);
             const savedVehicle = await vehicle.save();
+
+            // Auto create default VehicleAutoPart records for initial parts
+            try {
+                // Lấy một số AutoPart ban đầu (có thể lọc theo điều kiện nào đó)
+                const AutoPart = require('../models/autoPart.model').default;
+                const initialParts = await AutoPart.find().limit(5); // Lấy 5 part đầu tiên làm ví dụ
+
+                const vehicleAutoParts = initialParts.map((part: any) => ({
+                    serial_number: `${savedVehicle._id}-${part._id}-${Date.now()}`,
+                    vehicle_id: savedVehicle._id,
+                    autopart_id: part._id,
+                    quantity: 1,
+                    isWarranty: true
+                }));
+
+                if (vehicleAutoParts.length > 0) {
+                    await VehicleAutoPart.insertMany(vehicleAutoParts);
+                }
+            } catch (error) {
+                // Không throw error nếu tạo VehicleAutoPart thất bại, chỉ log warning
+                console.warn('Warning: Failed to create initial VehicleAutoPart:', error);
+            }
+
             return await this.getVehicleById(savedVehicle._id.toString());
         } catch (error) {
             throw new Error(`Error creating vehicle: ${error}`);
