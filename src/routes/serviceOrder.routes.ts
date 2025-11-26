@@ -8,10 +8,6 @@ const router = Router();
 
 router.post('/', validate, serviceOrderController.createServiceOrder);
 
-
-router.post('/bulk', validate, serviceOrderController.createMultipleServiceOrders);
-
-
 router.post('/lacking-parts', validate, serviceOrderController.getLackingPartsForShift);
 
 router.get('/record/:recordId', validate, serviceOrderController.getServiceOrdersByRecord);
