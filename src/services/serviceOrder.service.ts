@@ -25,25 +25,22 @@ export class ServiceOrderService {
 
             const center_id = serviceRecord.appointment_id.center_id;
 
-            // Lấy stock hiện tại
             const centerPart = await CenterAutoPart.findOne({
                 center_id: center_id,
                 part_id: data.part_id
             }).lean();
             const stock = centerPart?.quantity || 0;
 
-            // Lấy tổng held từ SUFFICIENT orders của part này trong center
-            const sufficientOrders = await ServiceOrder.find({
+            const orders = await ServiceOrder.find({
                 part_id: data.part_id,
-                stock_status: 'SUFFICIENT'
             })
                 .populate({
                     path: 'service_record_id',
-                    match: { appointment_id: serviceRecord.appointment_id._id }
+                    match: { status: { $ne: 'completed' } }
                 })
                 .lean() as any[];
 
-            const held = sufficientOrders
+            const held = orders
                 .filter(o => o.service_record_id)
                 .reduce((sum, o) => sum + (o.quantity || 0), 0);
 
