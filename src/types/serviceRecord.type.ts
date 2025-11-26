@@ -7,7 +7,7 @@ export interface IServiceRecord {
     start_time?: Date | null;
     end_time?: Date | null;
     description?: string;
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'waiting-for-parts';
     defects_finished?: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -19,7 +19,7 @@ export interface CreateServiceRecordRequest {
     start_time?: Date | null;
     end_time?: Date | null;
     description?: string;
-    status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    status?: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'waiting-for-parts';
 }
 
 export interface UpdateServiceRecordRequest {
@@ -28,6 +28,6 @@ export interface UpdateServiceRecordRequest {
     start_time?: Date;
     end_time?: Date;
     description?: string;
-    status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    status?: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'waiting-for-parts';
     defects_finished?: boolean;
 }
