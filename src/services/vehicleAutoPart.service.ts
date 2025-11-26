@@ -1,12 +1,44 @@
 import VehicleAutoPart from '../models/vehicleAutoPart.model';
+import mongoose from 'mongoose';
 
 export class VehicleAutoPartService {
-    // Lấy tất cả VehicleAutoPart của một xe
-    async getVehicleAutoPartsByVehicleId(vehicleId: string) {
+    // Lấy tất cả VehicleAutoPart của một xe, optionally filter by category
+    async getVehicleAutoPartsByVehicleId(vehicleId: string, category?: string) {
         try {
-            const vehicleAutoParts = await VehicleAutoPart.find({ vehicle_id: vehicleId })
-                .populate('vehicle_id', 'vehicleName model year plateNumber')
-                .populate('autopart_id', 'name category cost_price selling_price warranty_time');
+            const query: any = { vehicle_id: vehicleId };
+
+            let vehicleAutoParts;
+
+            if (category) {
+                // Use aggregation pipeline for category filtering
+                vehicleAutoParts = await VehicleAutoPart.aggregate([
+                    { $match: { vehicle_id: new mongoose.Types.ObjectId(vehicleId) } },
+                    {
+                        $lookup: {
+                            from: 'autoparts',
+                            localField: 'autopart_id',
+                            foreignField: '_id',
+                            as: 'autopart_id'
+                        }
+                    },
+                    { $unwind: '$autopart_id' },
+                    { $match: { 'autopart_id.category': category } },
+                    {
+                        $lookup: {
+                            from: 'vehicles',
+                            localField: 'vehicle_id',
+                            foreignField: '_id',
+                            as: 'vehicle_id'
+                        }
+                    },
+                    { $unwind: '$vehicle_id' }
+                ]);
+            } else {
+                // Default behavior without category filter
+                vehicleAutoParts = await VehicleAutoPart.find(query)
+                    .populate('vehicle_id', 'vehicleName model year plateNumber')
+                    .populate('autopart_id', 'name category cost_price selling_price warranty_time');
+            }
 
             return vehicleAutoParts;
         } catch (error) {
@@ -76,7 +108,7 @@ export class VehicleAutoPartService {
         try {
             const result = await VehicleAutoPart.aggregate([
                 {
-                    $match: { vehicle_id: require('mongoose').Types.ObjectId(vehicleId) }
+                    $match: { vehicle_id: new mongoose.Types.ObjectId(vehicleId) }
                 },
                 {
                     $lookup: {

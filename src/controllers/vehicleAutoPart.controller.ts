@@ -7,9 +7,10 @@ export class VehicleAutoPartController {
     async getVehicleAutoPartsByVehicleId(req: Request, res: Response): Promise<void> {
         // #swagger.tags = ['Vehicle Auto Parts']
         // #swagger.summary = 'Get all auto parts of a vehicle'
-        // #swagger.description = 'Get all auto parts (linh kiện) currently attached to a vehicle, used by technicians to check available parts'
+        // #swagger.description = 'Get all auto parts (linh kiện) currently attached to a vehicle, used by technicians to check available parts. Optionally filter by category'
         // #swagger.security = [{ "bearerAuth": [] }]
         // #swagger.parameters['vehicleId'] = { description: 'Vehicle ID', required: true, type: 'string', in: 'path' }
+        // #swagger.parameters['category'] = { description: 'Filter by part category (TIRE, BATTERY, BRAKE, etc)', required: false, type: 'string', in: 'query' }
         /* #swagger.responses[200] = {
             description: 'Successfully retrieved vehicle auto parts',
             schema: {
@@ -37,7 +38,10 @@ export class VehicleAutoPartController {
         } */
         try {
             const { vehicleId } = req.params;
-            const vehicleAutoParts = await vehicleAutoPartService.getVehicleAutoPartsByVehicleId(vehicleId);
+            const { category } = req.query;
+            const categoryFilter = typeof category === 'string' ? category : undefined;
+
+            const vehicleAutoParts = await vehicleAutoPartService.getVehicleAutoPartsByVehicleId(vehicleId, categoryFilter);
 
             res.status(200).json({
                 success: true,
@@ -220,10 +224,13 @@ export class VehicleAutoPartController {
         // #swagger.tags = ['Vehicle Auto Parts']
         // #swagger.summary = 'Get vehicle auto parts by service record'
         // #swagger.security = [{ "bearerAuth": [] }]
-        // #swagger.description = 'Fetch vehicle auto parts for the vehicle referenced by a given service record'
+        // #swagger.description = 'Fetch vehicle auto parts for the vehicle referenced by a given service record. Optionally filter by category'
         // #swagger.parameters['recordId'] = { description: 'Service record ID', required: true, type: 'string', in: 'path' }
+        // #swagger.parameters['category'] = { description: 'Filter by part category (TIRE, BATTERY, BRAKE, etc)', required: false, type: 'string', in: 'query' }
         try {
             const { recordId } = req.params;
+            const { category } = req.query;
+            const categoryFilter = typeof category === 'string' ? category : undefined;
 
             const record = await serviceRecordService.getServiceRecordById(recordId);
             if (!record) {
@@ -239,7 +246,7 @@ export class VehicleAutoPartController {
 
             const vehicleId = appointment.vehicle_id._id ? appointment.vehicle_id._id.toString() : appointment.vehicle_id.toString();
 
-            const parts = await vehicleAutoPartService.getVehicleAutoPartsByVehicleId(vehicleId);
+            const parts = await vehicleAutoPartService.getVehicleAutoPartsByVehicleId(vehicleId, categoryFilter);
 
             res.status(200).json({ success: true, data: parts });
         } catch (error: any) {
