@@ -26,7 +26,6 @@ export class InventoryTicketService {
                 InventoryTicket.find(query)
                     .populate('center_id', 'name address phone')
                     .populate('created_by', 'name email')
-                    .populate('approved_by', 'name email')
                     .populate({
                         path: 'items',
                         populate: { path: 'part_id', select: 'name category cost_price selling_price' }
@@ -55,7 +54,6 @@ export class InventoryTicketService {
             const ticket = await InventoryTicket.findById(id)
                 .populate('center_id', 'name address phone')
                 .populate('created_by', 'name email')
-                .populate('approved_by', 'name email')
                 .populate({
                     path: 'items',
                     populate: { path: 'part_id', select: 'name category cost_price selling_price' }
@@ -111,7 +109,6 @@ export class InventoryTicketService {
                 { new: true, runValidators: true }
             ).populate('center_id', 'name address phone')
                 .populate('created_by', 'name email')
-                .populate('approved_by', 'name email')
                 .populate({
                     path: 'items',
                     populate: { path: 'part_id', select: 'name category cost_price selling_price' }
@@ -186,7 +183,6 @@ export class InventoryTicketService {
                 { new: true, runValidators: true }
             ).populate('center_id', 'name address phone')
                 .populate('created_by', 'name email')
-                .populate('approved_by', 'name email')
                 .populate({
                     path: 'items',
                     populate: { path: 'part_id', select: 'name category cost_price selling_price' }
@@ -207,7 +203,6 @@ export class InventoryTicketService {
                 { new: true, runValidators: true }
             ).populate('center_id', 'name address phone')
                 .populate('created_by', 'name email')
-                .populate('approved_by', 'name email')
                 .populate({
                     path: 'items',
                     populate: { path: 'part_id', select: 'name category cost_price selling_price' }
@@ -228,7 +223,6 @@ export class InventoryTicketService {
                 { new: true, runValidators: true }
             ).populate('center_id', 'name address phone')
                 .populate('created_by', 'name email')
-                .populate('approved_by', 'name email')
                 .populate({
                     path: 'items',
                     populate: { path: 'part_id', select: 'name category cost_price selling_price' }
