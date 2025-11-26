@@ -6,6 +6,7 @@ import { CreateAppointmentRequest, UpdateAppointmentRequest, IAppointment } from
 import { Vehicle } from '../models/vehicle.model';
 import mongoose from 'mongoose';
 import systemUserModel from '../models/systemUser.model';
+import ServiceRecord from '../models/serviceRecord.model';
 
 export class AppointmentService {
     async createAppointment(appointmentData: CreateAppointmentRequest): Promise<IAppointment> {
@@ -203,6 +204,13 @@ export class AppointmentService {
                         if (incRes.booked_count >= incRes.capacity && incRes.status !== 'full') {
                             await Slot.findByIdAndUpdate(incRes._id, { $set: { status: 'full' } });
                         }
+                    }
+                    // Auto-update service record when appointment status changes to "waiting-for-parts"
+                    if (toStatus === 'waiting-for-parts') {
+                        await ServiceRecord.updateOne(
+                            { appointment_id: appointmentId },
+                            { status: 'waiting-for-parts' }
+                        );
                     }
                 }
             }

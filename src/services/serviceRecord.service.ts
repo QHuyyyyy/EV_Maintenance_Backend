@@ -93,6 +93,31 @@ export class ServiceRecordService {
         }
     }
 
+    async getServiceRecordByAppointmentId(appointmentId: string): Promise<IServiceRecord | null> {
+        try {
+            return await ServiceRecord.findOne({ appointment_id: appointmentId })
+                .populate({
+                    path: 'appointment_id',
+                    populate: [
+                        { path: 'customer_id', select: 'customerName dateOfBirth address' },
+                        { path: 'vehicle_id', select: 'vehicleName model plateNumber mileage' },
+                        { path: 'center_id', select: 'center_id name address phone' }
+                    ]
+                })
+                .populate({
+                    path: 'technician_id',
+                    select: 'name userId centerId isOnline certificates',
+                    populate: { path: 'userId', select: 'email' }
+                })
+                .lean() as any;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get service record: ${error.message}`);
+            }
+            throw new Error('Failed to get service record: Unknown error');
+        }
+    }
+
     async getAllServiceRecords(filters?: {
         status?: string;
         appointment_id?: string;
