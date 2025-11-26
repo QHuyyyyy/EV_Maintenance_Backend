@@ -6,7 +6,7 @@ export interface IAppointment extends Document {
     vehicle_id: mongoose.Types.ObjectId;
     center_id: mongoose.Types.ObjectId;
     slot_id: mongoose.Types.ObjectId; // reference to Slot instead of raw start/end time
-    status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'waiting-for-parts';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -41,7 +41,7 @@ const AppointmentSchema: Schema = new Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'confirmed', 'in-progress', 'completed', 'cancelled'],
+            enum: ['pending', 'confirmed', 'in-progress', 'completed', 'cancelled', 'waiting-for-parts'],
             default: 'pending'
         }
     },

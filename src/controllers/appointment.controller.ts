@@ -424,14 +424,25 @@ export class AppointmentController {
                 return res.status(400).json({ success: false, message: 'Technician is not scheduled for a shift covering the appointment time' });
             }
 
-            // Create minimal service record; technician will update remaining fields later
-            const record = await serviceRecordService.createServiceRecord({
-                appointment_id: appointmentId,
-                technician_id,
-                status: 'pending'
-            } as any);
+            // Check if service record already exists for this appointment
+            const existingRecord = await serviceRecordService.getServiceRecordByAppointmentId(appointmentId);
+            let record;
+            if (existingRecord) {
+                // Update existing service record with new technician
+                record = await serviceRecordService.updateServiceRecord(existingRecord._id as string, {
+                    technician_id
+                } as any);
+            } else {
+                // Create minimal service record; technician will update remaining fields later
+                record = await serviceRecordService.createServiceRecord({
+                    appointment_id: appointmentId,
+                    technician_id,
+                    status: 'pending'
+                } as any);
+            }
 
-            res.status(201).json({ success: true, message: 'Technician assigned and service record created', data: record });
+            const successMsg = existingRecord ? 'Technician reassigned successfully' : 'Technician assigned and service record created';
+            res.status(existingRecord ? 200 : 201).json({ success: true, message: successMsg, data: record });
         } catch (error) {
             if (error instanceof Error) {
                 res.status(400).json({ success: false, message: error.message });
