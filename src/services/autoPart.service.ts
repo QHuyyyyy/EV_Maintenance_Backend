@@ -143,10 +143,9 @@ export class AutoPartService {
                     stock_status: 'LACKING'
                 }).lean();
 
-                const available = stock - held;
+                const available = Math.max(0, stock - held);
 
-                // Chỉ trả về nếu: có sẵn AND không có LACKING
-                if (available > 0 && !hasLacking) {
+                if (!hasLacking) {
                     results.push({
                         center_id: center._id.toString(),
                         center_name: center.name,
