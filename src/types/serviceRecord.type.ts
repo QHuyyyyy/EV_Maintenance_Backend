@@ -8,6 +8,7 @@ export interface IServiceRecord {
     end_time?: Date | null;
     description?: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    defects_finished?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -28,4 +29,5 @@ export interface UpdateServiceRecordRequest {
     end_time?: Date;
     description?: string;
     status?: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    defects_finished?: boolean;
 }
