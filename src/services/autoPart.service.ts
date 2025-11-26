@@ -137,7 +137,7 @@ export class AutoPartService {
                 })
                     .populate({
                         path: 'service_record_id',
-                        match: { status: { $ne: 'completed' } }
+                        match: { status: { $nin: ['completed', 'canceled'] } }
                     })
                     .lean() as any[];
 
