@@ -9,7 +9,7 @@ router.get('/vehicle/:vehicleId', validate, (req, res) => {
     vehicleAutoPartController.getVehicleAutoPartsByVehicleId(req, res);
 });
 
-// Lấy auto parts của vehicle theo service record
+// Lấy auto parts của vehicle theo service record (có thể lọc theo category)
 router.get('/record/:recordId', validate, (req, res) => {
     vehicleAutoPartController.getVehicleAutoPartsByRecordId(req, res);
 });

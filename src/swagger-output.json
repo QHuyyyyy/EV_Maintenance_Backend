@@ -11744,7 +11744,7 @@
           "Vehicle Auto Parts"
         ],
         "summary": "Get all auto parts of a vehicle",
-        "description": "Get all auto parts (linh kiện) currently attached to a vehicle, used by technicians to check available parts",
+        "description": "Get all auto parts (linh kiện) currently attached to a vehicle, used by technicians to check available parts. Optionally filter by category",
         "parameters": [
           {
             "name": "vehicleId",
@@ -11754,6 +11754,15 @@
               "type": "string"
             },
             "description": "Vehicle ID"
+          },
+          {
+            "name": "category",
+            "description": "Filter by part category (TIRE, BATTERY, BRAKE, etc)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -11947,7 +11956,7 @@
           "Vehicle Auto Parts"
         ],
         "summary": "Get vehicle auto parts by service record",
-        "description": "Fetch vehicle auto parts for the vehicle referenced by a given service record",
+        "description": "Fetch vehicle auto parts for the vehicle referenced by a given service record. Optionally filter by category",
         "parameters": [
           {
             "name": "recordId",
@@ -11957,6 +11966,15 @@
               "type": "string"
             },
             "description": "Service record ID"
+          },
+          {
+            "name": "category",
+            "description": "Filter by part category (TIRE, BATTERY, BRAKE, etc)",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -12639,41 +12657,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateServiceOrder"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/service-orders/bulk": {
-      "post": {
-        "tags": [
-          "Service Orders"
-        ],
-        "summary": "Create Multiple Service Orders",
-        "description": "Create multiple service orders at once (customer confirms repair list)",
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMultipleServiceOrders"
               }
             }
           }
