@@ -215,28 +215,48 @@ export class ServiceOrderService {
     async getLackingPartsForShift(
         shiftId: string,
         slotId?: string
-    ): Promise<{ part_id: string; totalQuantity: number }[]> {
+    ): Promise<{ part_id: string; orderQuantity: number; lackingQuantity: number; currentStock: number }[]> {
         try {
-            // Tìm tất cả service records của shift (và slot nếu có)
-            const query: any = { shift_id: shiftId };
-            if (slotId) {
-                query.slot_id = slotId;
-            }
 
-            const records = await ServiceRecord.find(query).select('_id').lean();
-            const recordIds = records.map(r => r._id);
+            const records = await ServiceRecord.find()
+                .populate({
+                    path: 'appointment_id',
+                    populate: {
+                        path: 'slot_id',
+                        select: 'workshift_id center_id'
+                    }
+                })
+                .select('_id appointment_id')
+                .lean() as any[];
 
-            if (recordIds.length === 0) {
+            console.log(`[getLackingPartsForShift] Total records found: ${records.length}`);
+
+            const filteredRecords = records
+                .filter(r => {
+                    const appointment = r.appointment_id;
+                    if (!appointment || !appointment.slot_id) return false;
+
+                    const workshiftId = appointment.slot_id.workshift_id.toString();
+                    const recordSlotId = appointment.slot_id._id?.toString();
+                    if (workshiftId !== shiftId) return false;
+
+                    if (slotId && recordSlotId !== slotId) return false;
+
+                    return true;
+                });
+
+            if (filteredRecords.length === 0) {
                 return [];
             }
 
-            // Lấy tất cả lacking orders từ các records này
+            const filteredRecordIds = filteredRecords.map(r => r._id);
+            const centerId = filteredRecords[0].appointment_id.slot_id.center_id;
+
             const lackingOrders = await ServiceOrder.find({
-                service_record_id: { $in: recordIds },
+                service_record_id: { $in: filteredRecordIds },
                 stock_status: 'LACKING'
             }).lean();
 
-            // Gom lại theo part_id
             const partMap = new Map<string, number>();
             lackingOrders.forEach((order: any) => {
                 const partId = order.part_id.toString();
@@ -244,10 +264,30 @@ export class ServiceOrderService {
                 partMap.set(partId, current + order.quantity);
             });
 
-            return Array.from(partMap.entries()).map(([part_id, totalQuantity]) => ({
-                part_id,
-                totalQuantity
-            }));
+            const partIds = Array.from(partMap.keys());
+            const centerParts = await CenterAutoPart.find({
+                center_id: centerId,
+                part_id: { $in: partIds }
+            }).lean();
+
+
+            const stockMap = new Map<string, number>();
+            centerParts.forEach((cp: any) => {
+                stockMap.set(cp.part_id.toString(), cp.quantity || 0);
+            });
+
+            const result = Array.from(partMap.entries()).map(([part_id, orderQuantity]) => {
+                const currentStock = stockMap.get(part_id) || 0;
+                const lackingQuantity = Math.max(0, orderQuantity - currentStock);
+                return {
+                    part_id,
+                    orderQuantity,
+                    currentStock,
+                    lackingQuantity
+                };
+            });
+
+            return result;
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to get lacking parts for shift: ${error.message}`);
@@ -282,26 +322,24 @@ export class ServiceOrderService {
     }
 
     // Phân bổ hàng nhập kho cho các ServiceOrder thiếu hàng (FIFO)
-    // Gọi khi ImportRequest hoàn thành
+    // Gọi khi ImportRequest hoàn thành - stock đã được update rồi!
+    // Chỉ cần allocation dựa trên stock hiện tại
     async allocateImportedStock(
         part_id: string,
-        importedQuantity: number,
         center_id: string
-    ): Promise<{ updatedOrders: string[]; remainingQuantity: number; totalAvailable: number }> {
+    ): Promise<{ updatedOrders: string[]; remainingQuantity: number }> {
         try {
-            // Lấy số lượng tồn kho hiện tại
+            // Lấy stock hiện tại (đã được update bởi InventoryTicket)
             const centerPart = await CenterAutoPart.findOne({
                 center_id: center_id,
                 part_id: part_id
             }).lean();
-            const existingStock = centerPart?.quantity || 0;
+            const currentStock = centerPart?.quantity || 0;
 
-            // Tổng hàng khả dụng = tồn kho + nhập mới
-            let currentStock = existingStock + importedQuantity;
-            const totalAvailable = currentStock;
             const updatedOrderIds: string[] = [];
+            let remainingStock = currentStock;
 
-            // Lấy danh sách orders thiếu hàng, sắp xếp theo thời gian cũ nhất trước
+            // Lấy danh sách orders thiếu hàng của part này, sắp xếp theo thời gian cũ nhất trước
             const lackingOrders = await ServiceOrder.find({
                 part_id: part_id,
                 stock_status: 'LACKING'
@@ -312,32 +350,31 @@ export class ServiceOrderService {
             // Phân bổ hàng từng order
             for (const order of lackingOrders) {
                 // Hết hàng thì dừng
-                if (currentStock <= 0) {
+                if (remainingStock <= 0) {
                     break;
                 }
 
                 // Nếu hàng không đủ cho order này -> bỏ qua, chuyển sang order tiếp theo
-                if (currentStock < order.quantity) {
+                if (remainingStock < order.quantity) {
                     continue;
                 }
 
                 // Nếu đủ thì cập nhật order thành SUFFICIENT
-                if (currentStock >= order.quantity) {
+                if (remainingStock >= order.quantity) {
                     await ServiceOrder.findByIdAndUpdate(
                         order._id,
                         { stock_status: 'SUFFICIENT' },
                         { new: false }
                     );
 
-                    currentStock -= order.quantity;
+                    remainingStock -= order.quantity;
                     updatedOrderIds.push(order._id.toString());
                 }
             }
 
             return {
                 updatedOrders: updatedOrderIds,
-                remainingQuantity: currentStock,
-                totalAvailable: totalAvailable
+                remainingQuantity: remainingStock
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -349,16 +386,16 @@ export class ServiceOrderService {
 
     // Phân bổ cho nhiều parts cùng lúc (khi import request có nhiều items)
     async allocateMultipleImportedStocks(
-        items: Array<{ part_id: string; quantity: number }>,
+        partIds: string[],
         center_id: string
-    ): Promise<Array<{ part_id: string; updatedOrders: string[]; remainingQuantity: number; totalAvailable: number }>> {
+    ): Promise<Array<{ part_id: string; updatedOrders: string[]; remainingQuantity: number }>> {
         try {
             const results = [];
 
-            for (const item of items) {
-                const result = await this.allocateImportedStock(item.part_id, item.quantity, center_id);
+            for (const part_id of partIds) {
+                const result = await this.allocateImportedStock(part_id, center_id);
                 results.push({
-                    part_id: item.part_id,
+                    part_id,
                     ...result
                 });
             }
