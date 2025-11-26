@@ -188,15 +188,49 @@ export class ServiceOrderService {
         }
     }
 
-    // Update quantity
+    // Update quantity và kiểm tra lại stock status
     async updateServiceOrderQuantity(
         id: string,
         quantity: number
     ): Promise<ServiceOrderDTO | null> {
         try {
+            // Lấy order hiện tại
+            const order = await ServiceOrder.findById(id)
+                .populate('service_record_id')
+                .lean() as any;
+
+            if (!order) {
+                throw new Error('Service order not found');
+            }
+
+            // Lấy center_id từ service_record
+            const serviceRecord = await ServiceRecord.findById(order.service_record_id._id)
+                .populate('appointment_id')
+                .lean() as any;
+
+            if (!serviceRecord) {
+                throw new Error('Service record not found');
+            }
+
+            const center_id = serviceRecord.appointment_id.center_id;
+
+            // Kiểm tra stock hiện tại
+            const centerPart = await CenterAutoPart.findOne({
+                center_id: center_id,
+                part_id: order.part_id
+            }).lean();
+
+            const currentStock = centerPart?.quantity || 0;
+
+            // Xác định stock_status dựa trên quantity mới
+            const stockStatus = currentStock >= quantity ? 'SUFFICIENT' : 'LACKING';
+
             return await ServiceOrder.findByIdAndUpdate(
                 id,
-                { quantity },
+                {
+                    quantity,
+                    stock_status: stockStatus
+                },
                 { new: true }
             )
                 .populate('service_record_id')
