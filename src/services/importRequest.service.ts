@@ -1,6 +1,5 @@
 import ImportRequest from '../models/importRequest.model';
 import ImportRequestItem from '../models/importRequestItem.model';
-import serviceOrderService from './serviceOrder.service';
 
 export class ImportRequestService {
 
@@ -97,9 +96,11 @@ export class ImportRequestService {
     // Cập nhật ImportRequest (admin có thể điền source_type, source_center_id)
     async updateImportRequest(id: string, updateData: any) {
         try {
+            const { items = [], ...importData } = updateData;
+
             const updated = await ImportRequest.findByIdAndUpdate(
                 id,
-                updateData,
+                importData,
                 { new: true, runValidators: true }
             ).populate('center_id', 'name address phone')
                 .populate('staff_id', 'name email')
@@ -109,37 +110,47 @@ export class ImportRequestService {
                 throw new Error('ImportRequest not found');
             }
 
+            // Cập nhật items nếu có
+            if (items && Array.isArray(items) && items.length > 0) {
+                // Lấy danh sách item IDs từ request
+                const incomingItemIds = items
+                    .filter((item: any) => item._id) // Items có _id là items cũ
+                    .map((item: any) => item._id);
+
+                // Xóa items không có trong danh sách cập nhật
+                await ImportRequestItem.deleteMany({
+                    request_id: id,
+                    _id: { $nin: incomingItemIds }
+                });
+
+                // Upsert từng item
+                for (const item of items) {
+                    if (item._id) {
+                        // Cập nhật item cũ
+                        await ImportRequestItem.findByIdAndUpdate(
+                            item._id,
+                            { ...item, request_id: id },
+                            { new: true, runValidators: true }
+                        );
+                    } else {
+                        // Tạo item mới
+                        const newItem = new ImportRequestItem({
+                            ...item,
+                            request_id: id
+                        });
+                        await newItem.save();
+                    }
+                }
+            }
+
             // Lấy items của request
-            const items = await ImportRequestItem.find({ request_id: id })
+            const requestItems = await ImportRequestItem.find({ request_id: id })
                 .populate('part_id', 'name category cost_price selling_price');
 
             const result = {
                 ...updated.toObject(),
-                items
+                items: requestItems
             };
-
-            // AUTO: Nếu status thay đổi thành COMPLETED, tự động phân bổ hàng cho ServiceOrders
-            if (updateData.status === 'COMPLETED' && updated.status === 'COMPLETED') {
-                try {
-                    // Chuẩn bị items cho allocation
-                    const allocateItems = items.map((item: any) => ({
-                        part_id: item.part_id._id.toString(),
-                        quantity: item.quantity_imported || item.quantity_requested
-                    }));
-
-                    // Auto allocate stock FIFO (với center_id để tính tồn kho)
-                    const allocationResults = await serviceOrderService.allocateMultipleImportedStocks(
-                        allocateItems,
-                        updated.center_id.toString()
-                    );
-
-                    // Attach kết quả allocation vào response
-                    (result as any).allocationResults = allocationResults;
-                } catch (allocationError: any) {
-                    console.error(`[ImportRequest] Auto-allocation failed for request ${id}:`, allocationError.message);
-                    // Không throw error - import vẫn được completed, chỉ log lại
-                }
-            }
 
             return result;
         } catch (error) {
