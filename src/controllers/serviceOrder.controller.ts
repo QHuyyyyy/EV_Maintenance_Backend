@@ -28,35 +28,6 @@ export class ServiceOrderController {
         }
     }
 
-    async createMultipleServiceOrders(req: Request, res: Response) {
-        /* #swagger.tags = ['Service Orders']
-           #swagger.summary = 'Create Multiple Service Orders'
-           #swagger.description = 'Create multiple service orders at once (customer confirms repair list)'
-           #swagger.security = [{ "bearerAuth": [] }]
-           #swagger.requestBody = {
-               required: true,
-               content: {
-                   'application/json': {
-                       schema: { $ref: '#/components/schemas/CreateMultipleServiceOrders' }
-                   }
-               }
-           }
-        */
-        try {
-            const { orders } = req.body;
-            if (!Array.isArray(orders) || orders.length === 0) {
-                return res.status(400).json({ success: false, message: 'orders must be a non-empty array' });
-            }
-            const created = await serviceOrderService.createMultipleServiceOrders(orders);
-            res.status(201).json({ success: true, message: 'Service orders created', data: created });
-        } catch (error) {
-            if (error instanceof Error) {
-                res.status(400).json({ success: false, message: error.message });
-            } else {
-                res.status(400).json({ success: false, message: 'Failed to create service orders' });
-            }
-        }
-    }
 
     async getServiceOrdersByRecord(req: Request, res: Response) {
         /* #swagger.tags = ['Service Orders']
