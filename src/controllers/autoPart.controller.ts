@@ -281,6 +281,72 @@ export class AutoPartController {
             }
         }
     }
+
+    async getAvailableStockByCenters(req: Request, res: Response) {
+        /* #swagger.tags = ['Auto Parts']
+           #swagger.summary = 'Get available stock by centers for distribution'
+           #swagger.description = 'Get centers that have available stock (stock - held) for a part without LACKING orders'
+           #swagger.security = [{ "bearerAuth": [] }]
+           #swagger.parameters['part_id'] = {
+               in: 'query',
+               description: 'Auto part ID',
+               required: true,
+               type: 'string'
+           }
+           #swagger.responses[200] = {
+               description: 'List of centers with available stock',
+               schema: {
+                   type: 'object',
+                   properties: {
+                       success: { type: 'boolean' },
+                       data: {
+                           type: 'array',
+                           items: {
+                               type: 'object',
+                               properties: {
+                                   center_id: { type: 'string' },
+                                   center_name: { type: 'string' },
+                                   stock: { type: 'number' },
+                                   held: { type: 'number' },
+                                   available: { type: 'number' }
+                               }
+                           }
+                       }
+                   }
+               }
+           }
+        */
+        try {
+            const { part_id } = req.query;
+
+            if (!part_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'part_id is required'
+                });
+            }
+
+            const centers = await autoPartService.getAvailableStockByCenters(part_id as string);
+
+            res.status(200).json({
+                success: true,
+                message: 'Available stock by centers retrieved',
+                data: centers
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            } else {
+                res.status(400).json({
+                    success: false,
+                    message: 'Failed to get available stock by centers'
+                });
+            }
+        }
+    }
 }
 
 export default new AutoPartController();

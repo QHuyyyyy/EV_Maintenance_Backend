@@ -7,6 +7,7 @@ const router = Router();
 
 router.post('/', validate, upload.single('image'), autoPartController.createAutoPart.bind(autoPartController));
 router.get('/', validate, autoPartController.getAllAutoParts);
+router.get('/available-stock/by-centers', validate, autoPartController.getAvailableStockByCenters.bind(autoPartController));
 router.get('/:id', validate, autoPartController.getAutoPartById);
 router.put('/:id', validate, upload.single('image'), autoPartController.updateAutoPart.bind(autoPartController));
 router.delete('/:id', validate, autoPartController.deleteAutoPart);
