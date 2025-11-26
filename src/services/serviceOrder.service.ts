@@ -351,13 +351,28 @@ export class ServiceOrderService {
             const updatedOrderIds: string[] = [];
             let remainingStock = currentStock;
 
+            // FIX: Find all ServiceRecords that belong to this center
+            const serviceRecords = await ServiceRecord.find()
+                .populate('appointment_id')
+                .lean() as any[];
+
+            const centerServiceRecordIds = serviceRecords
+                .filter(sr => sr.appointment_id && sr.appointment_id.center_id?.toString() === center_id)
+                .map(sr => sr._id);
+
+            console.log(`[Allocation] Part: ${part_id}, Center: ${center_id}, Current Stock: ${currentStock}, Service Records for this center: ${centerServiceRecordIds.length}`);
+
             // Lấy danh sách orders thiếu hàng của part này, sắp xếp theo thời gian cũ nhất trước
+            // FIX: Filter by service_record_id to ensure we only allocate to the correct center
             const lackingOrders = await ServiceOrder.find({
                 part_id: part_id,
-                stock_status: 'LACKING'
+                stock_status: 'LACKING',
+                service_record_id: { $in: centerServiceRecordIds }
             })
                 .sort({ createdAt: 1 })
                 .lean();
+
+            console.log(`[Allocation] Found ${lackingOrders.length} lacking orders for this part and center`);
 
             // Phân bổ hàng từng order
             for (const order of lackingOrders) {
@@ -368,6 +383,7 @@ export class ServiceOrderService {
 
                 // Nếu hàng không đủ cho order này -> bỏ qua, chuyển sang order tiếp theo
                 if (remainingStock < order.quantity) {
+                    console.log(`[Allocation] Order ${order._id} needs ${order.quantity} but only ${remainingStock} remaining`);
                     continue;
                 }
 
@@ -381,8 +397,11 @@ export class ServiceOrderService {
 
                     remainingStock -= order.quantity;
                     updatedOrderIds.push(order._id.toString());
+                    console.log(`[Allocation] Updated order ${order._id} to SUFFICIENT (qty: ${order.quantity}, remaining: ${remainingStock})`);
                 }
             }
+
+            console.log(`[Allocation] Complete - Updated ${updatedOrderIds.length} orders, remaining stock: ${remainingStock}`);
 
             return {
                 updatedOrders: updatedOrderIds,
