@@ -115,16 +115,25 @@ export class AutoPartService {
 
             const results = [];
             for (const center of centers) {
-                // Lấy stock hiện tại
                 const stock = (await CenterAutoPart.findOne({
                     center_id: center._id,
                     part_id: part_id
                 }).lean())?.quantity || 0;
 
-                // Lấy SUFFICIENT orders của service records chưa completed
-                const sufficientOrders = await ServiceOrder.find({
+                const centerServiceRecords = await ServiceRecord.find({
+                    appointment_id: await ServiceRecord.distinct('appointment_id', {})
+                }).populate({
+                    path: 'appointment_id',
+                    match: { center_id: center._id }
+                }).lean() as any[];
+
+                const centerRecordIds = centerServiceRecords
+                    .filter(r => r.appointment_id)
+                    .map(r => r._id);
+
+                const Orders = await ServiceOrder.find({
                     part_id: part_id,
-                    stock_status: 'SUFFICIENT'
+                    service_record_id: { $in: centerRecordIds },
                 })
                     .populate({
                         path: 'service_record_id',
@@ -132,28 +141,20 @@ export class AutoPartService {
                     })
                     .lean() as any[];
 
-                // Tính held (chỉ những order có service record chưa complete)
-                const held = sufficientOrders
+                const held = Orders
                     .filter(o => o.service_record_id)
                     .reduce((sum, o) => sum + (o.quantity || 0), 0);
 
-                // Kiểm tra xem part này có LACKING không
-                const hasLacking = await ServiceOrder.findOne({
-                    part_id: part_id,
-                    stock_status: 'LACKING'
-                }).lean();
-
                 const available = Math.max(0, stock - held);
 
-                if (!hasLacking) {
-                    results.push({
-                        center_id: center._id.toString(),
-                        center_name: center.name,
-                        stock,
-                        held,
-                        available
-                    });
-                }
+                results.push({
+                    center_id: center._id.toString(),
+                    center_name: center.name,
+                    stock,
+                    held,
+                    available
+                });
+
             }
 
             return results;
