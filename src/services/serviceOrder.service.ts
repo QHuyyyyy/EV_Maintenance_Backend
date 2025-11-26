@@ -9,7 +9,7 @@ import {
 } from '../types/serviceOrder.type';
 
 export class ServiceOrderService {
-    // Tạo order đơn lẻ với kiểm tra stock tự động
+    // Tạo order đơn lẻ với kiểm tra stock tự động (tính held từ SUFFICIENT orders)
     async createServiceOrder(
         data: CreateServiceOrderRequest
     ): Promise<ServiceOrderDTO> {
@@ -25,13 +25,28 @@ export class ServiceOrderService {
 
             const center_id = serviceRecord.appointment_id.center_id;
 
-            // Kiểm tra stock status từ CenterAutoPart
             const centerPart = await CenterAutoPart.findOne({
                 center_id: center_id,
                 part_id: data.part_id
             }).lean();
+            const stock = centerPart?.quantity || 0;
 
-            const stockStatus = centerPart && centerPart.quantity >= data.quantity ? 'SUFFICIENT' : 'LACKING';
+            const orders = await ServiceOrder.find({
+                part_id: data.part_id,
+            })
+                .populate({
+                    path: 'service_record_id',
+                    match: { status: { $ne: 'completed' } }
+                })
+                .lean() as any[];
+
+            const held = orders
+                .filter(o => o.service_record_id)
+                .reduce((sum, o) => sum + (o.quantity || 0), 0);
+
+            // Tính available và xác định stock_status
+            const available = stock - held;
+            const stockStatus = available >= data.quantity ? 'SUFFICIENT' : 'LACKING';
 
             const order = new ServiceOrder({
                 service_record_id: data.service_record_id,
@@ -53,60 +68,6 @@ export class ServiceOrderService {
                 throw new Error(`Failed to create service order: ${error.message}`);
             }
             throw new Error('Failed to create service order: Unknown error');
-        }
-    }
-
-    // Tạo nhiều orders cùng lúc (khách chốt danh sách)
-    async createMultipleServiceOrders(
-        orders: CreateServiceOrderRequest[]
-    ): Promise<ServiceOrderDTO[]> {
-        try {
-            if (orders.length === 0) return [];
-
-            // Lấy service record đầu tiên để get center_id (tất cả orders cùng record)
-            const serviceRecord = await ServiceRecord.findById(orders[0].service_record_id)
-                .populate('appointment_id')
-                .lean() as any;
-
-            if (!serviceRecord) {
-                throw new Error('Service record not found');
-            }
-
-            const center_id = serviceRecord.appointment_id.center_id;
-
-            // Lấy tất cả center parts cần thiết
-            const partIds = orders.map(o => o.part_id);
-            const centerParts = await CenterAutoPart.find({
-                center_id: center_id,
-                part_id: { $in: partIds }
-            }).lean();
-
-            const centerPartMap = new Map();
-            centerParts.forEach((cp: any) => {
-                centerPartMap.set(cp.part_id.toString(), cp.quantity || 0);
-            });
-
-            // Tạo orders với stock status
-            const ordersToCreate = orders.map(order => ({
-                service_record_id: order.service_record_id,
-                checklist_defect_id: order.checklist_defect_id,
-                part_id: order.part_id,
-                quantity: order.quantity,
-                stock_status: (centerPartMap.get(order.part_id.toString()) || 0) >= order.quantity ? 'SUFFICIENT' : 'LACKING'
-            }));
-
-            const created = await ServiceOrder.insertMany(ordersToCreate);
-
-            return await ServiceOrder.find({ _id: { $in: created.map(o => o._id) } })
-                .populate('service_record_id')
-                .populate('checklist_defect_id')
-                .populate('part_id')
-                .lean() as any;
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to create service orders: ${error.message}`);
-            }
-            throw new Error('Failed to create service orders: Unknown error');
         }
     }
 
@@ -220,10 +181,27 @@ export class ServiceOrderService {
                 part_id: order.part_id
             }).lean();
 
-            const currentStock = centerPart?.quantity || 0;
+            const stock = centerPart?.quantity || 0;
 
-            // Xác định stock_status dựa trên quantity mới
-            const stockStatus = currentStock >= quantity ? 'SUFFICIENT' : 'LACKING';
+            // Lấy tổng held từ các SUFFICIENT orders khác (loại trừ order này)
+            const otherSufficientOrders = await ServiceOrder.find({
+                _id: { $ne: id },
+                part_id: order.part_id,
+                stock_status: 'SUFFICIENT'
+            })
+                .populate({
+                    path: 'service_record_id',
+                    match: { appointment_id: serviceRecord.appointment_id._id }
+                })
+                .lean() as any[];
+
+            const held = otherSufficientOrders
+                .filter(o => o.service_record_id)
+                .reduce((sum, o) => sum + (o.quantity || 0), 0);
+
+            // Tính available và xác định stock_status
+            const available = stock - held;
+            const stockStatus = available >= quantity ? 'SUFFICIENT' : 'LACKING';
 
             return await ServiceOrder.findByIdAndUpdate(
                 id,
