@@ -155,13 +155,16 @@ export class VehicleService {
             try {
                 // Lấy một số AutoPart ban đầu (có thể lọc theo điều kiện nào đó)
                 const AutoPart = require('../models/autoPart.model').default;
-                const initialParts = await AutoPart.find().limit(5); // Lấy 5 part đầu tiên làm ví dụ
+                const initialParts = await AutoPart.find().limit(5); // Lấy 5 part đầu tiên
 
-                const vehicleAutoParts = initialParts.map((part: any) => ({
+                // Define quantities for each part: 1, 4, 4, 2, 1
+                const quantities = [1, 4, 4, 2, 1];
+
+                const vehicleAutoParts = initialParts.map((part: any, index: number) => ({
                     serial_number: `${savedVehicle._id}-${part._id}-${Date.now()}`,
                     vehicle_id: savedVehicle._id,
                     autopart_id: part._id,
-                    quantity: 1,
+                    quantity: quantities[index] || 1,
                     isWarranty: true
                 }));
 
