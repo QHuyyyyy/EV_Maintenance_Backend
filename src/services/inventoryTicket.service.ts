@@ -1,6 +1,7 @@
 import InventoryTicket from '../models/inventoryTicket.model';
 import InventoryTransaction from '../models/inventoryTransaction.model';
 import CenterAutoPart from '../models/centerAutoPart.model';
+import serviceOrderService from './serviceOrder.service';
 
 export class InventoryTicketService {
 
@@ -153,6 +154,31 @@ export class InventoryTicketService {
                     } catch (err) {
                         // Log and continue adjusting other items
                         console.error('Error updating CenterAutoPart for part', it.part_id, err);
+                    }
+                }
+
+                // AUTO: Nếu đây là InventoryTicket loại IN (nhập hàng), tự động phân bổ cho ServiceOrders
+                if (updated.ticket_type === 'IN') {
+                    try {
+                        // Chuẩn bị items cho allocation
+                        const allocateItems = (updated.items || []).map((item: any) => ({
+                            part_id: item.part_id._id.toString(),
+                            quantity: item.quantity
+                        }));
+
+                        if (allocateItems.length > 0) {
+                            // Auto allocate stock FIFO
+                            const allocationResults = await serviceOrderService.allocateMultipleImportedStocks(
+                                allocateItems,
+                                updated.center_id.toString()
+                            );
+
+                            // Attach kết quả allocation vào response
+                            (updated as any).allocationResults = allocationResults;
+                        }
+                    } catch (allocationError: any) {
+                        console.error(`[InventoryTicket] Auto-allocation failed for ticket ${id}:`, allocationError.message);
+                        // Không throw error - ticket vẫn được completed
                     }
                 }
             }
