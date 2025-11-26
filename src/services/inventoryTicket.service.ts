@@ -165,9 +165,12 @@ export class InventoryTicketService {
                             .filter((id: string, index: number, self: string[]) => self.indexOf(id) === index); // Remove duplicates
 
                         if (partIds.length > 0) {
+                            // FIX: Extract _id from populated center_id object
+                            const centerIdString = (updated.center_id as any)?._id?.toString() || updated.center_id.toString();
+
                             const allocationResults = await serviceOrderService.allocateMultipleImportedStocks(
                                 partIds,
-                                updated.center_id.toString()
+                                centerIdString
                             );
 
                             // Attach kết quả allocation vào response
