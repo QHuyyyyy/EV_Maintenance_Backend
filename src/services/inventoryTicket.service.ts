@@ -157,7 +157,6 @@ export class InventoryTicketService {
                     }
                 }
 
-                // AUTO: Nếu đây là InventoryTicket loại IN (nhập hàng), tự động phân bổ cho ServiceOrders
                 if (updated.ticket_type === 'IN') {
                     try {
                         // Lấy danh sách part_id từ items
@@ -166,8 +165,6 @@ export class InventoryTicketService {
                             .filter((id: string, index: number, self: string[]) => self.indexOf(id) === index); // Remove duplicates
 
                         if (partIds.length > 0) {
-                            // Auto allocate stock FIFO
-                            // Stock đã được update rồi, chỉ cần allocation
                             const allocationResults = await serviceOrderService.allocateMultipleImportedStocks(
                                 partIds,
                                 updated.center_id.toString()
@@ -178,7 +175,6 @@ export class InventoryTicketService {
                         }
                     } catch (allocationError: any) {
                         console.error(`[InventoryTicket] Auto-allocation failed for ticket ${id}:`, allocationError.message);
-                        // Không throw error - ticket vẫn được completed
                     }
                 }
             }

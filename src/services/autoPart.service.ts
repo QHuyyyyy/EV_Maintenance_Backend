@@ -96,6 +96,75 @@ export class AutoPartService {
             throw new Error('Failed to delete auto part: Unknown error');
         }
     }
+
+    // Lấy danh sách centers có sẵn stock để OUT (có sẵn, không có LACKING)
+    async getAvailableStockByCenters(part_id: string): Promise<Array<{
+        center_id: string;
+        center_name: string;
+        stock: number;
+        held: number;
+        available: number;
+    }>> {
+        try {
+            const CenterAutoPart = require('../models/centerAutoPart.model').default;
+            const ServiceOrder = require('../models/serviceOrder.model').default;
+            const ServiceRecord = require('../models/serviceRecord.model').default;
+            const Center = require('../models/center.model').default;
+
+            const centers = await Center.find().lean();
+
+            const results = [];
+            for (const center of centers) {
+                // Lấy stock hiện tại
+                const stock = (await CenterAutoPart.findOne({
+                    center_id: center._id,
+                    part_id: part_id
+                }).lean())?.quantity || 0;
+
+                // Lấy SUFFICIENT orders của service records chưa completed
+                const sufficientOrders = await ServiceOrder.find({
+                    part_id: part_id,
+                    stock_status: 'SUFFICIENT'
+                })
+                    .populate({
+                        path: 'service_record_id',
+                        match: { status: { $ne: 'completed' } }
+                    })
+                    .lean() as any[];
+
+                // Tính held (chỉ những order có service record chưa complete)
+                const held = sufficientOrders
+                    .filter(o => o.service_record_id)
+                    .reduce((sum, o) => sum + (o.quantity || 0), 0);
+
+                // Kiểm tra xem part này có LACKING không
+                const hasLacking = await ServiceOrder.findOne({
+                    part_id: part_id,
+                    stock_status: 'LACKING'
+                }).lean();
+
+                const available = stock - held;
+
+                // Chỉ trả về nếu: có sẵn AND không có LACKING
+                if (available > 0 && !hasLacking) {
+                    results.push({
+                        center_id: center._id.toString(),
+                        center_name: center.name,
+                        stock,
+                        held,
+                        available
+                    });
+                }
+            }
+
+            return results;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to get available stock by centers: ${error.message}`);
+            }
+            throw new Error('Failed to get available stock by centers: Unknown error');
+        }
+    }
 }
 
 export default new AutoPartService();
