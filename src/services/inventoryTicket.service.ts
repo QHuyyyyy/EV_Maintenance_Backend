@@ -160,16 +160,16 @@ export class InventoryTicketService {
                 // AUTO: Nếu đây là InventoryTicket loại IN (nhập hàng), tự động phân bổ cho ServiceOrders
                 if (updated.ticket_type === 'IN') {
                     try {
-                        // Chuẩn bị items cho allocation
-                        const allocateItems = (updated.items || []).map((item: any) => ({
-                            part_id: item.part_id._id.toString(),
-                            quantity: item.quantity
-                        }));
+                        // Lấy danh sách part_id từ items
+                        const partIds = (updated.items || [])
+                            .map((item: any) => item.part_id._id.toString())
+                            .filter((id: string, index: number, self: string[]) => self.indexOf(id) === index); // Remove duplicates
 
-                        if (allocateItems.length > 0) {
+                        if (partIds.length > 0) {
                             // Auto allocate stock FIFO
+                            // Stock đã được update rồi, chỉ cần allocation
                             const allocationResults = await serviceOrderService.allocateMultipleImportedStocks(
-                                allocateItems,
+                                partIds,
                                 updated.center_id.toString()
                             );
 
