@@ -46,7 +46,7 @@ export async function checkAndApplyWarranty(
         const masterPartId = autoPart._id;
 
         console.log(`📦 Part: ${autoPart.name}`);
-
+        console.log(masterPartId)
         let unitPrice: number;
         let description: string;
         let warrantyQty = 0;
