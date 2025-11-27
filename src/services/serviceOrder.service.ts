@@ -370,12 +370,19 @@ export class ServiceOrderService {
                 service_record_id: { $in: centerServiceRecordIds }
             })
                 .sort({ createdAt: 1 })
-                .lean();
+                .populate({
+                    path: 'service_record_id',
+                    match: { status: { $nin: ['completed', 'canceled'] } }
+                })
+                .lean() as any[];
 
-            console.log(`[Allocation] Found ${lackingOrders.length} lacking orders for this part and center`);
+            // Filter out orders whose populated service_record_id did not match (i.e., completed or canceled)
+            const filteredLackingOrders = lackingOrders.filter(o => o.service_record_id);
+
+            console.log(`[Allocation] Found ${lackingOrders.length} lacking orders for this part and center, ${filteredLackingOrders.length} eligible after filtering completed/canceled`);
 
             // Phân bổ hàng từng order
-            for (const order of lackingOrders) {
+            for (const order of filteredLackingOrders) {
                 // Hết hàng thì dừng
                 if (remainingStock <= 0) {
                     break;
